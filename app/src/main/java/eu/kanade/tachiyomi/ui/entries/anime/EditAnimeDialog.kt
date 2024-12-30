@@ -21,9 +21,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.core.view.children
-import aniyomi.ui.metadata.adapters.MetadataUIUtil.getResourceColor
-import aniyomi.util.dropBlank
-import aniyomi.util.trimOrNull
+import exh.ui.metadata.adapters.MetadataUIUtil.getResourceColor
+import exh.util.dropBlank
+import exh.util.trimOrNull
 import coil3.load
 import coil3.request.transformations
 import coil3.transform.RoundedCornersTransformation

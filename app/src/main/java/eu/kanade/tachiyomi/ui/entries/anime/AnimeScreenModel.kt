@@ -7,8 +7,8 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
-import aniyomi.util.nullIfEmpty
-import aniyomi.util.trimOrNull
+import exh.util.nullIfEmpty
+import exh.util.trimOrNull
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.core.util.addOrRemove

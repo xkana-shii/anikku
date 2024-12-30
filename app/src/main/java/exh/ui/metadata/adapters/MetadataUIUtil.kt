@@ -1,4 +1,4 @@
-package aniyomi.ui.metadata.adapters
+package exh.ui.metadata.adapters
 
 import android.content.Context
 import android.graphics.Color

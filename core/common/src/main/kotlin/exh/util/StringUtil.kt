@@ -1,4 +1,4 @@
-package aniyomi.util
+package exh.util
 
 import java.util.Locale
 
