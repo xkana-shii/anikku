@@ -202,7 +202,7 @@ object SettingsMainScreen : Screen() {
             titleRes = MR.strings.pref_category_connections,
             subtitleRes = MR.strings.pref_connections_summary,
             icon = Icons.Outlined.Link,
-            screen = SettingsConnectionsScreen,
+            screen = SettingsConnectionScreen,
         ),
         // <-- AM (CONNECTIONS)
         Item(

@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.data.connections.discord
+package eu.kanade.tachiyomi.data.connection.discord
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

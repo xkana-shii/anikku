@@ -18,12 +18,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.util.fastMap
-import eu.kanade.domain.connections.service.ConnectionsPreferences
+import eu.kanade.domain.connection.service.ConnectionPreferences
 import eu.kanade.presentation.category.visualName
 import eu.kanade.presentation.more.settings.Preference
 import eu.kanade.presentation.more.settings.widget.TriStateListDialog
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.connections.ConnectionsManager
+import eu.kanade.tachiyomi.data.connection.ConnectionManager
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.coroutines.runBlocking
@@ -53,11 +53,11 @@ object SettingsDiscordScreen : SearchableSettings {
 
     @Composable
     override fun getPreferences(): List<Preference> {
-        val connectionsPreferences = remember { Injekt.get<ConnectionsPreferences>() }
-        val connectionsManager = remember { Injekt.get<ConnectionsManager>() }
-        val enableDRPCPref = connectionsPreferences.enableDiscordRPC()
-        val useChapterTitlesPref = connectionsPreferences.useChapterTitles()
-        val discordRPCStatus = connectionsPreferences.discordRPCStatus()
+        val connectionPreferences = remember { Injekt.get<ConnectionPreferences>() }
+        val connectionManager = remember { Injekt.get<ConnectionManager>() }
+        val enableDRPCPref = connectionPreferences.enableDiscordRPC()
+        val useChapterTitlesPref = connectionPreferences.useChapterTitles()
+        val discordRPCStatus = connectionPreferences.discordRPCStatus()
 
         val enableDRPC by enableDRPCPref.collectAsState()
         val useChapterTitles by useChapterTitlesPref.collectAsState()
@@ -65,7 +65,7 @@ object SettingsDiscordScreen : SearchableSettings {
         var dialog by remember { mutableStateOf<Any?>(null) }
         dialog?.run {
             when (this) {
-                is LogoutConnectionsDialog -> {
+                is LogoutConnectionDialog -> {
                     ConnectionsLogoutDialog(
                         service = service,
                         onDismissRequest = {
@@ -104,19 +104,19 @@ object SettingsDiscordScreen : SearchableSettings {
                 ),
             ),
             getRPCIncognitoGroup(
-                connectionsPreferences = connectionsPreferences,
+                connectionPreferences = connectionPreferences,
                 enabled = enableDRPC,
             ),
             Preference.PreferenceItem.TextPreference(
                 title = stringResource(R.string.logout),
-                onClick = { dialog = LogoutConnectionsDialog(connectionsManager.discord) },
+                onClick = { dialog = LogoutConnectionDialog(connectionManager.discord) },
             ),
         )
     }
 
     @Composable
     private fun getRPCIncognitoGroup(
-        connectionsPreferences: ConnectionsPreferences,
+        connectionPreferences: ConnectionPreferences,
         enabled: Boolean,
     ): Preference.PreferenceGroup {
         val getAnimeCategories = remember { Injekt.get<GetAnimeCategories>() }
@@ -124,8 +124,8 @@ object SettingsDiscordScreen : SearchableSettings {
             initial = runBlocking { getAnimeCategories.await() },
         )
 
-        val discordRPCIncognitoPref = connectionsPreferences.discordRPCIncognito()
-        val discordRPCIncognitoCategoriesPref = connectionsPreferences.discordRPCIncognitoCategories()
+        val discordRPCIncognitoPref = connectionPreferences.discordRPCIncognito()
+        val discordRPCIncognitoCategoriesPref = connectionPreferences.discordRPCIncognitoCategories()
 
         val includedAnime by discordRPCIncognitoCategoriesPref.collectAsState()
         var showAnimeDialog by rememberSaveable { mutableStateOf(false) }

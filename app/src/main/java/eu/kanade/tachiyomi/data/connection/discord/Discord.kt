@@ -2,14 +2,14 @@
 
 // Taken from Animiru. Thank you Quickdev for permission!
 
-package eu.kanade.tachiyomi.data.connections.discord
+package eu.kanade.tachiyomi.data.connection.discord
 
 import android.graphics.Color
 import androidx.annotation.StringRes
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.connections.ConnectionsService
+import eu.kanade.tachiyomi.data.connection.BaseConnection
 
-class Discord(id: Long) : ConnectionsService(id) {
+class Discord(id: Long) : BaseConnection(id) {
 
     @StringRes
     override fun nameRes() = R.string.connections_discord
@@ -21,7 +21,7 @@ class Discord(id: Long) : ConnectionsService(id) {
 
     override fun logout() {
         super.logout()
-        connectionsPreferences.connectionsToken(this).delete()
+        connectionPreferences.connectionsToken(this).delete()
     }
 
     override suspend fun login(username: String, password: String) {

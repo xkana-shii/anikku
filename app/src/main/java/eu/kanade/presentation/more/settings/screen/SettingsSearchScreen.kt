@@ -32,7 +32,6 @@ import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -327,7 +326,7 @@ private val settingScreens = listOf(
     SettingsDownloadScreen,
     SettingsTrackingScreen,
     // AM (CONNECTIONS) -->
-    SettingsConnectionsScreen,
+    SettingsConnectionScreen,
     // <-- AM (CONNECTIONS)
     SettingsBrowseScreen,
     SettingsDataScreen,

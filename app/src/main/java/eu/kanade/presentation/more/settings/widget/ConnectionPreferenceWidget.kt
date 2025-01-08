@@ -18,15 +18,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import eu.kanade.presentation.components.ConnectionsLogoIcon
+import eu.kanade.presentation.connection.components.ConnectionLogoIcon
 import eu.kanade.presentation.more.settings.LocalPreferenceHighlighted
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.connections.ConnectionsService
+import eu.kanade.tachiyomi.data.connection.BaseConnection
 
 @Composable
 @Suppress("ModifierNotUsedAtRoot", "MagicNumber")
-fun ConnectionsPreferenceWidget(
-    service: ConnectionsService,
+fun ConnectionPreferenceWidget(
+    service: BaseConnection,
     checked: Boolean,
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
@@ -40,7 +40,7 @@ fun ConnectionsPreferenceWidget(
                 .padding(horizontal = PrefsHorizontalPadding, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            ConnectionsLogoIcon(service)
+            ConnectionLogoIcon(service)
             Text(
                 text = stringResource(service.nameRes()),
                 modifier = Modifier

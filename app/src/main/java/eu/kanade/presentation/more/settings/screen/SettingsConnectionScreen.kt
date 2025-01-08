@@ -43,8 +43,8 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.more.settings.Preference
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.connections.ConnectionsManager
-import eu.kanade.tachiyomi.data.connections.ConnectionsService
+import eu.kanade.tachiyomi.data.connection.BaseConnection
+import eu.kanade.tachiyomi.data.connection.ConnectionManager
 import eu.kanade.tachiyomi.util.system.openDiscordLoginActivity
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.collections.immutable.persistentListOf
@@ -54,23 +54,22 @@ import tachiyomi.i18n.MR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
-object SettingsConnectionsScreen : SearchableSettings {
+object SettingsConnectionScreen : SearchableSettings {
 
     @ReadOnlyComposable
     @Composable
-    @StringRes
     override fun getTitleRes() = MR.strings.pref_category_connections
 
     @Composable
     override fun getPreferences(): List<Preference> {
         val context = LocalContext.current
         val navigator = LocalNavigator.currentOrThrow
-        val connectionsManager = remember { Injekt.get<ConnectionsManager>() }
+        val connectionManager = remember { Injekt.get<ConnectionManager>() }
 
         var dialog by remember { mutableStateOf<Any?>(null) }
         dialog?.run {
             when (this) {
-                is LoginConnectionsDialog -> {
+                is LoginConnectionDialog -> {
                     ConnectionsLoginDialog(
                         service = service,
                         uNameStringRes = uNameStringRes,
@@ -84,9 +83,9 @@ object SettingsConnectionsScreen : SearchableSettings {
             Preference.PreferenceGroup(
                 title = stringResource(R.string.special_services),
                 preferenceItems = persistentListOf(
-                    Preference.PreferenceItem.ConnectionsPreference(
-                        title = stringResource(connectionsManager.discord.nameRes()),
-                        service = connectionsManager.discord,
+                    Preference.PreferenceItem.ConnectionPreference(
+                        title = stringResource(connectionManager.discord.nameRes()),
+                        service = connectionManager.discord,
                         login = {
                             context.openDiscordLoginActivity()
                         },
@@ -106,7 +105,7 @@ object SettingsConnectionsScreen : SearchableSettings {
     @Composable
     @Suppress("LongMethod")
     private fun ConnectionsLoginDialog(
-        service: ConnectionsService,
+        service: BaseConnection,
         @StringRes uNameStringRes: Int,
         onDismissRequest: () -> Unit,
     ) {
@@ -214,7 +213,7 @@ object SettingsConnectionsScreen : SearchableSettings {
     @Suppress("SwallowedException", "TooGenericExceptionCaught")
     private suspend fun checkLogin(
         context: Context,
-        service: ConnectionsService,
+        service: BaseConnection,
         username: String,
         password: String,
     ): Boolean {
@@ -232,7 +231,7 @@ object SettingsConnectionsScreen : SearchableSettings {
 
 @Composable
 internal fun ConnectionsLogoutDialog(
-    service: ConnectionsService,
+    service: BaseConnection,
     onDismissRequest: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -275,12 +274,12 @@ internal fun ConnectionsLogoutDialog(
 }
 
 @Suppress("UnusedPrivateClass")
-private data class LoginConnectionsDialog(
-    val service: ConnectionsService,
+private data class LoginConnectionDialog(
+    val service: BaseConnection,
     @StringRes val uNameStringRes: Int,
 )
 
-internal data class LogoutConnectionsDialog(
-    val service: ConnectionsService,
+internal data class LogoutConnectionDialog(
+    val service: BaseConnection,
 )
 // <-- AM (CONNECTIONS)

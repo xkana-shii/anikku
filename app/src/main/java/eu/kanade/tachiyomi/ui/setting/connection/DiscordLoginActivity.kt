@@ -3,15 +3,15 @@
 // Original library from https://github.com/dead8309/KizzyRPC (Thank you)
 // Thank you to the 最高 man for the refactored and simplified code
 // https://github.com/saikou-app/saikou
-package eu.kanade.tachiyomi.ui.setting.connections
+package eu.kanade.tachiyomi.ui.setting.connection
 
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import eu.kanade.domain.connections.service.ConnectionsPreferences
+import eu.kanade.domain.connection.service.ConnectionPreferences
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.connections.ConnectionsManager
+import eu.kanade.tachiyomi.data.connection.ConnectionManager
 import eu.kanade.tachiyomi.ui.base.activity.BaseActivity
 import eu.kanade.tachiyomi.util.system.toast
 import tachiyomi.i18n.MR
@@ -20,8 +20,8 @@ import java.io.File
 
 class DiscordLoginActivity : BaseActivity() {
 
-    private val connectionsManager: ConnectionsManager by injectLazy()
-    private val connectionsPreferences: ConnectionsPreferences by injectLazy()
+    private val connectionManager: ConnectionManager by injectLazy()
+    private val connectionPreferences: ConnectionPreferences by injectLazy()
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -58,9 +58,9 @@ class DiscordLoginActivity : BaseActivity() {
     }
 
     private fun login(token: String) {
-        connectionsPreferences.connectionsToken(connectionsManager.discord).set(token)
-        connectionsPreferences.setConnectionsCredentials(
-            connectionsManager.discord,
+        connectionPreferences.connectionsToken(connectionManager.discord).set(token)
+        connectionPreferences.setConnectionsCredentials(
+            connectionManager.discord,
             "Discord",
             "Logged In",
         )
