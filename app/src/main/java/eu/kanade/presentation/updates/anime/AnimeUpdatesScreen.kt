@@ -3,8 +3,14 @@ package eu.kanade.presentation.updates.anime
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.CalendarMonth
+import androidx.compose.material.icons.outlined.FlipToBack
+import androidx.compose.material.icons.outlined.Refresh
+import androidx.compose.material.icons.outlined.SelectAll
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -14,18 +20,22 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.util.fastAll
 import androidx.compose.ui.util.fastAny
+import eu.kanade.presentation.components.AppBar
+import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.entries.anime.components.EpisodeDownloadAction
 import eu.kanade.presentation.entries.components.EntryBottomActionMenu
 import eu.kanade.tachiyomi.data.download.anime.model.AnimeDownload
 import eu.kanade.tachiyomi.ui.player.settings.PlayerPreferences
 import eu.kanade.tachiyomi.ui.updates.anime.AnimeUpdatesItem
 import eu.kanade.tachiyomi.ui.updates.anime.AnimeUpdatesScreenModel
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.FastScrollLazyColumn
 import tachiyomi.presentation.core.components.material.PullRefresh
 import tachiyomi.presentation.core.components.material.Scaffold
+import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.EmptyScreen
 import tachiyomi.presentation.core.screens.LoadingScreen
 import uy.kohesive.injekt.Injekt
@@ -41,6 +51,7 @@ fun AnimeUpdateScreen(
     onClickCover: (AnimeUpdatesItem) -> Unit,
     onSelectAll: (Boolean) -> Unit,
     onInvertSelection: () -> Unit,
+    onCalendarClicked: () -> Unit,
     onUpdateLibrary: () -> Boolean,
     onDownloadEpisode: (List<AnimeUpdatesItem>, EpisodeDownloadAction) -> Unit,
     onMultiBookmarkClicked: (List<AnimeUpdatesItem>, bookmark: Boolean) -> Unit,
@@ -48,10 +59,23 @@ fun AnimeUpdateScreen(
     onMultiDeleteClicked: (List<AnimeUpdatesItem>) -> Unit,
     onUpdateSelected: (AnimeUpdatesItem, Boolean, Boolean, Boolean) -> Unit,
     onOpenEpisode: (AnimeUpdatesItem, altPlayer: Boolean) -> Unit,
+    navigateUp: (() -> Unit)?,
 ) {
     BackHandler(enabled = state.selectionMode, onBack = { onSelectAll(false) })
 
     Scaffold(
+        topBar = { scrollBehavior ->
+            UpdatesAppBar(
+                onCalendarClicked = { onCalendarClicked() },
+                onUpdateLibrary = { onUpdateLibrary() },
+                actionModeCounter = state.selected.size,
+                onSelectAll = { onSelectAll(true) },
+                onInvertSelection = { onInvertSelection() },
+                onCancelActionMode = { onSelectAll(false) },
+                navigateUp = navigateUp,
+                scrollBehavior = scrollBehavior,
+            )
+        },
         bottomBar = {
             AnimeUpdatesBottomBar(
                 selected = state.selected,
@@ -107,6 +131,61 @@ fun AnimeUpdateScreen(
             }
         }
     }
+}
+
+@Composable
+private fun UpdatesAppBar(
+    onCalendarClicked: () -> Unit,
+    onUpdateLibrary: () -> Unit,
+    // For action mode
+    actionModeCounter: Int,
+    onSelectAll: () -> Unit,
+    onInvertSelection: () -> Unit,
+    onCancelActionMode: () -> Unit,
+    scrollBehavior: TopAppBarScrollBehavior,
+    navigateUp: (() -> Unit)?,
+    modifier: Modifier = Modifier,
+) {
+    AppBar(
+        modifier = modifier,
+        title = stringResource(MR.strings.label_recent_updates),
+        actions = {
+            AppBarActions(
+                persistentListOf(
+                    AppBar.Action(
+                        title = stringResource(MR.strings.action_view_upcoming),
+                        icon = Icons.Outlined.CalendarMonth,
+                        onClick = onCalendarClicked,
+                    ),
+                    AppBar.Action(
+                        title = stringResource(MR.strings.action_update_library),
+                        icon = Icons.Outlined.Refresh,
+                        onClick = onUpdateLibrary,
+                    ),
+                ),
+            )
+        },
+        actionModeCounter = actionModeCounter,
+        onCancelActionMode = onCancelActionMode,
+        actionModeActions = {
+            AppBarActions(
+                persistentListOf(
+                    AppBar.Action(
+                        title = stringResource(MR.strings.action_select_all),
+                        icon = Icons.Outlined.SelectAll,
+                        onClick = onSelectAll,
+                    ),
+                    AppBar.Action(
+                        title = stringResource(MR.strings.action_select_inverse),
+                        icon = Icons.Outlined.FlipToBack,
+                        onClick = onInvertSelection,
+                    ),
+                ),
+            )
+        },
+        navigateUp = navigateUp,
+        scrollBehavior = scrollBehavior,
+    )
 }
 
 @Composable

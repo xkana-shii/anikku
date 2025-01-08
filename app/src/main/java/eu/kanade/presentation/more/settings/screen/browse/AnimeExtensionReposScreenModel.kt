@@ -1,7 +1,10 @@
 package eu.kanade.presentation.more.settings.screen.browse
 
+import androidx.compose.runtime.Immutable
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import dev.icerock.moko.resources.StringResource
+import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collectLatest
@@ -14,6 +17,7 @@ import mihon.domain.extensionrepo.anime.interactor.ReplaceAnimeExtensionRepo
 import mihon.domain.extensionrepo.anime.interactor.UpdateAnimeExtensionRepo
 import mihon.domain.extensionrepo.model.ExtensionRepo
 import tachiyomi.core.common.util.lang.launchIO
+import tachiyomi.i18n.MR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -108,5 +112,35 @@ class AnimeExtensionReposScreenModel(
                 is RepoScreenState.Success -> it.copy(dialog = null)
             }
         }
+    }
+}
+
+sealed class RepoEvent {
+    sealed class LocalizedMessage(val stringRes: StringResource) : RepoEvent()
+    data object InvalidUrl : LocalizedMessage(MR.strings.invalid_repo_name)
+    data object RepoAlreadyExists : LocalizedMessage(MR.strings.error_repo_exists)
+}
+
+sealed class RepoDialog {
+    data object Create : RepoDialog()
+    data class Delete(val repo: String) : RepoDialog()
+    data class Conflict(val oldRepo: ExtensionRepo, val newRepo: ExtensionRepo) : RepoDialog()
+    data class Confirm(val url: String) : RepoDialog()
+}
+
+sealed class RepoScreenState {
+
+    @Immutable
+    data object Loading : RepoScreenState()
+
+    @Immutable
+    data class Success(
+        val repos: ImmutableSet<ExtensionRepo>,
+        val oldRepos: ImmutableSet<String>? = null,
+        val dialog: RepoDialog? = null,
+    ) : RepoScreenState() {
+
+        val isEmpty: Boolean
+            get() = repos.isEmpty()
     }
 }

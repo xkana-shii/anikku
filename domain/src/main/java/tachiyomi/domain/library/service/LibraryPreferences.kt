@@ -5,13 +5,9 @@ import tachiyomi.core.common.preference.PreferenceStore
 import tachiyomi.core.common.preference.TriState
 import tachiyomi.core.common.preference.getEnum
 import tachiyomi.domain.entries.anime.model.Anime
-import tachiyomi.domain.entries.manga.model.Manga
 import tachiyomi.domain.library.anime.model.AnimeGroupLibraryMode
 import tachiyomi.domain.library.anime.model.AnimeLibraryGroup
 import tachiyomi.domain.library.anime.model.AnimeLibrarySort
-import tachiyomi.domain.library.manga.model.MangaGroupLibraryMode
-import tachiyomi.domain.library.manga.model.MangaLibraryGroup
-import tachiyomi.domain.library.manga.model.MangaLibrarySort
 import tachiyomi.domain.library.model.LibraryDisplayMode
 
 class LibraryPreferences(
@@ -23,13 +19,6 @@ class LibraryPreferences(
         LibraryDisplayMode.default,
         LibraryDisplayMode.Serializer::serialize,
         LibraryDisplayMode.Serializer::deserialize,
-    )
-
-    fun mangaSortingMode() = preferenceStore.getObject(
-        "library_sorting_mode",
-        MangaLibrarySort.default,
-        MangaLibrarySort.Serializer::serialize,
-        MangaLibrarySort.Serializer::deserialize,
     )
 
     fun animeSortingMode() = preferenceStore.getObject(
@@ -152,42 +141,25 @@ class LibraryPreferences(
     // Mixture Category
 
     fun defaultAnimeCategory() = preferenceStore.getInt("default_anime_category", -1)
-    fun defaultMangaCategory() = preferenceStore.getInt("default_category", -1)
 
     fun lastUsedAnimeCategory() = preferenceStore.getInt(Preference.appStateKey("last_used_anime_category"), 0)
-    fun lastUsedMangaCategory() = preferenceStore.getInt(Preference.appStateKey("last_used_category"), 0)
 
     fun animeUpdateCategories() =
         preferenceStore.getStringSet("animelib_update_categories", emptySet())
 
-    fun mangaUpdateCategories() =
-        preferenceStore.getStringSet("library_update_categories", emptySet())
-
     fun animeUpdateCategoriesExclude() =
         preferenceStore.getStringSet("animelib_update_categories_exclude", emptySet())
-
-    fun mangaUpdateCategoriesExclude() =
-        preferenceStore.getStringSet("library_update_categories_exclude", emptySet())
 
     // Mixture Item
 
     fun filterEpisodeBySeen() =
         preferenceStore.getLong("default_episode_filter_by_seen", Anime.SHOW_ALL)
 
-    fun filterChapterByRead() =
-        preferenceStore.getLong("default_chapter_filter_by_read", Manga.SHOW_ALL)
-
     fun filterEpisodeByDownloaded() =
         preferenceStore.getLong("default_episode_filter_by_downloaded", Anime.SHOW_ALL)
 
-    fun filterChapterByDownloaded() =
-        preferenceStore.getLong("default_chapter_filter_by_downloaded", Manga.SHOW_ALL)
-
     fun filterEpisodeByBookmarked() =
         preferenceStore.getLong("default_episode_filter_by_bookmarked", Anime.SHOW_ALL)
-
-    fun filterChapterByBookmarked() =
-        preferenceStore.getLong("default_chapter_filter_by_bookmarked", Manga.SHOW_ALL)
 
     // and upload date
     fun sortEpisodeBySourceOrNumber() = preferenceStore.getLong(
@@ -195,29 +167,14 @@ class LibraryPreferences(
         Anime.EPISODE_SORTING_SOURCE,
     )
 
-    fun sortChapterBySourceOrNumber() = preferenceStore.getLong(
-        "default_chapter_sort_by_source_or_number",
-        Manga.CHAPTER_SORTING_SOURCE,
-    )
-
     fun displayEpisodeByNameOrNumber() = preferenceStore.getLong(
         "default_chapter_display_by_name_or_number",
         Anime.EPISODE_DISPLAY_NAME,
     )
 
-    fun displayChapterByNameOrNumber() = preferenceStore.getLong(
-        "default_chapter_display_by_name_or_number",
-        Manga.CHAPTER_DISPLAY_NAME,
-    )
-
     fun sortEpisodeByAscendingOrDescending() = preferenceStore.getLong(
         "default_chapter_sort_by_ascending_or_descending",
         Anime.EPISODE_SORT_DESC,
-    )
-
-    fun sortChapterByAscendingOrDescending() = preferenceStore.getLong(
-        "default_chapter_sort_by_ascending_or_descending",
-        Manga.CHAPTER_SORT_DESC,
     )
 
     fun setEpisodeSettingsDefault(anime: Anime) {
@@ -228,17 +185,6 @@ class LibraryPreferences(
         displayEpisodeByNameOrNumber().set(anime.displayMode)
         sortEpisodeByAscendingOrDescending().set(
             if (anime.sortDescending()) Anime.EPISODE_SORT_DESC else Anime.EPISODE_SORT_ASC,
-        )
-    }
-
-    fun setChapterSettingsDefault(manga: Manga) {
-        filterChapterByRead().set(manga.unreadFilterRaw)
-        filterChapterByDownloaded().set(manga.downloadedFilterRaw)
-        filterChapterByBookmarked().set(manga.bookmarkedFilterRaw)
-        sortChapterBySourceOrNumber().set(manga.sorting)
-        displayChapterByNameOrNumber().set(manga.displayMode)
-        sortChapterByAscendingOrDescending().set(
-            if (manga.sortDescending()) Manga.CHAPTER_SORT_DESC else Manga.CHAPTER_SORT_ASC,
         )
     }
 
@@ -283,19 +229,9 @@ class LibraryPreferences(
         AnimeGroupLibraryMode.GLOBAL,
     )
 
-    fun groupMangaLibraryUpdateType() = preferenceStore.getEnum(
-        "group_library_update_type",
-        MangaGroupLibraryMode.GLOBAL,
-    )
-
     fun groupAnimeLibraryBy() = preferenceStore.getInt(
         "group_anime_library_by",
         AnimeLibraryGroup.BY_DEFAULT,
-    )
-
-    fun groupMangaLibraryBy() = preferenceStore.getInt(
-        "group_library_by",
-        MangaLibraryGroup.BY_DEFAULT,
     )
 
     // SY <--

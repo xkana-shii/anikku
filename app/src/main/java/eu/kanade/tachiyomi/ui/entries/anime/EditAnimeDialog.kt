@@ -21,9 +21,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.core.view.children
-import exh.ui.metadata.adapters.MetadataUIUtil.getResourceColor
-import exh.util.dropBlank
-import exh.util.trimOrNull
 import coil3.load
 import coil3.request.transformations
 import coil3.transform.RoundedCornersTransformation
@@ -36,6 +33,9 @@ import eu.kanade.tachiyomi.databinding.EditAnimeDialogBinding
 import eu.kanade.tachiyomi.util.lang.chop
 import eu.kanade.tachiyomi.util.system.dpToPx
 import eu.kanade.tachiyomi.widget.materialdialogs.setTextInput
+import exh.ui.metadata.adapters.MetadataUIUtil.getResourceColor
+import exh.util.dropBlank
+import exh.util.trimOrNull
 import kotlinx.coroutines.CoroutineScope
 import tachiyomi.domain.entries.anime.model.Anime
 import tachiyomi.source.local.entries.anime.isLocal

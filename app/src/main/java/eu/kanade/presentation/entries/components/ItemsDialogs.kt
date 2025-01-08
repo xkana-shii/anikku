@@ -23,7 +23,6 @@ import eu.kanade.tachiyomi.util.system.isDevFlavor
 import eu.kanade.tachiyomi.util.system.isPreviewBuildType
 import kotlinx.collections.immutable.toImmutableList
 import tachiyomi.domain.entries.anime.interactor.AnimeFetchInterval
-import tachiyomi.domain.entries.manga.interactor.MangaFetchInterval
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.WheelTextPicker
 import tachiyomi.presentation.core.components.material.padding
@@ -37,9 +36,8 @@ import kotlin.math.absoluteValue
 fun DeleteItemsDialog(
     onDismissRequest: () -> Unit,
     onConfirm: () -> Unit,
-    isManga: Boolean,
 ) {
-    val subtitle = if (isManga) MR.strings.confirm_delete_chapters else MR.strings.confirm_delete_episodes
+    val subtitle = MR.strings.confirm_delete_episodes
     AlertDialog(
         onDismissRequest = onDismissRequest,
         dismissButton = {
@@ -131,11 +129,7 @@ fun SetIntervalDialog(
                         contentAlignment = Alignment.Center,
                     ) {
                         val size = DpSize(width = maxWidth / 2, height = 128.dp)
-                        val maxInterval = if (isManga) {
-                            MangaFetchInterval.MAX_INTERVAL
-                        } else {
-                            AnimeFetchInterval.MAX_INTERVAL
-                        }
+                        val maxInterval = AnimeFetchInterval.MAX_INTERVAL
                         val items = (0..maxInterval)
                             .map {
                                 if (it == 0) {

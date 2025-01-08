@@ -9,7 +9,6 @@ import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import eu.kanade.presentation.browse.InLibraryBadge
-import eu.kanade.presentation.browse.manga.components.BrowseSourceLoadingItem
 import eu.kanade.presentation.library.components.CommonEntryItemDefaults
 import eu.kanade.presentation.library.components.EntryListItem
 import kotlinx.coroutines.flow.StateFlow

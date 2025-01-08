@@ -3,22 +3,30 @@ package eu.kanade.presentation.history.anime
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.DeleteSweep
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
+import eu.kanade.presentation.components.AppBar
+import eu.kanade.presentation.components.AppBarActions
+import eu.kanade.presentation.components.AppBarTitle
+import eu.kanade.presentation.components.SearchToolbar
 import eu.kanade.presentation.components.relativeDateText
 import eu.kanade.presentation.history.anime.components.AnimeHistoryItem
 import eu.kanade.presentation.theme.TachiyomiPreviewTheme
 import eu.kanade.presentation.util.animateItemFastScroll
 import eu.kanade.tachiyomi.ui.history.anime.AnimeHistoryScreenModel
+import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.domain.history.anime.model.AnimeHistoryWithRelations
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.FastScrollLazyColumn
 import tachiyomi.presentation.core.components.ListGroupHeader
 import tachiyomi.presentation.core.components.material.Scaffold
+import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.EmptyScreen
 import tachiyomi.presentation.core.screens.LoadingScreen
 import java.time.LocalDate
@@ -27,12 +35,44 @@ import java.time.LocalDate
 fun AnimeHistoryScreen(
     state: AnimeHistoryScreenModel.State,
     snackbarHostState: SnackbarHostState,
+    onSearchQueryChange: (String?) -> Unit,
     onClickCover: (animeId: Long) -> Unit,
     onClickResume: (animeId: Long, episodeId: Long) -> Unit,
     onDialogChange: (AnimeHistoryScreenModel.Dialog?) -> Unit,
+    navigateUp: (() -> Unit)?,
     searchQuery: String? = null,
 ) {
     Scaffold(
+        topBar = { scrollBehavior ->
+            SearchToolbar(
+                titleContent = { AppBarTitle(stringResource(MR.strings.history)) },
+                searchQuery = state.searchQuery,
+                onChangeSearchQuery = onSearchQueryChange,
+                actions = {
+                    AppBarActions(
+                        // KMK -->
+                        persistentListOf<AppBar.AppBarAction>().builder()
+                            .apply {
+                                add(
+                                    // KMK <--
+                                    AppBar.Action(
+                                        title = stringResource(MR.strings.pref_clear_history),
+                                        icon = Icons.Outlined.DeleteSweep,
+                                        onClick = {
+                                            onDialogChange(AnimeHistoryScreenModel.Dialog.DeleteAll)
+                                        },
+                                    ),
+                                    // KMK -->
+                                )
+                            }
+                            .build(),
+                        // KMK <--
+                    )
+                },
+                navigateUp = navigateUp,
+                scrollBehavior = scrollBehavior,
+            )
+        },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
     ) { contentPadding ->
         state.list.let {
@@ -120,9 +160,11 @@ internal fun HistoryScreenPreviews(
             state = historyState,
             snackbarHostState = SnackbarHostState(),
             searchQuery = null,
+            onSearchQueryChange = {},
             onClickCover = {},
             onClickResume = { _, _ -> run {} },
             onDialogChange = {},
+            navigateUp = {},
         )
     }
 }

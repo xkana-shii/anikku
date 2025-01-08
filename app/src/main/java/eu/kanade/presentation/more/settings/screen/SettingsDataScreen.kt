@@ -58,7 +58,7 @@ import eu.kanade.tachiyomi.data.sync.SyncDataJob
 import eu.kanade.tachiyomi.data.sync.SyncManager
 import eu.kanade.tachiyomi.data.sync.service.GoogleDriveService
 import eu.kanade.tachiyomi.data.sync.service.GoogleDriveSyncService
-import eu.kanade.tachiyomi.ui.storage.StorageTab
+import eu.kanade.tachiyomi.ui.storage.StorageScreen
 import eu.kanade.tachiyomi.util.system.DeviceUtil
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.collections.immutable.persistentListOf
@@ -333,7 +333,7 @@ object SettingsDataScreen : SearchableSettings {
                     title = stringResource(MR.strings.label_storage),
                     icon = Icons.Outlined.Storage,
                     onClick = {
-                        navigator.push(StorageTab)
+                        navigator.push(StorageScreen)
                     },
                 ),
 

@@ -7,8 +7,6 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
-import exh.util.nullIfEmpty
-import exh.util.trimOrNull
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.core.util.addOrRemove
@@ -33,6 +31,7 @@ import eu.kanade.tachiyomi.data.download.anime.AnimeDownloadManager
 import eu.kanade.tachiyomi.data.download.anime.model.AnimeDownload
 import eu.kanade.tachiyomi.data.torrentServer.TorrentServerUtils
 import eu.kanade.tachiyomi.data.torrentServer.service.TorrentServerService
+import eu.kanade.tachiyomi.data.track.BaseTracker
 import eu.kanade.tachiyomi.data.track.EnhancedAnimeTracker
 import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.network.HttpException
@@ -44,6 +43,8 @@ import eu.kanade.tachiyomi.util.AniChartApi
 import eu.kanade.tachiyomi.util.episode.getNextUnseen
 import eu.kanade.tachiyomi.util.removeCovers
 import eu.kanade.tachiyomi.util.system.toast
+import exh.util.nullIfEmpty
+import exh.util.trimOrNull
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.async
@@ -1143,7 +1144,14 @@ class AnimeScreenModel(
                 trackerManager.loggedInTrackersFlow(),
             ) { animeTracks, loggedInTrackers ->
                 loggedInTrackers
-                    .map { service -> AnimeTrackItem(animeTracks.find { it.trackerId == service.id }, service) }
+                    .map { service ->
+                        AnimeTrackItem(
+                            animeTracks.find {
+                                it.trackerId == (service as BaseTracker).id
+                            },
+                            (service as BaseTracker),
+                        )
+                    }
             }
                 .distinctUntilChanged()
                 .collectLatest { trackItems ->

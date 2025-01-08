@@ -19,7 +19,6 @@ import eu.kanade.tachiyomi.databinding.DownloadListBinding
 import kotlinx.coroutines.CoroutineScope
 import tachiyomi.core.common.util.lang.launchUI
 import tachiyomi.i18n.MR
-import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.screens.EmptyScreen
 import kotlin.math.roundToInt
 
@@ -31,61 +30,59 @@ fun AnimeDownloadQueueScreen(
     downloadList: List<AnimeDownloadHeaderItem>,
     nestedScrollConnection: NestedScrollConnection,
 ) {
-    Scaffold {
-        if (downloadList.isEmpty()) {
-            EmptyScreen(
-                stringRes = MR.strings.information_no_downloads,
-                modifier = Modifier.padding(contentPadding),
-            )
-            return@Scaffold
-        }
+    if (downloadList.isEmpty()) {
+        EmptyScreen(
+            stringRes = MR.strings.information_no_downloads,
+            modifier = Modifier.padding(contentPadding),
+        )
+        return
+    }
 
-        val density = LocalDensity.current
-        val layoutDirection = LocalLayoutDirection.current
-        val left = with(density) { contentPadding.calculateLeftPadding(layoutDirection).toPx().roundToInt() }
-        val top = with(density) { contentPadding.calculateTopPadding().toPx().roundToInt() }
-        val right = with(density) { contentPadding.calculateRightPadding(layoutDirection).toPx().roundToInt() }
-        val bottom = with(density) { contentPadding.calculateBottomPadding().toPx().roundToInt() }
+    val density = LocalDensity.current
+    val layoutDirection = LocalLayoutDirection.current
+    val left = with(density) { contentPadding.calculateLeftPadding(layoutDirection).toPx().roundToInt() }
+    val top = with(density) { contentPadding.calculateTopPadding().toPx().roundToInt() }
+    val right = with(density) { contentPadding.calculateRightPadding(layoutDirection).toPx().roundToInt() }
+    val bottom = with(density) { contentPadding.calculateBottomPadding().toPx().roundToInt() }
 
-        Box(modifier = Modifier.nestedScroll(nestedScrollConnection)) {
-            AndroidView(
-                modifier = Modifier.fillMaxWidth(),
-                factory = { context ->
-                    screenModel.controllerBinding = DownloadListBinding.inflate(
-                        LayoutInflater.from(context),
+    Box(modifier = Modifier.nestedScroll(nestedScrollConnection)) {
+        AndroidView(
+            modifier = Modifier.fillMaxWidth(),
+            factory = { context ->
+                screenModel.controllerBinding = DownloadListBinding.inflate(
+                    LayoutInflater.from(context),
+                )
+                screenModel.adapter = AnimeDownloadAdapter(screenModel.listener)
+                screenModel.controllerBinding.root.adapter = screenModel.adapter
+                screenModel.adapter?.isHandleDragEnabled = true
+                screenModel.controllerBinding.root.layoutManager = LinearLayoutManager(
+                    context,
+                )
+
+                ViewCompat.setNestedScrollingEnabled(screenModel.controllerBinding.root, true)
+
+                scope.launchUI {
+                    screenModel.getDownloadStatusFlow()
+                        .collect(screenModel::onStatusChange)
+                }
+                scope.launchUI {
+                    screenModel.getDownloadProgressFlow()
+                        .collect(screenModel::onUpdateDownloadedPages)
+                }
+
+                screenModel.controllerBinding.root
+            },
+            update = {
+                screenModel.controllerBinding.root
+                    .updatePadding(
+                        left = left,
+                        top = top,
+                        right = right,
+                        bottom = bottom,
                     )
-                    screenModel.adapter = AnimeDownloadAdapter(screenModel.listener)
-                    screenModel.controllerBinding.root.adapter = screenModel.adapter
-                    screenModel.adapter?.isHandleDragEnabled = true
-                    screenModel.controllerBinding.root.layoutManager = LinearLayoutManager(
-                        context,
-                    )
 
-                    ViewCompat.setNestedScrollingEnabled(screenModel.controllerBinding.root, true)
-
-                    scope.launchUI {
-                        screenModel.getDownloadStatusFlow()
-                            .collect(screenModel::onStatusChange)
-                    }
-                    scope.launchUI {
-                        screenModel.getDownloadProgressFlow()
-                            .collect(screenModel::onUpdateDownloadedPages)
-                    }
-
-                    screenModel.controllerBinding.root
-                },
-                update = {
-                    screenModel.controllerBinding.root
-                        .updatePadding(
-                            left = left,
-                            top = top,
-                            right = right,
-                            bottom = bottom,
-                        )
-
-                    screenModel.adapter?.updateDataSet(downloadList)
-                },
-            )
-        }
+                screenModel.adapter?.updateDataSet(downloadList)
+            },
+        )
     }
 }

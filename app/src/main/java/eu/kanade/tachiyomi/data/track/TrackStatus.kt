@@ -5,8 +5,6 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.track.anilist.Anilist
 import eu.kanade.tachiyomi.data.track.bangumi.Bangumi
 import eu.kanade.tachiyomi.data.track.kitsu.Kitsu
-import eu.kanade.tachiyomi.data.track.komga.Komga
-import eu.kanade.tachiyomi.data.track.mangaupdates.MangaUpdates
 import eu.kanade.tachiyomi.data.track.myanimelist.MyAnimeList
 import eu.kanade.tachiyomi.data.track.shikimori.Shikimori
 import eu.kanade.tachiyomi.data.track.simkl.Simkl
@@ -87,24 +85,6 @@ enum class TrackStatus(val int: Long, @StringRes val res: Int) {
                         Bangumi.ON_HOLD -> PAUSED
                         Bangumi.PLAN_TO_READ -> PLAN_TO_READ
                         Bangumi.DROPPED -> DROPPED
-                        else -> null
-                    }
-                }
-                (6L) -> {
-                    when (statusLong) {
-                        Komga.READING -> READING
-                        Komga.COMPLETED -> COMPLETED
-                        Komga.UNREAD -> null
-                        else -> null
-                    }
-                }
-                (7L) -> {
-                    when (statusLong) {
-                        MangaUpdates.READING_LIST -> READING
-                        MangaUpdates.COMPLETE_LIST -> COMPLETED
-                        MangaUpdates.ON_HOLD_LIST -> PAUSED
-                        MangaUpdates.WISH_LIST -> PLAN_TO_READ
-                        MangaUpdates.UNFINISHED_LIST -> DROPPED
                         else -> null
                     }
                 }

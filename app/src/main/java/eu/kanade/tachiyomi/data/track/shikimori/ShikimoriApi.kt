@@ -3,9 +3,7 @@ package eu.kanade.tachiyomi.data.track.shikimori
 import android.net.Uri
 import androidx.core.net.toUri
 import eu.kanade.tachiyomi.data.database.models.anime.AnimeTrack
-import eu.kanade.tachiyomi.data.database.models.manga.MangaTrack
 import eu.kanade.tachiyomi.data.track.model.AnimeTrackSearch
-import eu.kanade.tachiyomi.data.track.model.MangaTrackSearch
 import eu.kanade.tachiyomi.data.track.shikimori.dto.SMAddEntryResponse
 import eu.kanade.tachiyomi.data.track.shikimori.dto.SMEntry
 import eu.kanade.tachiyomi.data.track.shikimori.dto.SMOAuth
@@ -27,7 +25,6 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import tachiyomi.core.common.util.lang.withIOContext
 import uy.kohesive.injekt.injectLazy
 import tachiyomi.domain.track.anime.model.AnimeTrack as DomainAnimeTrack
-import tachiyomi.domain.track.manga.model.MangaTrack as DomainMangaTrack
 
 class ShikimoriApi(
     private val trackId: Long,
@@ -38,47 +35,6 @@ class ShikimoriApi(
     private val json: Json by injectLazy()
 
     private val authClient = client.newBuilder().addInterceptor(interceptor).build()
-
-    suspend fun addLibManga(track: MangaTrack, userId: String): MangaTrack {
-        return withIOContext {
-            with(json) {
-                val payload = buildJsonObject {
-                    putJsonObject("user_rate") {
-                        put("user_id", userId)
-                        put("target_id", track.remote_id)
-                        put("target_type", "Manga")
-                        put("chapters", track.last_chapter_read.toInt())
-                        put("score", track.score.toInt())
-                        put("status", track.toShikimoriStatus())
-                    }
-                }
-                authClient.newCall(
-                    POST(
-                        "$API_URL/v2/user_rates",
-                        body = payload.toString().toRequestBody(jsonMime),
-                    ),
-                ).awaitSuccess()
-                    .parseAs<SMAddEntryResponse>()
-                    .let {
-                        track.library_id = it.id
-                    }
-                track
-            }
-        }
-    }
-
-    suspend fun updateLibManga(track: MangaTrack, userId: String): MangaTrack = addLibManga(
-        track,
-        userId,
-    )
-
-    suspend fun deleteLibManga(track: DomainMangaTrack) {
-        withIOContext {
-            authClient
-                .newCall(DELETE("$API_URL/v2/user_rates/${track.libraryId}"))
-                .awaitSuccess()
-        }
-    }
 
     suspend fun addLibAnime(track: AnimeTrack, userId: String): AnimeTrack {
         return withIOContext {
@@ -121,22 +77,6 @@ class ShikimoriApi(
         }
     }
 
-    suspend fun search(search: String): List<MangaTrackSearch> {
-        return withIOContext {
-            val url = "$API_URL/mangas".toUri().buildUpon()
-                .appendQueryParameter("order", "popularity")
-                .appendQueryParameter("search", search)
-                .appendQueryParameter("limit", "20")
-                .build()
-            with(json) {
-                authClient.newCall(GET(url.toString()))
-                    .awaitSuccess()
-                    .parseAs<List<SMEntry>>()
-                    .map { it.toMangaTrack(trackId) }
-            }
-        }
-    }
-
     suspend fun searchAnime(search: String): List<AnimeTrackSearch> {
         return withIOContext {
             val url = "$API_URL/animes".toUri().buildUpon()
@@ -149,38 +89,6 @@ class ShikimoriApi(
                     .awaitSuccess()
                     .parseAs<List<SMEntry>>()
                     .map { it.toAnimeTrack(trackId) }
-            }
-        }
-    }
-
-    suspend fun findLibManga(track: MangaTrack, userId: String): MangaTrack? {
-        return withIOContext {
-            val urlMangas = "$API_URL/mangas".toUri().buildUpon()
-                .appendPath(track.remote_id.toString())
-                .build()
-            val manga = with(json) {
-                authClient.newCall(GET(urlMangas.toString()))
-                    .awaitSuccess()
-                    .parseAs<SMEntry>()
-            }
-
-            val url = "$API_URL/v2/user_rates".toUri().buildUpon()
-                .appendQueryParameter("user_id", userId)
-                .appendQueryParameter("target_id", track.remote_id.toString())
-                .appendQueryParameter("target_type", "Manga")
-                .build()
-            with(json) {
-                authClient.newCall(GET(url.toString()))
-                    .awaitSuccess()
-                    .parseAs<List<SMUserListEntry>>()
-                    .let { entries ->
-                        if (entries.size > 1) {
-                            throw Exception("Too many manga in response")
-                        }
-                        entries
-                            .map { it.toMangaTrack(trackId, manga) }
-                            .firstOrNull()
-                    }
             }
         }
     }
