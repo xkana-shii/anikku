@@ -45,9 +45,9 @@ import kotlinx.coroutines.flow.update
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.launchUI
 import tachiyomi.core.common.util.lang.withNonCancellableContext
-import tachiyomi.domain.source.anime.interactor.GetAnimeSourcesWithNonLibraryAnime
-import tachiyomi.domain.source.anime.model.AnimeSource
-import tachiyomi.domain.source.anime.model.AnimeSourceWithCount
+import tachiyomi.domain.source.interactor.GetAnimeSourcesWithNonLibraryAnime
+import tachiyomi.domain.source.model.AnimeSource
+import tachiyomi.domain.source.model.AnimeSourceWithCount
 import tachiyomi.i18n.MR
 import tachiyomi.mi.data.AnimeDatabase
 import tachiyomi.presentation.core.components.material.Scaffold

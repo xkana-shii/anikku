@@ -2,9 +2,9 @@ package eu.kanade.domain
 
 import android.app.Application
 import tachiyomi.data.entries.anime.CustomAnimeRepositoryImpl
-import tachiyomi.domain.entries.anime.interactor.GetCustomAnimeInfo
-import tachiyomi.domain.entries.anime.interactor.SetCustomAnimeInfo
-import tachiyomi.domain.entries.anime.repository.CustomAnimeRepository
+import tachiyomi.domain.anime.interactor.GetCustomAnimeInfo
+import tachiyomi.domain.anime.interactor.SetCustomAnimeInfo
+import tachiyomi.domain.anime.repository.CustomAnimeRepository
 import uy.kohesive.injekt.api.InjektModule
 import uy.kohesive.injekt.api.InjektRegistrar
 import uy.kohesive.injekt.api.addFactory

@@ -4,10 +4,10 @@ import tachiyomi.core.common.preference.Preference
 import tachiyomi.core.common.preference.PreferenceStore
 import tachiyomi.core.common.preference.TriState
 import tachiyomi.core.common.preference.getEnum
-import tachiyomi.domain.entries.anime.model.Anime
-import tachiyomi.domain.library.anime.model.AnimeGroupLibraryMode
-import tachiyomi.domain.library.anime.model.AnimeLibraryGroup
-import tachiyomi.domain.library.anime.model.AnimeLibrarySort
+import tachiyomi.domain.anime.model.Anime
+import tachiyomi.domain.library.model.AnimeGroupLibraryMode
+import tachiyomi.domain.library.model.AnimeLibraryGroup
+import tachiyomi.domain.library.model.AnimeLibrarySort
 import tachiyomi.domain.library.model.LibraryDisplayMode
 
 class LibraryPreferences(

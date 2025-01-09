@@ -24,7 +24,7 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.serialization.json.Json
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.withIOContext
-import tachiyomi.domain.category.anime.interactor.GetAnimeCategories
+import tachiyomi.domain.category.interactor.GetAnimeCategories
 import tachiyomi.domain.category.model.Category.Companion.UNCATEGORIZED_ID
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get

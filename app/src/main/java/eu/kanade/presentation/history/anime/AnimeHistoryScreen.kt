@@ -21,7 +21,7 @@ import eu.kanade.presentation.theme.TachiyomiPreviewTheme
 import eu.kanade.presentation.util.animateItemFastScroll
 import eu.kanade.tachiyomi.ui.history.anime.AnimeHistoryScreenModel
 import kotlinx.collections.immutable.persistentListOf
-import tachiyomi.domain.history.anime.model.AnimeHistoryWithRelations
+import tachiyomi.domain.history.model.AnimeHistoryWithRelations
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.FastScrollLazyColumn
 import tachiyomi.presentation.core.components.ListGroupHeader
