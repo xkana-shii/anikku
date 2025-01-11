@@ -36,7 +36,7 @@ import tachiyomi.presentation.core.screens.EmptyScreen
 import tachiyomi.presentation.core.screens.LoadingScreen
 import tachiyomi.presentation.core.theme.header
 import tachiyomi.presentation.core.util.plus
-import tachiyomi.source.local.entries.anime.LocalAnimeSource
+import tachiyomi.source.local.LocalAnimeSource
 
 @Composable
 fun AnimeSourcesScreen(

@@ -103,7 +103,7 @@ import tachiyomi.domain.history.model.AnimeHistoryUpdate
 import tachiyomi.domain.source.service.AnimeSourceManager
 import tachiyomi.domain.track.interactor.GetAnimeTracks
 import tachiyomi.i18n.MR
-import tachiyomi.source.local.entries.anime.isLocal
+import tachiyomi.source.local.isLocal
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.io.File
