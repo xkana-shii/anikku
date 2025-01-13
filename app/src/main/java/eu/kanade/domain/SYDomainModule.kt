@@ -1,7 +1,7 @@
 package eu.kanade.domain
 
 import android.app.Application
-import tachiyomi.data.entries.anime.CustomAnimeRepositoryImpl
+import tachiyomi.data.anime.CustomAnimeRepositoryImpl
 import tachiyomi.domain.anime.interactor.GetCustomAnimeInfo
 import tachiyomi.domain.anime.interactor.SetCustomAnimeInfo
 import tachiyomi.domain.anime.repository.CustomAnimeRepository
