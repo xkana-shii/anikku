@@ -8,8 +8,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
-import eu.kanade.presentation.library.components.CommonEntryItemDefaults
-import eu.kanade.presentation.library.components.EntryListItem
+import eu.kanade.presentation.library.components.AnimeListItem
+import eu.kanade.presentation.library.components.CommonAnimeItemDefaults
 import kotlinx.coroutines.flow.StateFlow
 import tachiyomi.domain.anime.model.Anime
 import tachiyomi.domain.anime.model.AnimeCover
@@ -54,7 +54,7 @@ private fun BrowseSourceListItem(
     onClick: () -> Unit = {},
     onLongClick: () -> Unit = onClick,
 ) {
-    EntryListItem(
+    AnimeListItem(
         title = anime.title,
         coverData = AnimeCover(
             animeId = anime.id,
@@ -63,7 +63,7 @@ private fun BrowseSourceListItem(
             url = anime.thumbnailUrl,
             lastModified = anime.coverLastModified,
         ),
-        coverAlpha = if (anime.favorite) CommonEntryItemDefaults.BrowseFavoriteCoverAlpha else 1f,
+        coverAlpha = if (anime.favorite) CommonAnimeItemDefaults.BrowseFavoriteCoverAlpha else 1f,
         badge = {
             InLibraryBadge(enabled = anime.favorite)
         },

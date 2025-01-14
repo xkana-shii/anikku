@@ -1,4 +1,4 @@
-package eu.kanade.presentation.library
+package eu.kanade.presentation.library.components
 
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Column
@@ -19,7 +19,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import eu.kanade.core.preference.PreferenceMutableState
-import eu.kanade.presentation.library.components.GlobalSearchItem
 import eu.kanade.tachiyomi.ui.library.AnimeLibraryItem
 import tachiyomi.domain.library.LibraryAnime
 import tachiyomi.domain.library.model.LibraryDisplayMode
@@ -28,7 +27,7 @@ import tachiyomi.presentation.core.screens.EmptyScreen
 import tachiyomi.presentation.core.util.plus
 
 @Composable
-fun AnimeLibraryPager(
+fun LibraryPager(
     state: PagerState,
     contentPadding: PaddingValues,
     hasActiveFilters: Boolean,
@@ -75,7 +74,7 @@ fun AnimeLibraryPager(
 
         when (displayMode) {
             LibraryDisplayMode.List -> {
-                AnimeLibraryList(
+                LibraryList(
                     items = library,
                     contentPadding = contentPadding,
                     selection = selectedAnime,
@@ -87,7 +86,7 @@ fun AnimeLibraryPager(
                 )
             }
             LibraryDisplayMode.CompactGrid, LibraryDisplayMode.CoverOnlyGrid -> {
-                AnimeLibraryCompactGrid(
+                LibraryCompactGrid(
                     items = library,
                     showTitle = displayMode is LibraryDisplayMode.CompactGrid,
                     columns = columns,
@@ -101,7 +100,7 @@ fun AnimeLibraryPager(
                 )
             }
             LibraryDisplayMode.ComfortableGrid -> {
-                AnimeLibraryComfortableGrid(
+                LibraryComfortableGrid(
                     items = library,
                     columns = columns,
                     contentPadding = contentPadding,

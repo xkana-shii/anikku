@@ -47,7 +47,7 @@ import tachiyomi.presentation.core.util.collectAsState
 
 @Composable
 @Suppress("MagicNumber")
-fun AnimeLibrarySettingsDialog(
+fun LibrarySettingsDialog(
     onDismissRequest: () -> Unit,
     screenModel: AnimeLibrarySettingsScreenModel,
     category: Category?,

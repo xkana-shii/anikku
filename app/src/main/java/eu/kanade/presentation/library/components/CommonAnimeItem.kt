@@ -45,7 +45,7 @@ import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.selectedBackground
 import tachiyomi.domain.anime.EntryCover as EntryCoverModel
 
-object CommonEntryItemDefaults {
+object CommonAnimeItemDefaults {
     val GridHorizontalSpacer = 4.dp
     val GridVerticalSpacer = 4.dp
 
@@ -53,14 +53,14 @@ object CommonEntryItemDefaults {
     const val BrowseFavoriteCoverAlpha = 0.34f
 }
 
-private val ContinueViewingButtonSizeSmall = 28.dp
-private val ContinueViewingButtonSizeLarge = 32.dp
+private val ContinueWatchingButtonSizeSmall = 28.dp
+private val ContinueWatchingButtonSizeLarge = 32.dp
 
-private val ContinueViewingButtonIconSizeSmall = 16.dp
-private val ContinueViewingButtonIconSizeLarge = 20.dp
+private val ContinueWatchingButtonIconSizeSmall = 16.dp
+private val ContinueWatchingButtonIconSizeLarge = 20.dp
 
-private val ContinueViewingButtonGridPadding = 6.dp
-private val ContinueViewingButtonListSpacing = 8.dp
+private val ContinueWatchingButtonGridPadding = 6.dp
+private val ContinueWatchingButtonListSpacing = 8.dp
 
 private const val GRID_SELECTED_COVER_ALPHA = 0.76f
 
@@ -69,7 +69,7 @@ private const val GRID_SELECTED_COVER_ALPHA = 0.76f
  * Accepts null [title] for a cover-only view.
  */
 @Composable
-fun EntryCompactGridItem(
+fun AnimeCompactGridItem(
     coverData: EntryCoverModel,
     onClick: () -> Unit,
     onLongClick: () -> Unit,
@@ -85,7 +85,7 @@ fun EntryCompactGridItem(
         onClick = onClick,
         onLongClick = onLongClick,
     ) {
-        EntryGridCover(
+        AnimeGridCover(
             cover = {
                 AnimeCover.Book(
                     modifier = Modifier
@@ -103,12 +103,12 @@ fun EntryCompactGridItem(
                         onClickContinueViewing = onClickContinueViewing,
                     )
                 } else if (onClickContinueViewing != null) {
-                    ContinueViewingButton(
-                        size = ContinueViewingButtonSizeLarge,
-                        iconSize = ContinueViewingButtonIconSizeLarge,
+                    ContinueWatchingButton(
+                        size = ContinueWatchingButtonSizeLarge,
+                        iconSize = ContinueWatchingButtonIconSizeLarge,
                         onClick = onClickContinueViewing,
                         modifier = Modifier
-                            .padding(ContinueViewingButtonGridPadding)
+                            .padding(ContinueWatchingButtonGridPadding)
                             .align(Alignment.BottomEnd),
                     )
                 }
@@ -118,7 +118,7 @@ fun EntryCompactGridItem(
 }
 
 /**
- * Title overlay for [EntryCompactGridItem]
+ * Title overlay for [AnimeCompactGridItem]
  */
 @Composable
 private fun BoxScope.CoverTextOverlay(
@@ -157,13 +157,13 @@ private fun BoxScope.CoverTextOverlay(
             minLines = 1,
         )
         if (onClickContinueViewing != null) {
-            ContinueViewingButton(
-                size = ContinueViewingButtonSizeSmall,
-                iconSize = ContinueViewingButtonIconSizeSmall,
+            ContinueWatchingButton(
+                size = ContinueWatchingButtonSizeSmall,
+                iconSize = ContinueWatchingButtonIconSizeSmall,
                 onClick = onClickContinueViewing,
                 modifier = Modifier.padding(
-                    end = ContinueViewingButtonGridPadding,
-                    bottom = ContinueViewingButtonGridPadding,
+                    end = ContinueWatchingButtonGridPadding,
+                    bottom = ContinueWatchingButtonGridPadding,
                 ),
             )
         }
@@ -174,7 +174,7 @@ private fun BoxScope.CoverTextOverlay(
  * Layout of grid list item with title below the cover.
  */
 @Composable
-fun EntryComfortableGridItem(
+fun AnimeComfortableGridItem(
     isSelected: Boolean = false,
     title: String,
     onClick: () -> Unit,
@@ -192,7 +192,7 @@ fun EntryComfortableGridItem(
         onLongClick = onLongClick,
     ) {
         Column {
-            EntryGridCover(
+            AnimeGridCover(
                 cover = {
                     AnimeCover.Book(
                         modifier = Modifier
@@ -205,12 +205,12 @@ fun EntryComfortableGridItem(
                 badgesEnd = coverBadgeEnd,
                 content = {
                     if (onClickContinueViewing != null) {
-                        ContinueViewingButton(
-                            size = ContinueViewingButtonSizeLarge,
-                            iconSize = ContinueViewingButtonIconSizeLarge,
+                        ContinueWatchingButton(
+                            size = ContinueWatchingButtonSizeLarge,
+                            iconSize = ContinueWatchingButtonIconSizeLarge,
                             onClick = onClickContinueViewing,
                             modifier = Modifier
-                                .padding(ContinueViewingButtonGridPadding)
+                                .padding(ContinueWatchingButtonGridPadding)
                                 .align(Alignment.BottomEnd),
                         )
                     }
@@ -231,7 +231,7 @@ fun EntryComfortableGridItem(
  * Common cover layout to add contents to be drawn on top of the cover.
  */
 @Composable
-private fun EntryGridCover(
+private fun AnimeGridCover(
     modifier: Modifier = Modifier,
     cover: @Composable BoxScope.() -> Unit = {},
     badgesStart: (@Composable RowScope.() -> Unit)? = null,
@@ -329,7 +329,7 @@ private fun Modifier.selectedOutline(
  * Layout of list item.
  */
 @Composable
-fun EntryListItem(
+fun AnimeListItem(
     isSelected: Boolean = false,
     title: String,
     coverData: EntryCoverModel,
@@ -367,18 +367,18 @@ fun EntryListItem(
         )
         BadgeGroup(content = badge)
         if (onClickContinueViewing != null) {
-            ContinueViewingButton(
-                size = ContinueViewingButtonSizeSmall,
-                iconSize = ContinueViewingButtonIconSizeSmall,
+            ContinueWatchingButton(
+                size = ContinueWatchingButtonSizeSmall,
+                iconSize = ContinueWatchingButtonIconSizeSmall,
                 onClick = onClickContinueViewing,
-                modifier = Modifier.padding(start = ContinueViewingButtonListSpacing),
+                modifier = Modifier.padding(start = ContinueWatchingButtonListSpacing),
             )
         }
     }
 }
 
 @Composable
-private fun ContinueViewingButton(
+private fun ContinueWatchingButton(
     size: Dp,
     iconSize: Dp,
     onClick: () -> Unit,

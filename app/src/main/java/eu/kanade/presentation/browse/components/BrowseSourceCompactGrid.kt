@@ -11,8 +11,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
-import eu.kanade.presentation.library.components.CommonEntryItemDefaults
-import eu.kanade.presentation.library.components.EntryCompactGridItem
+import eu.kanade.presentation.library.components.AnimeCompactGridItem
+import eu.kanade.presentation.library.components.CommonAnimeItemDefaults
 import kotlinx.coroutines.flow.StateFlow
 import tachiyomi.domain.anime.model.Anime
 import tachiyomi.domain.anime.model.AnimeCover
@@ -29,8 +29,8 @@ fun BrowseSourceCompactGrid(
     LazyVerticalGrid(
         columns = columns,
         contentPadding = contentPadding + PaddingValues(8.dp),
-        verticalArrangement = Arrangement.spacedBy(CommonEntryItemDefaults.GridVerticalSpacer),
-        horizontalArrangement = Arrangement.spacedBy(CommonEntryItemDefaults.GridHorizontalSpacer),
+        verticalArrangement = Arrangement.spacedBy(CommonAnimeItemDefaults.GridVerticalSpacer),
+        horizontalArrangement = Arrangement.spacedBy(CommonAnimeItemDefaults.GridHorizontalSpacer),
     ) {
         if (animeList.loadState.prepend is LoadState.Loading) {
             item(span = { GridItemSpan(maxLineSpan) }) {
@@ -61,7 +61,7 @@ private fun BrowseSourceCompactGridItem(
     onClick: () -> Unit = {},
     onLongClick: () -> Unit = onClick,
 ) {
-    EntryCompactGridItem(
+    AnimeCompactGridItem(
         title = anime.title,
         coverData = AnimeCover(
             animeId = anime.id,
@@ -70,7 +70,7 @@ private fun BrowseSourceCompactGridItem(
             url = anime.thumbnailUrl,
             lastModified = anime.coverLastModified,
         ),
-        coverAlpha = if (anime.favorite) CommonEntryItemDefaults.BrowseFavoriteCoverAlpha else 1f,
+        coverAlpha = if (anime.favorite) CommonAnimeItemDefaults.BrowseFavoriteCoverAlpha else 1f,
         coverBadgeStart = {
             InLibraryBadge(enabled = anime.favorite)
         },

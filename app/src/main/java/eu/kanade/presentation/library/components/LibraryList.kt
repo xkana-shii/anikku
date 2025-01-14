@@ -1,26 +1,22 @@
-package eu.kanade.presentation.library
+package eu.kanade.presentation.library.components
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastAny
-import eu.kanade.presentation.library.components.DownloadsBadge
-import eu.kanade.presentation.library.components.EntryCompactGridItem
-import eu.kanade.presentation.library.components.LanguageBadge
-import eu.kanade.presentation.library.components.LazyLibraryGrid
-import eu.kanade.presentation.library.components.UnviewedBadge
-import eu.kanade.presentation.library.components.globalSearchItem
 import eu.kanade.tachiyomi.ui.library.AnimeLibraryItem
 import tachiyomi.domain.anime.model.AnimeCover
 import tachiyomi.domain.library.LibraryAnime
+import tachiyomi.presentation.core.components.FastScrollLazyColumn
+import tachiyomi.presentation.core.util.plus
 
 @Composable
-fun AnimeLibraryCompactGrid(
+internal fun LibraryList(
     items: List<AnimeLibraryItem>,
-    showTitle: Boolean,
-    columns: Int,
     contentPadding: PaddingValues,
     selection: List<LibraryAnime>,
     onClick: (LibraryAnime) -> Unit,
@@ -29,21 +25,28 @@ fun AnimeLibraryCompactGrid(
     searchQuery: String?,
     onGlobalSearchClicked: () -> Unit,
 ) {
-    LazyLibraryGrid(
+    FastScrollLazyColumn(
         modifier = Modifier.fillMaxSize(),
-        columns = columns,
-        contentPadding = contentPadding,
+        contentPadding = contentPadding + PaddingValues(vertical = 8.dp),
     ) {
-        globalSearchItem(searchQuery, onGlobalSearchClicked)
+        item {
+            if (!searchQuery.isNullOrEmpty()) {
+                GlobalSearchItem(
+                    modifier = Modifier.fillMaxWidth(),
+                    searchQuery = searchQuery,
+                    onClick = onGlobalSearchClicked,
+                )
+            }
+        }
 
         items(
             items = items,
-            contentType = { "anime_library_compact_grid_item" },
+            contentType = { "anime_library_list_item" },
         ) { libraryItem ->
             val anime = libraryItem.libraryAnime.anime
-            EntryCompactGridItem(
+            AnimeListItem(
                 isSelected = selection.fastAny { it.id == libraryItem.libraryAnime.id },
-                title = anime.title.takeIf { showTitle },
+                title = anime.title,
                 coverData = AnimeCover(
                     animeId = anime.id,
                     sourceId = anime.source,
@@ -51,11 +54,9 @@ fun AnimeLibraryCompactGrid(
                     url = anime.thumbnailUrl,
                     lastModified = anime.coverLastModified,
                 ),
-                coverBadgeStart = {
+                badge = {
                     DownloadsBadge(count = libraryItem.downloadCount)
                     UnviewedBadge(count = libraryItem.unseenCount)
-                },
-                coverBadgeEnd = {
                     LanguageBadge(
                         isLocal = libraryItem.isLocal,
                         sourceLanguage = libraryItem.sourceLanguage,

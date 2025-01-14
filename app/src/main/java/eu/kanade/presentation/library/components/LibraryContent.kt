@@ -1,4 +1,4 @@
-package eu.kanade.presentation.library
+package eu.kanade.presentation.library.components
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -16,7 +16,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
 import eu.kanade.core.preference.PreferenceMutableState
-import eu.kanade.presentation.library.components.LibraryTabs
 import eu.kanade.tachiyomi.ui.library.AnimeLibraryItem
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -27,7 +26,7 @@ import tachiyomi.presentation.core.components.material.PullRefresh
 import kotlin.time.Duration.Companion.seconds
 
 @Composable
-fun AnimeLibraryContent(
+fun LibraryContent(
     categories: List<Category>,
     searchQuery: String?,
     selection: List<LibraryAnime>,
@@ -96,7 +95,7 @@ fun AnimeLibraryContent(
             },
             enabled = notSelectionMode,
         ) {
-            AnimeLibraryPager(
+            LibraryPager(
                 state = pagerState,
                 contentPadding = PaddingValues(bottom = contentPadding.calculateBottomPadding()),
                 hasActiveFilters = hasActiveFilters,
