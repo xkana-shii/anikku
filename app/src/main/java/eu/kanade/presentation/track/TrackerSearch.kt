@@ -85,7 +85,7 @@ import tachiyomi.presentation.core.util.runOnEnterKeyPressed
 import tachiyomi.presentation.core.util.secondaryItemAlpha
 
 @Composable
-fun AnimeTrackerSearch(
+fun TrackerSearch(
     state: TextFieldState,
     onDispatchQuery: () -> Unit,
     queryResult: Result<List<AnimeTrackSearch>>?,
@@ -381,7 +381,7 @@ private fun SearchResultItemDetails(
 @PreviewLightDark
 @Composable
 private fun TrackerSearchPreviews(
-    @PreviewParameter(AnimeTrackerSearchPreviewProvider::class)
+    @PreviewParameter(TrackerSearchPreviewProvider::class)
     content: @Composable () -> Unit,
 ) {
     TachiyomiPreviewTheme {

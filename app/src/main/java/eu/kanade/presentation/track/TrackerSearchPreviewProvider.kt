@@ -9,10 +9,10 @@ import java.time.Instant
 import java.time.temporal.ChronoUnit
 import kotlin.random.Random
 
-internal class AnimeTrackerSearchPreviewProvider : PreviewParameterProvider<@Composable () -> Unit> {
+internal class TrackerSearchPreviewProvider : PreviewParameterProvider<@Composable () -> Unit> {
     private val fullPageWithSecondSelected = @Composable {
         val items = someTrackSearches().take(30).toList()
-        AnimeTrackerSearch(
+        TrackerSearch(
             state = TextFieldState(initialText = "search text"),
             onDispatchQuery = {},
             queryResult = Result.success(items),
@@ -23,7 +23,7 @@ internal class AnimeTrackerSearchPreviewProvider : PreviewParameterProvider<@Com
         )
     }
     private val fullPageWithoutSelected = @Composable {
-        AnimeTrackerSearch(
+        TrackerSearch(
             state = TextFieldState(),
             onDispatchQuery = {},
             queryResult = Result.success(someTrackSearches().take(30).toList()),
@@ -34,7 +34,7 @@ internal class AnimeTrackerSearchPreviewProvider : PreviewParameterProvider<@Com
         )
     }
     private val loading = @Composable {
-        AnimeTrackerSearch(
+        TrackerSearch(
             state = TextFieldState(),
             onDispatchQuery = {},
             queryResult = null,

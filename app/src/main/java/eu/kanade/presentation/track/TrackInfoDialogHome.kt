@@ -58,7 +58,7 @@ import tachiyomi.presentation.core.i18n.stringResource
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun AnimeTrackInfoDialogHome(
+fun TrackInfoDialogHome(
     trackItems: List<AnimeTrackItem>,
     dateFormat: DateTimeFormatter,
     onStatusClick: (AnimeTrackItem) -> Unit,
@@ -336,7 +336,7 @@ private fun TrackInfoItemMenu(
 @PreviewLightDark
 @Composable
 private fun TrackInfoDialogHomePreviews(
-    @PreviewParameter(AnimeTrackInfoDialogHomePreviewProvider::class)
+    @PreviewParameter(TrackInfoDialogHomePreviewProvider::class)
     content: @Composable () -> Unit,
 ) {
     TachiyomiPreviewTheme { content() }

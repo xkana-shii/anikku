@@ -41,12 +41,12 @@ import dev.icerock.moko.resources.StringResource
 import eu.kanade.domain.track.interactor.RefreshTracks
 import eu.kanade.domain.track.model.toDbTrack
 import eu.kanade.domain.ui.UiPreferences
-import eu.kanade.presentation.track.AnimeTrackInfoDialogHome
-import eu.kanade.presentation.track.AnimeTrackerSearch
 import eu.kanade.presentation.track.TrackDateSelector
+import eu.kanade.presentation.track.TrackInfoDialogHome
 import eu.kanade.presentation.track.TrackItemSelector
 import eu.kanade.presentation.track.TrackScoreSelector
 import eu.kanade.presentation.track.TrackStatusSelector
+import eu.kanade.presentation.track.TrackerSearch
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.data.track.AnimeTracker
 import eu.kanade.tachiyomi.data.track.DeletableAnimeTracker
@@ -107,7 +107,7 @@ data class AnimeTrackInfoDialogHomeScreen(
         }
         val state by screenModel.state.collectAsState()
 
-        AnimeTrackInfoDialogHome(
+        TrackInfoDialogHome(
             trackItems = state.trackItems,
             dateFormat = dateFormat,
             onStatusClick = {
@@ -691,7 +691,7 @@ data class TrackServiceSearchScreen(
         val state by screenModel.state.collectAsState()
 
         val textFieldState = rememberTextFieldState(initialQuery)
-        AnimeTrackerSearch(
+        TrackerSearch(
             state = textFieldState,
             onDispatchQuery = { screenModel.trackingSearch(textFieldState.text.toString()) },
             queryResult = state.queryResult,

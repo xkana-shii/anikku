@@ -8,7 +8,7 @@ import tachiyomi.domain.track.model.AnimeTrack
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
-internal class AnimeTrackInfoDialogHomePreviewProvider :
+internal class TrackInfoDialogHomePreviewProvider :
     PreviewParameterProvider<@Composable () -> Unit> {
 
     private val aTrack = AnimeTrack(
@@ -42,7 +42,7 @@ internal class AnimeTrackInfoDialogHomePreviewProvider :
     )
 
     private val trackersWithAndWithoutTrack = @Composable {
-        AnimeTrackInfoDialogHome(
+        TrackInfoDialogHome(
             trackItems = listOf(
                 trackItemWithoutTrack,
                 trackItemWithTrack,
@@ -61,7 +61,7 @@ internal class AnimeTrackInfoDialogHomePreviewProvider :
     }
 
     private val noTrackers = @Composable {
-        AnimeTrackInfoDialogHome(
+        TrackInfoDialogHome(
             trackItems = listOf(),
             dateFormat = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM),
             onStatusClick = {},
