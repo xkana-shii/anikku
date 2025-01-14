@@ -42,7 +42,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import eu.kanade.domain.extension.interactor.ExtensionSourceItem
-import eu.kanade.presentation.browse.components.AnimeExtensionIcon
+import eu.kanade.presentation.browse.components.ExtensionIcon
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.WarningBanner
@@ -63,7 +63,7 @@ import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.EmptyScreen
 
 @Composable
-fun AnimeExtensionDetailsScreen(
+fun ExtensionDetailsScreen(
     navigateUp: () -> Unit,
     state: AnimeExtensionDetailsScreenModel.State,
     onClickSourcePreferences: (sourceId: Long) -> Unit,
@@ -136,7 +136,7 @@ fun AnimeExtensionDetailsScreen(
             return@Scaffold
         }
 
-        AnimeExtensionDetails(
+        ExtensionDetails(
             contentPadding = paddingValues,
             extension = state.extension,
             sources = state.sources,
@@ -148,7 +148,7 @@ fun AnimeExtensionDetailsScreen(
 }
 
 @Composable
-private fun AnimeExtensionDetails(
+private fun ExtensionDetails(
     contentPadding: PaddingValues,
     extension: AnimeExtension.Installed,
     sources: ImmutableList<ExtensionSourceItem>,
@@ -251,7 +251,7 @@ private fun DetailsHeader(
                 },
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            AnimeExtensionIcon(
+            ExtensionIcon(
                 modifier = Modifier
                     .size(112.dp),
                 extension = extension,

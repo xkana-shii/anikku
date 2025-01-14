@@ -20,7 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import eu.kanade.presentation.browse.components.BaseAnimeSourceItem
+import eu.kanade.presentation.browse.components.BaseSourceItem
 import eu.kanade.tachiyomi.ui.browse.source.AnimeSourcesScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseAnimeSourceScreenModel.Listing
 import eu.kanade.tachiyomi.util.system.LocaleHelper
@@ -39,7 +39,7 @@ import tachiyomi.presentation.core.util.plus
 import tachiyomi.source.local.LocalAnimeSource
 
 @Composable
-fun AnimeSourcesScreen(
+fun SourcesScreen(
     state: AnimeSourcesScreenModel.State,
     contentPadding: PaddingValues,
     onClickItem: (AnimeSource, Listing) -> Unit,
@@ -60,25 +60,25 @@ fun AnimeSourcesScreen(
                     items = state.items,
                     contentType = {
                         when (it) {
-                            is AnimeSourceUiModel.Header -> "header"
-                            is AnimeSourceUiModel.Item -> "item"
+                            is SourceUiModel.Header -> "header"
+                            is SourceUiModel.Item -> "item"
                         }
                     },
                     key = {
                         when (it) {
-                            is AnimeSourceUiModel.Header -> it.hashCode()
-                            is AnimeSourceUiModel.Item -> "source-${it.source.key()}"
+                            is SourceUiModel.Header -> it.hashCode()
+                            is SourceUiModel.Item -> "source-${it.source.key()}"
                         }
                     },
                 ) { model ->
                     when (model) {
-                        is AnimeSourceUiModel.Header -> {
-                            AnimeSourceHeader(
+                        is SourceUiModel.Header -> {
+                            SourceHeader(
                                 modifier = Modifier.animateItem(),
                                 language = model.language,
                             )
                         }
-                        is AnimeSourceUiModel.Item -> AnimeSourceItem(
+                        is SourceUiModel.Item -> SourceItem(
                             modifier = Modifier.animateItem(),
                             source = model.source,
                             onClickItem = onClickItem,
@@ -93,7 +93,7 @@ fun AnimeSourcesScreen(
 }
 
 @Composable
-private fun AnimeSourceHeader(
+private fun SourceHeader(
     language: String,
     modifier: Modifier = Modifier,
 ) {
@@ -110,14 +110,14 @@ private fun AnimeSourceHeader(
 }
 
 @Composable
-private fun AnimeSourceItem(
+private fun SourceItem(
     source: AnimeSource,
     onClickItem: (AnimeSource, Listing) -> Unit,
     onLongClickItem: (AnimeSource) -> Unit,
     onClickPin: (AnimeSource) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    BaseAnimeSourceItem(
+    BaseSourceItem(
         modifier = modifier,
         source = source,
         onClickItem = { onClickItem(source, Listing.Popular) },
@@ -133,7 +133,7 @@ private fun AnimeSourceItem(
                     )
                 }
             }
-            AnimeSourcePinButton(
+            SourcePinButton(
                 isPinned = Pin.Pinned in source.pin,
                 onClick = { onClickPin(source) },
             )
@@ -142,7 +142,7 @@ private fun AnimeSourceItem(
 }
 
 @Composable
-private fun AnimeSourcePinButton(
+private fun SourcePinButton(
     isPinned: Boolean,
     onClick: () -> Unit,
 ) {
@@ -165,7 +165,7 @@ private fun AnimeSourcePinButton(
 }
 
 @Composable
-fun AnimeSourceOptionsDialog(
+fun SourceOptionsDialog(
     source: AnimeSource,
     onClickPin: () -> Unit,
     onClickDisable: () -> Unit,
@@ -201,7 +201,7 @@ fun AnimeSourceOptionsDialog(
     )
 }
 
-sealed interface AnimeSourceUiModel {
-    data class Item(val source: AnimeSource) : AnimeSourceUiModel
-    data class Header(val language: String) : AnimeSourceUiModel
+sealed interface SourceUiModel {
+    data class Item(val source: AnimeSource) : SourceUiModel
+    data class Header(val language: String) : SourceUiModel
 }

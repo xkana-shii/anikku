@@ -1,4 +1,4 @@
-package eu.kanade.presentation.browse
+package eu.kanade.presentation.browse.components
 
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Row

@@ -9,14 +9,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
-import eu.kanade.presentation.browse.BaseBrowseItem
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import tachiyomi.domain.source.model.AnimeSource
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.util.secondaryItemAlpha
 
 @Composable
-fun BaseAnimeSourceItem(
+fun BaseSourceItem(
     source: AnimeSource,
     modifier: Modifier = Modifier,
     showLanguageInContent: Boolean = true,
@@ -40,7 +39,7 @@ fun BaseAnimeSourceItem(
 }
 
 private val defaultIcon: @Composable RowScope.(AnimeSource) -> Unit = { source ->
-    AnimeSourceIcon(source = source)
+    SourceIcon(source = source)
 }
 
 private val defaultContent: @Composable RowScope.(AnimeSource, String?) -> Unit = { source, sourceLangString ->

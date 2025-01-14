@@ -11,7 +11,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
-import eu.kanade.presentation.browse.InLibraryBadge
 import eu.kanade.presentation.library.components.CommonEntryItemDefaults
 import eu.kanade.presentation.library.components.EntryCompactGridItem
 import kotlinx.coroutines.flow.StateFlow
@@ -20,7 +19,7 @@ import tachiyomi.domain.anime.model.AnimeCover
 import tachiyomi.presentation.core.util.plus
 
 @Composable
-fun BrowseAnimeSourceCompactGrid(
+fun BrowseSourceCompactGrid(
     animeList: LazyPagingItems<StateFlow<Anime>>,
     columns: GridCells,
     contentPadding: PaddingValues,
@@ -41,7 +40,7 @@ fun BrowseAnimeSourceCompactGrid(
 
         items(count = animeList.itemCount) { index ->
             val anime by animeList[index]?.collectAsState() ?: return@items
-            BrowseAnimeSourceCompactGridItem(
+            BrowseSourceCompactGridItem(
                 anime = anime,
                 onClick = { onAnimeClick(anime) },
                 onLongClick = { onAnimeLongClick(anime) },
@@ -57,7 +56,7 @@ fun BrowseAnimeSourceCompactGrid(
 }
 
 @Composable
-private fun BrowseAnimeSourceCompactGridItem(
+private fun BrowseSourceCompactGridItem(
     anime: Anime,
     onClick: () -> Unit = {},
     onLongClick: () -> Unit = onClick,

@@ -17,7 +17,7 @@ import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.EmptyScreen
 
 @Composable
-fun AnimeExtensionFilterScreen(
+fun ExtensionFilterScreen(
     navigateUp: () -> Unit,
     state: AnimeExtensionFilterState.Success,
     onClickToggle: (String) -> Unit,
@@ -38,7 +38,7 @@ fun AnimeExtensionFilterScreen(
             )
             return@Scaffold
         }
-        AnimeExtensionFilterContent(
+        ExtensionFilterContent(
             contentPadding = contentPadding,
             state = state,
             onClickLang = onClickToggle,
@@ -47,7 +47,7 @@ fun AnimeExtensionFilterScreen(
 }
 
 @Composable
-private fun AnimeExtensionFilterContent(
+private fun ExtensionFilterContent(
     contentPadding: PaddingValues,
     state: AnimeExtensionFilterState.Success,
     onClickLang: (String) -> Unit,

@@ -44,7 +44,8 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import dev.icerock.moko.resources.StringResource
 import eu.kanade.presentation.anime.components.DotSeparatorNoSpaceText
-import eu.kanade.presentation.browse.components.AnimeExtensionIcon
+import eu.kanade.presentation.browse.components.BaseBrowseItem
+import eu.kanade.presentation.browse.components.ExtensionIcon
 import eu.kanade.presentation.components.WarningBanner
 import eu.kanade.presentation.more.settings.screen.browse.AnimeExtensionReposScreen
 import eu.kanade.presentation.util.animateItemFastScroll
@@ -70,7 +71,7 @@ import tachiyomi.presentation.core.util.plus
 import tachiyomi.presentation.core.util.secondaryItemAlpha
 
 @Composable
-fun AnimeExtensionScreen(
+fun ExtensionScreen(
     state: AnimeExtensionsScreenModel.State,
     contentPadding: PaddingValues,
     searchQuery: String?,
@@ -113,7 +114,7 @@ fun AnimeExtensionScreen(
                 )
             }
             else -> {
-                AnimeExtensionContent(
+                ExtensionContent(
                     state = state,
                     contentPadding = contentPadding,
                     onLongClickItem = onLongClickItem,
@@ -132,7 +133,7 @@ fun AnimeExtensionScreen(
 }
 
 @Composable
-private fun AnimeExtensionContent(
+private fun ExtensionContent(
     state: AnimeExtensionsScreenModel.State,
     contentPadding: PaddingValues,
     onLongClickItem: (AnimeExtension) -> Unit,
@@ -211,7 +212,7 @@ private fun AnimeExtensionContent(
                     }
                 },
             ) { item ->
-                AnimeExtensionItem(
+                ExtensionItem(
                     item = item,
                     modifier = Modifier.animateItemFastScroll(),
                     onClickItem = {
@@ -270,7 +271,7 @@ private fun AnimeExtensionContent(
 }
 
 @Composable
-private fun AnimeExtensionItem(
+private fun ExtensionItem(
     item: AnimeExtensionUiModel.Item,
     onClickItem: (AnimeExtension) -> Unit,
     onLongClickItem: (AnimeExtension) -> Unit,
@@ -306,7 +307,7 @@ private fun AnimeExtensionItem(
                     targetValue = if (idle) 0.dp else 8.dp,
                     label = "iconPadding",
                 )
-                AnimeExtensionIcon(
+                ExtensionIcon(
                     extension = extension,
                     modifier = Modifier
                         .matchParentSize()
@@ -315,7 +316,7 @@ private fun AnimeExtensionItem(
             }
         },
         action = {
-            AnimeExtensionItemActions(
+            ExtensionItemActions(
                 extension = extension,
                 installStep = installStep,
                 onClickItemCancel = onClickItemCancel,
@@ -324,7 +325,7 @@ private fun AnimeExtensionItem(
             )
         },
     ) {
-        AnimeExtensionItemContent(
+        ExtensionItemContent(
             extension = extension,
             installStep = installStep,
             modifier = Modifier.weight(1f),
@@ -333,7 +334,7 @@ private fun AnimeExtensionItem(
 }
 
 @Composable
-private fun AnimeExtensionItemContent(
+private fun ExtensionItemContent(
     extension: AnimeExtension,
     installStep: InstallStep,
     modifier: Modifier = Modifier,
@@ -400,7 +401,7 @@ private fun AnimeExtensionItemContent(
 }
 
 @Composable
-private fun AnimeExtensionItemActions(
+private fun ExtensionItemActions(
     extension: AnimeExtension,
     installStep: InstallStep,
     modifier: Modifier = Modifier,

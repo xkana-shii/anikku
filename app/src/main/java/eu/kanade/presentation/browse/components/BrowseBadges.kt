@@ -1,4 +1,4 @@
-package eu.kanade.presentation.browse
+package eu.kanade.presentation.browse.components
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CollectionsBookmark

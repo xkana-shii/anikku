@@ -16,9 +16,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
-import eu.kanade.presentation.browse.components.BrowseAnimeSourceComfortableGrid
-import eu.kanade.presentation.browse.components.BrowseAnimeSourceCompactGrid
-import eu.kanade.presentation.browse.components.BrowseAnimeSourceList
+import eu.kanade.presentation.browse.components.BrowseSourceComfortableGrid
+import eu.kanade.presentation.browse.components.BrowseSourceCompactGrid
+import eu.kanade.presentation.browse.components.BrowseSourceList
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.util.formattedMessage
 import eu.kanade.tachiyomi.animesource.AnimeSource
@@ -37,7 +37,7 @@ import tachiyomi.presentation.core.screens.LoadingScreen
 import tachiyomi.source.local.LocalAnimeSource
 
 @Composable
-fun BrowseAnimeSourceContent(
+fun BrowseSourceContent(
     source: AnimeSource?,
     animeList: LazyPagingItems<StateFlow<Anime>>,
     columns: GridCells,
@@ -118,7 +118,7 @@ fun BrowseAnimeSourceContent(
 
     when (displayMode) {
         LibraryDisplayMode.ComfortableGrid -> {
-            BrowseAnimeSourceComfortableGrid(
+            BrowseSourceComfortableGrid(
                 animeList = animeList,
                 columns = columns,
                 contentPadding = contentPadding,
@@ -127,7 +127,7 @@ fun BrowseAnimeSourceContent(
             )
         }
         LibraryDisplayMode.List -> {
-            BrowseAnimeSourceList(
+            BrowseSourceList(
                 animeList = animeList,
                 contentPadding = contentPadding,
                 onAnimeClick = onAnimeClick,
@@ -135,7 +135,7 @@ fun BrowseAnimeSourceContent(
             )
         }
         LibraryDisplayMode.CompactGrid, LibraryDisplayMode.CoverOnlyGrid -> {
-            BrowseAnimeSourceCompactGrid(
+            BrowseSourceCompactGrid(
                 animeList = animeList,
                 columns = columns,
                 contentPadding = contentPadding,

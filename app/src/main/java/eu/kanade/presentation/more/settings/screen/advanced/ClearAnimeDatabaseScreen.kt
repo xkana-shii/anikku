@@ -34,7 +34,7 @@ import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import eu.kanade.presentation.browse.components.AnimeSourceIcon
+import eu.kanade.presentation.browse.components.SourceIcon
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.util.Screen
@@ -190,7 +190,7 @@ class ClearAnimeDatabaseScreen : Screen() {
                 .height(56.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            AnimeSourceIcon(source = source)
+            SourceIcon(source = source)
             Column(
                 modifier = Modifier
                     .padding(start = 8.dp)

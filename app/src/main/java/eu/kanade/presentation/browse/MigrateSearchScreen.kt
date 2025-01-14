@@ -2,7 +2,7 @@ package eu.kanade.presentation.browse
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
-import eu.kanade.presentation.browse.components.GlobalAnimeSearchToolbar
+import eu.kanade.presentation.browse.components.GlobalSearchToolbar
 import eu.kanade.tachiyomi.animesource.AnimeCatalogueSource
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.AnimeSearchScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.AnimeSourceFilter
@@ -10,7 +10,7 @@ import tachiyomi.domain.anime.model.Anime
 import tachiyomi.presentation.core.components.material.Scaffold
 
 @Composable
-fun MigrateAnimeSearchScreen(
+fun MigrateSearchScreen(
     state: AnimeSearchScreenModel.State,
     fromSourceId: Long?,
     navigateUp: () -> Unit,
@@ -25,7 +25,7 @@ fun MigrateAnimeSearchScreen(
 ) {
     Scaffold(
         topBar = { scrollBehavior ->
-            GlobalAnimeSearchToolbar(
+            GlobalSearchToolbar(
                 searchQuery = state.searchQuery,
                 progress = state.progress,
                 total = state.total,

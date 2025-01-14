@@ -40,7 +40,7 @@ private val defaultModifier = Modifier
     .aspectRatio(1f)
 
 @Composable
-fun AnimeSourceIcon(
+fun SourceIcon(
     source: AnimeSource,
     modifier: Modifier = Modifier,
 ) {
@@ -80,7 +80,7 @@ fun AnimeSourceIcon(
 }
 
 @Composable
-fun AnimeExtensionIcon(
+fun ExtensionIcon(
     extension: AnimeExtension,
     modifier: Modifier = Modifier,
     density: Int = DisplayMetrics.DENSITY_DEFAULT,

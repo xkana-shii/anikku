@@ -12,7 +12,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import eu.kanade.presentation.browse.AnimeExtensionScreen
+import eu.kanade.presentation.browse.ExtensionScreen
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.TabContent
 import eu.kanade.presentation.more.settings.screen.browse.AnimeExtensionReposScreen
@@ -53,7 +53,7 @@ fun animeExtensionsTab(
             ),
         ),
         content = { contentPadding, _ ->
-            AnimeExtensionScreen(
+            ExtensionScreen(
                 state = state,
                 contentPadding = contentPadding,
                 searchQuery = state.searchQuery,

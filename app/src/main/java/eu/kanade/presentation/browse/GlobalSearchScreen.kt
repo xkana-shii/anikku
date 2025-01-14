@@ -5,8 +5,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.ui.Modifier
-import eu.kanade.presentation.browse.components.GlobalAnimeSearchCardRow
-import eu.kanade.presentation.browse.components.GlobalAnimeSearchToolbar
+import eu.kanade.presentation.browse.components.GlobalSearchCardRow
+import eu.kanade.presentation.browse.components.GlobalSearchErrorResultItem
+import eu.kanade.presentation.browse.components.GlobalSearchLoadingResultItem
+import eu.kanade.presentation.browse.components.GlobalSearchResultItem
+import eu.kanade.presentation.browse.components.GlobalSearchToolbar
 import eu.kanade.tachiyomi.animesource.AnimeCatalogueSource
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.AnimeSearchItemResult
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.AnimeSearchScreenModel
@@ -16,7 +19,7 @@ import tachiyomi.domain.anime.model.Anime
 import tachiyomi.presentation.core.components.material.Scaffold
 
 @Composable
-fun GlobalAnimeSearchScreen(
+fun GlobalSearchScreen(
     state: AnimeSearchScreenModel.State,
     navigateUp: () -> Unit,
     onChangeSearchQuery: (String?) -> Unit,
@@ -30,7 +33,7 @@ fun GlobalAnimeSearchScreen(
 ) {
     Scaffold(
         topBar = { scrollBehavior ->
-            GlobalAnimeSearchToolbar(
+            GlobalSearchToolbar(
                 searchQuery = state.searchQuery,
                 progress = state.progress,
                 total = state.total,
@@ -84,7 +87,7 @@ internal fun GlobalSearchContent(
                             GlobalSearchLoadingResultItem()
                         }
                         is AnimeSearchItemResult.Success -> {
-                            GlobalAnimeSearchCardRow(
+                            GlobalSearchCardRow(
                                 titles = result.result,
                                 getAnime = getAnime,
                                 onClick = onClickItem,

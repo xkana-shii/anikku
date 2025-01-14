@@ -33,7 +33,7 @@ import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
 
 @Composable
-fun GlobalAnimeSearchToolbar(
+fun GlobalSearchToolbar(
     searchQuery: String?,
     progress: Int,
     total: Int,

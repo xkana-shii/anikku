@@ -7,7 +7,7 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import eu.kanade.presentation.browse.components.BaseAnimeSourceItem
+import eu.kanade.presentation.browse.components.BaseSourceItem
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.more.settings.widget.SwitchPreferenceWidget
 import eu.kanade.presentation.util.animateItemFastScroll
@@ -21,7 +21,7 @@ import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.EmptyScreen
 
 @Composable
-fun AnimeSourcesFilterScreen(
+fun SourcesFilterScreen(
     navigateUp: () -> Unit,
     state: AnimeSourcesFilterScreenModel.State.Success,
     onClickLanguage: (String) -> Unit,
@@ -43,7 +43,7 @@ fun AnimeSourcesFilterScreen(
             )
             return@Scaffold
         }
-        AnimeSourcesFilterContent(
+        SourcesFilterContent(
             contentPadding = contentPadding,
             state = state,
             onClickLanguage = onClickLanguage,
@@ -53,7 +53,7 @@ fun AnimeSourcesFilterScreen(
 }
 
 @Composable
-private fun AnimeSourcesFilterContent(
+private fun SourcesFilterContent(
     contentPadding: PaddingValues,
     state: AnimeSourcesFilterScreenModel.State.Success,
     onClickLanguage: (String) -> Unit,
@@ -68,7 +68,7 @@ private fun AnimeSourcesFilterContent(
                 key = language,
                 contentType = "source-filter-header",
             ) {
-                AnimeSourcesFilterHeader(
+                SourcesFilterHeader(
                     modifier = Modifier.animateItemFastScroll(),
                     language = language,
                     enabled = enabled,
@@ -81,7 +81,7 @@ private fun AnimeSourcesFilterContent(
                     key = { "source-filter-${it.key()}" },
                     contentType = { "source-filter-item" },
                 ) { source ->
-                    AnimeSourcesFilterItem(
+                    SourcesFilterItem(
                         modifier = Modifier.animateItemFastScroll(),
                         source = source,
                         isEnabled = "${source.id}" !in state.disabledSources,
@@ -94,7 +94,7 @@ private fun AnimeSourcesFilterContent(
 }
 
 @Composable
-fun AnimeSourcesFilterHeader(
+fun SourcesFilterHeader(
     language: String,
     enabled: Boolean,
     onClickItem: (String) -> Unit,
@@ -109,13 +109,13 @@ fun AnimeSourcesFilterHeader(
 }
 
 @Composable
-private fun AnimeSourcesFilterItem(
+private fun SourcesFilterItem(
     source: AnimeSource,
     isEnabled: Boolean,
     onClickItem: (AnimeSource) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    BaseAnimeSourceItem(
+    BaseSourceItem(
         modifier = modifier,
         source = source,
         showLanguageInContent = false,

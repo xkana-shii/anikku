@@ -8,7 +8,7 @@ import eu.kanade.domain.source.interactor.GetEnabledSources
 import eu.kanade.domain.source.interactor.ToggleSource
 import eu.kanade.domain.source.interactor.ToggleSourcePin
 import eu.kanade.domain.source.service.SourcePreferences
-import eu.kanade.presentation.browse.AnimeSourceUiModel
+import eu.kanade.presentation.browse.SourceUiModel
 import eu.kanade.tachiyomi.util.system.LAST_USED_KEY
 import eu.kanade.tachiyomi.util.system.PINNED_KEY
 import kotlinx.collections.immutable.ImmutableList
@@ -77,9 +77,9 @@ class AnimeSourcesScreenModel(
                 items = byLang
                     .flatMap {
                         listOf(
-                            AnimeSourceUiModel.Header(it.key),
+                            SourceUiModel.Header(it.key),
                             *it.value.map { source ->
-                                AnimeSourceUiModel.Item(source)
+                                SourceUiModel.Item(source)
                             }.toTypedArray(),
                         )
                     }
@@ -114,7 +114,7 @@ class AnimeSourcesScreenModel(
     data class State(
         val dialog: Dialog? = null,
         val isLoading: Boolean = true,
-        val items: ImmutableList<AnimeSourceUiModel> = persistentListOf(),
+        val items: ImmutableList<SourceUiModel> = persistentListOf(),
     ) {
         val isEmpty = items.isEmpty()
     }

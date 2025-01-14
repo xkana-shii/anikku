@@ -22,8 +22,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import eu.kanade.domain.source.interactor.SetMigrateSorting
-import eu.kanade.presentation.browse.components.AnimeSourceIcon
-import eu.kanade.presentation.browse.components.BaseAnimeSourceItem
+import eu.kanade.presentation.browse.components.BaseSourceItem
+import eu.kanade.presentation.browse.components.SourceIcon
 import eu.kanade.tachiyomi.ui.browse.migration.sources.MigrateAnimeSourceScreenModel
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import kotlinx.collections.immutable.ImmutableList
@@ -43,7 +43,7 @@ import tachiyomi.presentation.core.util.plus
 import tachiyomi.presentation.core.util.secondaryItemAlpha
 
 @Composable
-fun MigrateAnimeSourceScreen(
+fun MigrateSourceScreen(
     state: MigrateAnimeSourceScreenModel.State,
     contentPadding: PaddingValues,
     onClickItem: (AnimeSource) -> Unit,
@@ -58,7 +58,7 @@ fun MigrateAnimeSourceScreen(
             modifier = Modifier.padding(contentPadding),
         )
         else ->
-            MigrateAnimeSourceList(
+            MigrateSourceList(
                 list = state.items,
                 contentPadding = contentPadding,
                 onClickItem = onClickItem,
@@ -75,7 +75,7 @@ fun MigrateAnimeSourceScreen(
 }
 
 @Composable
-private fun MigrateAnimeSourceList(
+private fun MigrateSourceList(
     list: ImmutableList<Pair<AnimeSource, Long>>,
     contentPadding: PaddingValues,
     onClickItem: (AnimeSource) -> Unit,
@@ -132,7 +132,7 @@ private fun MigrateAnimeSourceList(
             items = list,
             key = { (source, _) -> "migrate-${source.id}" },
         ) { (source, count) ->
-            MigrateAnimeSourceItem(
+            MigrateSourceItem(
                 modifier = Modifier.animateItem(),
                 source = source,
                 count = count,
@@ -144,20 +144,20 @@ private fun MigrateAnimeSourceList(
 }
 
 @Composable
-private fun MigrateAnimeSourceItem(
+private fun MigrateSourceItem(
     source: AnimeSource,
     count: Long,
     onClickItem: () -> Unit,
     onLongClickItem: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    BaseAnimeSourceItem(
+    BaseSourceItem(
         modifier = modifier,
         source = source,
         showLanguageInContent = source.lang != "",
         onClickItem = onClickItem,
         onLongClickItem = onLongClickItem,
-        icon = { AnimeSourceIcon(source = source) },
+        icon = { SourceIcon(source = source) },
         action = {
             BadgeGroup {
                 Badge(text = "$count")
