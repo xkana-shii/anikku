@@ -32,11 +32,11 @@ import tachiyomi.domain.history.model.AnimeHistoryWithRelations
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
-class AnimeHistoryScreenModel(
+class HistoryScreenModel(
     private val getHistory: GetAnimeHistory = Injekt.get(),
     private val getNextEpisodes: GetNextEpisodes = Injekt.get(),
     private val removeHistory: RemoveAnimeHistory = Injekt.get(),
-) : StateScreenModel<AnimeHistoryScreenModel.State>(State()) {
+) : StateScreenModel<HistoryScreenModel.State>(State()) {
 
     private val _events: Channel<Event> = Channel(Channel.UNLIMITED)
     val events: Flow<Event> = _events.receiveAsFlow()

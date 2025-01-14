@@ -39,7 +39,7 @@ import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.i18n.stringResource
 import uy.kohesive.injekt.injectLazy
 
-data object HistoriesTab : Tab {
+data object HistoryTab : Tab {
 
     private val resumeLastEpisodeSeenEvent = Channel<Unit>()
 
@@ -72,7 +72,7 @@ data object HistoriesTab : Tab {
         val snackbarHostState = SnackbarHostState()
 
         val navigator = LocalNavigator.currentOrThrow
-        val screenModel = rememberScreenModel { AnimeHistoryScreenModel() }
+        val screenModel = rememberScreenModel { HistoryScreenModel() }
         val state by screenModel.state.collectAsState()
         val searchQuery by screenModel.query.collectAsState()
 
@@ -117,7 +117,7 @@ data object HistoriesTab : Tab {
 
         val onDismissRequest = { screenModel.setDialog(null) }
         when (val dialog = state.dialog) {
-            is AnimeHistoryScreenModel.Dialog.Delete -> {
+            is HistoryScreenModel.Dialog.Delete -> {
                 HistoryDeleteDialog(
                     onDismissRequest = onDismissRequest,
                     onDelete = { all ->
@@ -130,7 +130,7 @@ data object HistoriesTab : Tab {
                     isManga = false,
                 )
             }
-            is AnimeHistoryScreenModel.Dialog.DeleteAll -> {
+            is HistoryScreenModel.Dialog.DeleteAll -> {
                 HistoryDeleteAllDialog(
                     onDismissRequest = onDismissRequest,
                     onDelete = screenModel::removeAllHistory,
@@ -151,11 +151,11 @@ data object HistoriesTab : Tab {
             // <-- AM (DISCORD)
             screenModel.events.collectLatest { e ->
                 when (e) {
-                    AnimeHistoryScreenModel.Event.InternalError ->
+                    HistoryScreenModel.Event.InternalError ->
                         snackbarHostState.showSnackbar(context.stringResource(MR.strings.internal_error))
-                    AnimeHistoryScreenModel.Event.HistoryCleared ->
+                    HistoryScreenModel.Event.HistoryCleared ->
                         snackbarHostState.showSnackbar(context.stringResource(MR.strings.clear_history_completed))
-                    is AnimeHistoryScreenModel.Event.OpenEpisode -> openEpisode(context, e.episode)
+                    is HistoryScreenModel.Event.OpenEpisode -> openEpisode(context, e.episode)
                 }
             }
         }

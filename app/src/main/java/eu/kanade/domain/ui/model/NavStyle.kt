@@ -10,7 +10,7 @@ import dev.icerock.moko.resources.StringResource
 import eu.kanade.presentation.util.Tab
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.browse.BrowseTab
-import eu.kanade.tachiyomi.ui.history.HistoriesTab
+import eu.kanade.tachiyomi.ui.history.HistoryTab
 import eu.kanade.tachiyomi.ui.library.AnimeLibraryTab
 import eu.kanade.tachiyomi.ui.more.MoreTab
 import eu.kanade.tachiyomi.ui.updates.UpdatesTab
@@ -21,7 +21,7 @@ enum class NavStyle(
     val moreTab: Tab,
 ) {
     MOVE_UPDATES_TO_MORE(titleRes = MR.strings.pref_bottom_nav_no_updates, moreTab = UpdatesTab),
-    MOVE_HISTORY_TO_MORE(titleRes = MR.strings.pref_bottom_nav_no_history, moreTab = HistoriesTab),
+    MOVE_HISTORY_TO_MORE(titleRes = MR.strings.pref_bottom_nav_no_history, moreTab = HistoryTab),
     MOVE_BROWSE_TO_MORE(titleRes = MR.strings.pref_bottom_nav_no_browse, moreTab = BrowseTab),
     ;
 
@@ -38,7 +38,7 @@ enum class NavStyle(
             return mutableListOf(
                 AnimeLibraryTab,
                 UpdatesTab,
-                HistoriesTab,
+                HistoryTab,
                 BrowseTab,
                 MoreTab,
             ).apply { remove(this@NavStyle.moreTab) }
