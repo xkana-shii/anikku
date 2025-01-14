@@ -1,7 +1,10 @@
 package eu.kanade.tachiyomi.ui.download
 
+import android.view.LayoutInflater
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Sort
@@ -27,10 +30,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.view.ViewCompat
+import androidx.core.view.updatePadding
+import androidx.recyclerview.widget.LinearLayoutManager
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -39,21 +49,25 @@ import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.DropdownMenu
 import eu.kanade.presentation.components.NestedMenuItem
+import eu.kanade.tachiyomi.databinding.DownloadListBinding
 import kotlinx.collections.immutable.persistentListOf
+import tachiyomi.core.common.util.lang.launchUI
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.Pill
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.presentation.core.screens.EmptyScreen
+import kotlin.math.roundToInt
 
 data object DownloadQueueScreen : Screen {
 
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
-        val animeScreenModel = rememberScreenModel { AnimeDownloadQueueScreenModel() }
-        val animeDownloadList by animeScreenModel.state.collectAsState()
-        val animeDownloadCount by remember {
-            derivedStateOf { animeDownloadList.sumOf { it.subItems.size } }
+        val screenModel = rememberScreenModel { DownloadQueueScreenModel() }
+        val downloadList by screenModel.state.collectAsState()
+        val downloadCount by remember {
+            derivedStateOf { downloadList.sumOf { it.subItems.size } }
         }
 
         val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
@@ -91,10 +105,10 @@ data object DownloadQueueScreen : Screen {
                                 modifier = Modifier.weight(1f, false),
                                 overflow = TextOverflow.Ellipsis,
                             )
-                            if (animeDownloadCount > 0) {
+                            if (downloadCount > 0) {
                                 val pillAlpha = if (isSystemInDarkTheme()) 0.12f else 0.08f
                                 Pill(
-                                    text = "$animeDownloadCount",
+                                    text = "$downloadCount",
                                     modifier = Modifier.padding(start = 4.dp),
                                     color = MaterialTheme.colorScheme.onBackground
                                         .copy(alpha = pillAlpha),
@@ -104,12 +118,12 @@ data object DownloadQueueScreen : Screen {
                         }
                     },
                     navigateUp = navigator::pop,
-                    actions = { AnimeActions(animeScreenModel, animeDownloadList) },
+                    actions = { AnimeActions(screenModel, downloadList) },
                     scrollBehavior = scrollBehavior,
                 )
             },
             floatingActionButton = {
-                val animeIsRunning by animeScreenModel.isDownloaderRunning.collectAsState()
+                val animeIsRunning by screenModel.isDownloaderRunning.collectAsState()
                 ExtendedFloatingActionButton(
                     text = {
                         val id = if (animeIsRunning) {
@@ -129,9 +143,9 @@ data object DownloadQueueScreen : Screen {
                     },
                     onClick = {
                         if (animeIsRunning) {
-                            animeScreenModel.pauseDownloads()
+                            screenModel.pauseDownloads()
                         } else {
-                            animeScreenModel.startDownloads()
+                            screenModel.startDownloads()
                         }
                     },
                     expanded = fabExpanded,
@@ -140,20 +154,68 @@ data object DownloadQueueScreen : Screen {
         ) { contentPadding ->
             val scope = rememberCoroutineScope()
 
-            AnimeDownloadQueueScreen(
-                contentPadding = contentPadding,
-                scope = scope,
-                screenModel = animeScreenModel,
-                downloadList = animeDownloadList,
-                nestedScrollConnection = nestedScrollConnection,
-            )
+            if (downloadList.isEmpty()) {
+                EmptyScreen(
+                    stringRes = MR.strings.information_no_downloads,
+                    modifier = Modifier.padding(contentPadding),
+                )
+                return@Scaffold
+            }
+
+            val density = LocalDensity.current
+            val layoutDirection = LocalLayoutDirection.current
+            val left = with(density) { contentPadding.calculateLeftPadding(layoutDirection).toPx().roundToInt() }
+            val top = with(density) { contentPadding.calculateTopPadding().toPx().roundToInt() }
+            val right = with(density) { contentPadding.calculateRightPadding(layoutDirection).toPx().roundToInt() }
+            val bottom = with(density) { contentPadding.calculateBottomPadding().toPx().roundToInt() }
+
+            Box(modifier = Modifier.nestedScroll(nestedScrollConnection)) {
+                AndroidView(
+                    modifier = Modifier.fillMaxWidth(),
+                    factory = { context ->
+                        screenModel.controllerBinding = DownloadListBinding.inflate(
+                            LayoutInflater.from(context),
+                        )
+                        screenModel.adapter = DownloadAdapter(screenModel.listener)
+                        screenModel.controllerBinding.root.adapter = screenModel.adapter
+                        screenModel.adapter?.isHandleDragEnabled = true
+                        screenModel.controllerBinding.root.layoutManager = LinearLayoutManager(
+                            context,
+                        )
+
+                        ViewCompat.setNestedScrollingEnabled(screenModel.controllerBinding.root, true)
+
+                        scope.launchUI {
+                            screenModel.getDownloadStatusFlow()
+                                .collect(screenModel::onStatusChange)
+                        }
+                        scope.launchUI {
+                            screenModel.getDownloadProgressFlow()
+                                .collect(screenModel::onUpdateDownloadedPages)
+                        }
+
+                        screenModel.controllerBinding.root
+                    },
+                    update = {
+                        screenModel.controllerBinding.root
+                            .updatePadding(
+                                left = left,
+                                top = top,
+                                right = right,
+                                bottom = bottom,
+                            )
+
+                        screenModel.adapter?.updateDataSet(downloadList)
+                    },
+                )
+            }
         }
     }
 
     @Composable
     private fun AnimeActions(
-        animeScreenModel: AnimeDownloadQueueScreenModel,
-        animeDownloadList: List<AnimeDownloadHeaderItem>,
+        animeScreenModel: DownloadQueueScreenModel,
+        animeDownloadList: List<DownloadHeaderItem>,
     ) {
         if (animeDownloadList.isNotEmpty()) {
             var sortExpanded by remember { mutableStateOf(false) }

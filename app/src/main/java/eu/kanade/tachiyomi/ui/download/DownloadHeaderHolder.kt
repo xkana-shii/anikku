@@ -7,7 +7,7 @@ import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.viewholders.ExpandableViewHolder
 import eu.kanade.tachiyomi.databinding.DownloadHeaderBinding
 
-class AnimeDownloadHeaderHolder(view: View, adapter: FlexibleAdapter<*>) : ExpandableViewHolder(
+class DownloadHeaderHolder(view: View, adapter: FlexibleAdapter<*>) : ExpandableViewHolder(
     view,
     adapter,
 ) {
@@ -15,7 +15,7 @@ class AnimeDownloadHeaderHolder(view: View, adapter: FlexibleAdapter<*>) : Expan
     private val binding = DownloadHeaderBinding.bind(view)
 
     @SuppressLint("SetTextI18n")
-    fun bind(item: AnimeDownloadHeaderItem) {
+    fun bind(item: DownloadHeaderItem) {
         setDragHandleView(binding.reorder)
         binding.title.text = "${item.name} (${item.size})"
     }
@@ -32,6 +32,6 @@ class AnimeDownloadHeaderHolder(view: View, adapter: FlexibleAdapter<*>) : Expan
         super.onItemReleased(position)
         binding.container.isDragged = false
         mAdapter.expandAll()
-        (mAdapter as AnimeDownloadAdapter).downloadItemListener.onItemReleased(position)
+        (mAdapter as DownloadAdapter).downloadItemListener.onItemReleased(position)
     }
 }

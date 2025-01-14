@@ -9,7 +9,7 @@ import eu.davidea.flexibleadapter.items.AbstractFlexibleItem
  *
  * @param downloadItemListener Listener called when an item of the list is released.
  */
-class AnimeDownloadAdapter(val downloadItemListener: DownloadItemListener) : FlexibleAdapter<AbstractFlexibleItem<*>>(
+class DownloadAdapter(val downloadItemListener: DownloadItemListener) : FlexibleAdapter<AbstractFlexibleItem<*>>(
     null,
     downloadItemListener,
     true,

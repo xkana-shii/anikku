@@ -7,11 +7,11 @@ import eu.davidea.flexibleadapter.items.AbstractExpandableHeaderItem
 import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.R
 
-data class AnimeDownloadHeaderItem(
+data class DownloadHeaderItem(
     val id: Long,
     val name: String,
     val size: Int,
-) : AbstractExpandableHeaderItem<AnimeDownloadHeaderHolder, AnimeDownloadItem>() {
+) : AbstractExpandableHeaderItem<DownloadHeaderHolder, DownloadItem>() {
 
     override fun getLayoutRes(): Int {
         return R.layout.download_header
@@ -20,13 +20,13 @@ data class AnimeDownloadHeaderItem(
     override fun createViewHolder(
         view: View,
         adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>,
-    ): AnimeDownloadHeaderHolder {
-        return AnimeDownloadHeaderHolder(view, adapter)
+    ): DownloadHeaderHolder {
+        return DownloadHeaderHolder(view, adapter)
     }
 
     override fun bindViewHolder(
         adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>,
-        holder: AnimeDownloadHeaderHolder,
+        holder: DownloadHeaderHolder,
         position: Int,
         payloads: List<Any?>?,
     ) {
@@ -37,7 +37,7 @@ data class AnimeDownloadHeaderItem(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as AnimeDownloadHeaderItem
+        other as DownloadHeaderItem
 
         if (id != other.id) return false
         if (name != other.name) return false

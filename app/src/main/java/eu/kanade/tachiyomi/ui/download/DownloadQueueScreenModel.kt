@@ -18,11 +18,11 @@ import kotlinx.coroutines.launch
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
-class AnimeDownloadQueueScreenModel(
+class DownloadQueueScreenModel(
     private val downloadManager: AnimeDownloadManager = Injekt.get(),
 ) : ScreenModel {
 
-    private val _state = MutableStateFlow(emptyList<AnimeDownloadHeaderItem>())
+    private val _state = MutableStateFlow(emptyList<DownloadHeaderItem>())
     val state = _state.asStateFlow()
 
     lateinit var controllerBinding: DownloadListBinding
@@ -30,14 +30,14 @@ class AnimeDownloadQueueScreenModel(
     /**
      * Adapter containing the active downloads.
      */
-    var adapter: AnimeDownloadAdapter? = null
+    var adapter: DownloadAdapter? = null
 
     /**
      * Map of jobs for active downloads.
      */
     private val progressJobs = mutableMapOf<AnimeDownload, Job>()
 
-    val listener = object : AnimeDownloadAdapter.DownloadItemListener {
+    val listener = object : DownloadAdapter.DownloadItemListener {
         /**
          * Called when an item is released from a drag.
          *
@@ -47,7 +47,7 @@ class AnimeDownloadQueueScreenModel(
             val adapter = adapter ?: return
             val downloads = adapter.headerItems.flatMap { header ->
                 adapter.getSectionItems(header).map { item ->
-                    (item as AnimeDownloadItem).download
+                    (item as DownloadItem).download
                 }
             }
             reorder(downloads)
@@ -61,13 +61,13 @@ class AnimeDownloadQueueScreenModel(
          */
         override fun onMenuItemClick(position: Int, menuItem: MenuItem) {
             val item = adapter?.getItem(position) ?: return
-            if (item is AnimeDownloadItem) {
+            if (item is DownloadItem) {
                 when (menuItem.itemId) {
                     R.id.move_to_top, R.id.move_to_bottom -> {
                         val headerItems = adapter?.headerItems ?: return
                         val newAnimeDownloads = mutableListOf<AnimeDownload>()
                         headerItems.forEach { headerItem ->
-                            headerItem as AnimeDownloadHeaderItem
+                            headerItem as DownloadHeaderItem
                             if (headerItem == item.header) {
                                 headerItem.removeSubItem(item)
                                 if (menuItem.itemId == R.id.move_to_top) {
@@ -82,8 +82,8 @@ class AnimeDownloadQueueScreenModel(
                     }
                     R.id.move_to_top_series, R.id.move_to_bottom_series -> {
                         val (selectedSeries, otherSeries) = adapter?.currentItems
-                            ?.filterIsInstance<AnimeDownloadItem>()
-                            ?.map(AnimeDownloadItem::download)
+                            ?.filterIsInstance<DownloadItem>()
+                            ?.map(DownloadItem::download)
                             ?.partition { item.download.anime.id == it.anime.id }
                             ?: Pair(emptyList(), emptyList())
                         if (menuItem.itemId == R.id.move_to_top_series) {
@@ -97,9 +97,9 @@ class AnimeDownloadQueueScreenModel(
                     }
                     R.id.cancel_series -> {
                         val allAnimeDownloadsForSeries = adapter?.currentItems
-                            ?.filterIsInstance<AnimeDownloadItem>()
+                            ?.filterIsInstance<DownloadItem>()
                             ?.filter { item.download.anime.id == it.download.anime.id }
-                            ?.map(AnimeDownloadItem::download)
+                            ?.map(DownloadItem::download)
                         if (!allAnimeDownloadsForSeries.isNullOrEmpty()) {
                             cancel(allAnimeDownloadsForSeries)
                         }
@@ -116,8 +116,8 @@ class AnimeDownloadQueueScreenModel(
                     downloads
                         .groupBy { it.source }
                         .map { entry ->
-                            AnimeDownloadHeaderItem(entry.key.id, entry.key.name, entry.value.size).apply {
-                                addSubItems(0, entry.value.map { AnimeDownloadItem(it, this) })
+                            DownloadHeaderItem(entry.key.id, entry.key.name, entry.value.size).apply {
+                                addSubItems(0, entry.value.map { DownloadItem(it, this) })
                             }
                         }
                 }
@@ -160,13 +160,13 @@ class AnimeDownloadQueueScreenModel(
     }
 
     fun <R : Comparable<R>> reorderQueue(
-        selector: (AnimeDownloadItem) -> R,
+        selector: (DownloadItem) -> R,
         reverse: Boolean = false,
     ) {
         val adapter = adapter ?: return
         val newAnimeDownloads = mutableListOf<AnimeDownload>()
         adapter.headerItems.forEach { headerItem ->
-            headerItem as AnimeDownloadHeaderItem
+            headerItem as DownloadHeaderItem
             headerItem.subItems = headerItem.subItems.sortedBy(selector).toMutableList().apply {
                 if (reverse) {
                     reverse()
@@ -236,7 +236,7 @@ class AnimeDownloadQueueScreenModel(
      * @param download the download to find.
      * @return the holder of the download or null if it's not bound.
      */
-    private fun getHolder(download: AnimeDownload): AnimeDownloadHolder? {
-        return controllerBinding.root.findViewHolderForItemId(download.episode.id) as? AnimeDownloadHolder
+    private fun getHolder(download: AnimeDownload): DownloadHolder? {
+        return controllerBinding.root.findViewHolderForItemId(download.episode.id) as? DownloadHolder
     }
 }

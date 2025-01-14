@@ -17,7 +17,7 @@ import tachiyomi.i18n.MR
  * @param view the inflated view for this holder.
  * @constructor creates a new download holder.
  */
-class AnimeDownloadHolder(private val view: View, val adapter: AnimeDownloadAdapter) :
+class DownloadHolder(private val view: View, val adapter: DownloadAdapter) :
     FlexibleViewHolder(view, adapter) {
 
     private val binding = DownloadItemBinding.bind(view)

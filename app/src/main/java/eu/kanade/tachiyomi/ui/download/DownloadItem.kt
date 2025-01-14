@@ -8,10 +8,10 @@ import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.download.model.AnimeDownload
 
-class AnimeDownloadItem(
+class DownloadItem(
     val download: AnimeDownload,
-    header: AnimeDownloadHeaderItem,
-) : AbstractSectionableItem<AnimeDownloadHolder, AnimeDownloadHeaderItem>(header) {
+    header: DownloadHeaderItem,
+) : AbstractSectionableItem<DownloadHolder, DownloadHeaderItem>(header) {
 
     override fun getLayoutRes(): Int {
         return R.layout.download_item
@@ -26,8 +26,8 @@ class AnimeDownloadItem(
     override fun createViewHolder(
         view: View,
         adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>,
-    ): AnimeDownloadHolder {
-        return AnimeDownloadHolder(view, adapter as AnimeDownloadAdapter)
+    ): DownloadHolder {
+        return DownloadHolder(view, adapter as DownloadAdapter)
     }
 
     /**
@@ -40,7 +40,7 @@ class AnimeDownloadItem(
      */
     override fun bindViewHolder(
         adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>,
-        holder: AnimeDownloadHolder,
+        holder: DownloadHolder,
         position: Int,
         payloads: MutableList<Any>,
     ) {
@@ -56,7 +56,7 @@ class AnimeDownloadItem(
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other is AnimeDownloadItem) {
+        if (other is DownloadItem) {
             return download.episode.id == other.download.episode.id
         }
         return false
