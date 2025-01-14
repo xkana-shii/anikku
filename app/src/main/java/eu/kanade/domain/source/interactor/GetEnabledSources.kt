@@ -10,7 +10,7 @@ import tachiyomi.domain.source.model.Pins
 import tachiyomi.domain.source.repository.AnimeSourceRepository
 import tachiyomi.source.local.LocalAnimeSource
 
-class GetEnabledAnimeSources(
+class GetEnabledSources(
     private val repository: AnimeSourceRepository,
     private val preferences: SourcePreferences,
 ) {

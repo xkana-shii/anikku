@@ -4,9 +4,9 @@ import androidx.compose.runtime.Immutable
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.domain.base.BasePreferences
-import eu.kanade.domain.source.interactor.GetEnabledAnimeSources
-import eu.kanade.domain.source.interactor.ToggleAnimeSource
-import eu.kanade.domain.source.interactor.ToggleAnimeSourcePin
+import eu.kanade.domain.source.interactor.GetEnabledSources
+import eu.kanade.domain.source.interactor.ToggleSource
+import eu.kanade.domain.source.interactor.ToggleSourcePin
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.presentation.browse.AnimeSourceUiModel
 import eu.kanade.tachiyomi.util.system.LAST_USED_KEY
@@ -31,9 +31,9 @@ import java.util.TreeMap
 class AnimeSourcesScreenModel(
     private val preferences: BasePreferences = Injekt.get(),
     private val sourcePreferences: SourcePreferences = Injekt.get(),
-    private val getEnabledAnimeSources: GetEnabledAnimeSources = Injekt.get(),
-    private val toggleSource: ToggleAnimeSource = Injekt.get(),
-    private val toggleSourcePin: ToggleAnimeSourcePin = Injekt.get(),
+    private val getEnabledSources: GetEnabledSources = Injekt.get(),
+    private val toggleSource: ToggleSource = Injekt.get(),
+    private val toggleSourcePin: ToggleSourcePin = Injekt.get(),
 ) : StateScreenModel<AnimeSourcesScreenModel.State>(State()) {
 
     private val _events = Channel<Event>(Int.MAX_VALUE)
@@ -41,7 +41,7 @@ class AnimeSourcesScreenModel(
 
     init {
         screenModelScope.launchIO {
-            getEnabledAnimeSources.subscribe()
+            getEnabledSources.subscribe()
                 .catch {
                     logcat(LogPriority.ERROR, it)
                     _events.send(Event.FailedFetchingSources)

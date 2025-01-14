@@ -9,7 +9,7 @@ import tachiyomi.domain.source.repository.AnimeSourceRepository
 import tachiyomi.source.local.LocalAnimeSource
 import java.util.Collections
 
-class GetAnimeSourcesWithFavoriteCount(
+class GetSourcesWithFavoriteCount(
     private val repository: AnimeSourceRepository,
     private val preferences: SourcePreferences,
 ) {

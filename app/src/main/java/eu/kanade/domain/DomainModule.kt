@@ -9,13 +9,13 @@ import eu.kanade.domain.extension.interactor.GetExtensionLanguages
 import eu.kanade.domain.extension.interactor.GetExtensionSources
 import eu.kanade.domain.extension.interactor.GetExtensionsByType
 import eu.kanade.domain.extension.interactor.TrustExtension
-import eu.kanade.domain.source.interactor.GetAnimeSourcesWithFavoriteCount
-import eu.kanade.domain.source.interactor.GetEnabledAnimeSources
-import eu.kanade.domain.source.interactor.GetLanguagesWithAnimeSources
+import eu.kanade.domain.source.interactor.GetEnabledSources
+import eu.kanade.domain.source.interactor.GetLanguagesWithSources
+import eu.kanade.domain.source.interactor.GetSourcesWithFavoriteCount
 import eu.kanade.domain.source.interactor.SetMigrateSorting
-import eu.kanade.domain.source.interactor.ToggleAnimeSource
-import eu.kanade.domain.source.interactor.ToggleAnimeSourcePin
 import eu.kanade.domain.source.interactor.ToggleLanguage
+import eu.kanade.domain.source.interactor.ToggleSource
+import eu.kanade.domain.source.interactor.ToggleSourcePin
 import eu.kanade.domain.track.interactor.AddAnimeTracks
 import eu.kanade.domain.track.interactor.RefreshAnimeTracks
 import eu.kanade.domain.track.interactor.SyncEpisodeProgressWithTrack
@@ -168,13 +168,13 @@ class DomainModule : InjektModule {
 
         addSingletonFactory<AnimeSourceRepository> { AnimeSourceRepositoryImpl(get(), get()) }
         addSingletonFactory<AnimeStubSourceRepository> { AnimeStubSourceRepositoryImpl(get()) }
-        addFactory { GetEnabledAnimeSources(get(), get()) }
-        addFactory { GetLanguagesWithAnimeSources(get(), get()) }
+        addFactory { GetEnabledSources(get(), get()) }
+        addFactory { GetLanguagesWithSources(get(), get()) }
         addFactory { GetRemoteAnime(get()) }
-        addFactory { GetAnimeSourcesWithFavoriteCount(get(), get()) }
+        addFactory { GetSourcesWithFavoriteCount(get(), get()) }
         addFactory { GetAnimeSourcesWithNonLibraryAnime(get()) }
-        addFactory { ToggleAnimeSource(get()) }
-        addFactory { ToggleAnimeSourcePin(get()) }
+        addFactory { ToggleSource(get()) }
+        addFactory { ToggleSourcePin(get()) }
 
         addFactory { SetMigrateSorting(get()) }
         addFactory { ToggleLanguage(get()) }

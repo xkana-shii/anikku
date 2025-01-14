@@ -8,7 +8,7 @@ import tachiyomi.domain.source.model.AnimeSource
 import tachiyomi.domain.source.repository.AnimeSourceRepository
 import java.util.SortedMap
 
-class GetLanguagesWithAnimeSources(
+class GetLanguagesWithSources(
     private val repository: AnimeSourceRepository,
     private val preferences: SourcePreferences,
 ) {

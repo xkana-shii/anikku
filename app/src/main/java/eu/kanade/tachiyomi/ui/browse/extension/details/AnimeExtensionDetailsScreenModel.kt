@@ -6,7 +6,7 @@ import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.domain.extension.interactor.ExtensionSourceItem
 import eu.kanade.domain.extension.interactor.GetExtensionSources
-import eu.kanade.domain.source.interactor.ToggleAnimeSource
+import eu.kanade.domain.source.interactor.ToggleSource
 import eu.kanade.tachiyomi.animesource.online.AnimeHttpSource
 import eu.kanade.tachiyomi.extension.AnimeExtensionManager
 import eu.kanade.tachiyomi.extension.model.AnimeExtension
@@ -35,7 +35,7 @@ class AnimeExtensionDetailsScreenModel(
     private val network: NetworkHelper = Injekt.get(),
     private val extensionManager: AnimeExtensionManager = Injekt.get(),
     private val getExtensionSources: GetExtensionSources = Injekt.get(),
-    private val toggleSource: ToggleAnimeSource = Injekt.get(),
+    private val toggleSource: ToggleSource = Injekt.get(),
 ) : StateScreenModel<AnimeExtensionDetailsScreenModel.State>(State()) {
 
     private val _events: Channel<AnimeExtensionDetailsEvent> = Channel()
