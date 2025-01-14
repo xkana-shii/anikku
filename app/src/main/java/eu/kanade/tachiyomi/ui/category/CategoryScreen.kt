@@ -21,29 +21,29 @@ import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.collectLatest
 import tachiyomi.presentation.core.screens.LoadingScreen
 
-object CategoriesScreen : Screen {
-    private fun readResolve(): Any = CategoriesScreen
+object CategoryScreen : Screen {
+    private fun readResolve(): Any = CategoryScreen
 
     @Composable
     override fun Content() {
         val context = LocalContext.current
         val navigator = LocalNavigator.currentOrThrow
-        val screenModel = rememberScreenModel { AnimeCategoryScreenModel() }
+        val screenModel = rememberScreenModel { CategoryScreenModel() }
 
         val state by screenModel.state.collectAsState()
 
-        if (state is AnimeCategoryScreenState.Loading) {
+        if (state is CategoryScreenState.Loading) {
             LoadingScreen()
         } else {
-            val successState = state as AnimeCategoryScreenState.Success
+            val successState = state as CategoryScreenState.Success
 
             CategoryScreen(
                 state = successState,
-                onClickCreate = { screenModel.showDialog(AnimeCategoryDialog.Create) },
-                onClickSortAlphabetically = { screenModel.showDialog(AnimeCategoryDialog.SortAlphabetically) },
-                onClickRename = { screenModel.showDialog(AnimeCategoryDialog.Rename(it)) },
+                onClickCreate = { screenModel.showDialog(CategoryDialog.Create) },
+                onClickSortAlphabetically = { screenModel.showDialog(CategoryDialog.SortAlphabetically) },
+                onClickRename = { screenModel.showDialog(CategoryDialog.Rename(it)) },
                 onClickHide = screenModel::hideCategory,
-                onClickDelete = { screenModel.showDialog(AnimeCategoryDialog.Delete(it)) },
+                onClickDelete = { screenModel.showDialog(CategoryDialog.Delete(it)) },
                 onClickMoveUp = screenModel::moveUp,
                 onClickMoveDown = screenModel::moveDown,
                 navigateUp = navigator::pop,
@@ -51,14 +51,14 @@ object CategoriesScreen : Screen {
 
             when (val dialog = successState.dialog) {
                 null -> {}
-                AnimeCategoryDialog.Create -> {
+                CategoryDialog.Create -> {
                     CategoryCreateDialog(
                         onDismissRequest = screenModel::dismissDialog,
                         onCreate = screenModel::createCategory,
                         categories = successState.categories.fastMap { it.name }.toImmutableList(),
                     )
                 }
-                is AnimeCategoryDialog.Rename -> {
+                is CategoryDialog.Rename -> {
                     CategoryRenameDialog(
                         onDismissRequest = screenModel::dismissDialog,
                         onRename = { screenModel.renameCategory(dialog.category, it) },
@@ -66,14 +66,14 @@ object CategoriesScreen : Screen {
                         category = dialog.category.name,
                     )
                 }
-                is AnimeCategoryDialog.Delete -> {
+                is CategoryDialog.Delete -> {
                     CategoryDeleteDialog(
                         onDismissRequest = screenModel::dismissDialog,
                         onDelete = { screenModel.deleteCategory(dialog.category.id) },
                         category = dialog.category.name,
                     )
                 }
-                is AnimeCategoryDialog.SortAlphabetically -> {
+                is CategoryDialog.SortAlphabetically -> {
                     CategorySortAlphabeticallyDialog(
                         onDismissRequest = screenModel::dismissDialog,
                         onSort = { screenModel.sortAlphabetically() },
@@ -88,7 +88,7 @@ object CategoriesScreen : Screen {
 
         LaunchedEffect(Unit) {
             screenModel.events.collectLatest { event ->
-                if (event is AnimeCategoryEvent.LocalizedMessage) {
+                if (event is CategoryEvent.LocalizedMessage) {
                     context.toast(event.stringRes)
                 }
             }

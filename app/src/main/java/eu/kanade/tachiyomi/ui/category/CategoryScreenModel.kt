@@ -24,7 +24,7 @@ import tachiyomi.i18n.MR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
-class AnimeCategoryScreenModel(
+class CategoryScreenModel(
     private val getAllCategories: GetAnimeCategories = Injekt.get(),
     private val getVisibleCategories: GetVisibleAnimeCategories = Injekt.get(),
     private val createCategoryWithName: CreateAnimeCategoryWithName = Injekt.get(),
@@ -33,9 +33,9 @@ class AnimeCategoryScreenModel(
     private val reorderCategory: ReorderAnimeCategory = Injekt.get(),
     private val renameCategory: RenameAnimeCategory = Injekt.get(),
     private val libraryPreferences: LibraryPreferences = Injekt.get(),
-) : StateScreenModel<AnimeCategoryScreenState>(AnimeCategoryScreenState.Loading) {
+) : StateScreenModel<CategoryScreenState>(CategoryScreenState.Loading) {
 
-    private val _events: Channel<AnimeCategoryEvent> = Channel()
+    private val _events: Channel<CategoryEvent> = Channel()
     val events = _events.receiveAsFlow()
 
     init {
@@ -48,7 +48,7 @@ class AnimeCategoryScreenModel(
 
             allCategories.collectLatest { categories ->
                 mutableState.update {
-                    AnimeCategoryScreenState.Success(
+                    CategoryScreenState.Success(
                         categories = categories
                             .filterNot(Category::isSystemCategory)
                             .toImmutableList(),
@@ -62,7 +62,7 @@ class AnimeCategoryScreenModel(
         screenModelScope.launch {
             when (createCategoryWithName.await(name)) {
                 is CreateAnimeCategoryWithName.Result.InternalError -> _events.send(
-                    AnimeCategoryEvent.InternalError,
+                    CategoryEvent.InternalError,
                 )
 
                 else -> {}
@@ -74,7 +74,7 @@ class AnimeCategoryScreenModel(
         screenModelScope.launch {
             when (hideCategory.await(category)) {
                 is HideAnimeCategory.Result.InternalError -> _events.send(
-                    AnimeCategoryEvent.InternalError,
+                    CategoryEvent.InternalError,
                 )
                 else -> {}
             }
@@ -85,7 +85,7 @@ class AnimeCategoryScreenModel(
         screenModelScope.launch {
             when (deleteCategory.await(categoryId = categoryId)) {
                 is DeleteAnimeCategory.Result.InternalError -> _events.send(
-                    AnimeCategoryEvent.InternalError,
+                    CategoryEvent.InternalError,
                 )
                 else -> {}
             }
@@ -95,7 +95,7 @@ class AnimeCategoryScreenModel(
     fun sortAlphabetically() {
         screenModelScope.launch {
             when (reorderCategory.sortAlphabetically()) {
-                is ReorderAnimeCategory.Result.InternalError -> _events.send(AnimeCategoryEvent.InternalError)
+                is ReorderAnimeCategory.Result.InternalError -> _events.send(CategoryEvent.InternalError)
                 else -> {}
             }
         }
@@ -105,7 +105,7 @@ class AnimeCategoryScreenModel(
         screenModelScope.launch {
             when (reorderCategory.moveUp(category)) {
                 is ReorderAnimeCategory.Result.InternalError -> _events.send(
-                    AnimeCategoryEvent.InternalError,
+                    CategoryEvent.InternalError,
                 )
                 else -> {}
             }
@@ -116,7 +116,7 @@ class AnimeCategoryScreenModel(
         screenModelScope.launch {
             when (reorderCategory.moveDown(category)) {
                 is ReorderAnimeCategory.Result.InternalError -> _events.send(
-                    AnimeCategoryEvent.InternalError,
+                    CategoryEvent.InternalError,
                 )
                 else -> {}
             }
@@ -127,18 +127,18 @@ class AnimeCategoryScreenModel(
         screenModelScope.launch {
             when (renameCategory.await(category, name)) {
                 is RenameAnimeCategory.Result.InternalError -> _events.send(
-                    AnimeCategoryEvent.InternalError,
+                    CategoryEvent.InternalError,
                 )
                 else -> {}
             }
         }
     }
 
-    fun showDialog(dialog: AnimeCategoryDialog) {
+    fun showDialog(dialog: CategoryDialog) {
         mutableState.update {
             when (it) {
-                AnimeCategoryScreenState.Loading -> it
-                is AnimeCategoryScreenState.Success -> it.copy(dialog = dialog)
+                CategoryScreenState.Loading -> it
+                is CategoryScreenState.Success -> it.copy(dialog = dialog)
             }
         }
     }
@@ -146,35 +146,35 @@ class AnimeCategoryScreenModel(
     fun dismissDialog() {
         mutableState.update {
             when (it) {
-                AnimeCategoryScreenState.Loading -> it
-                is AnimeCategoryScreenState.Success -> it.copy(dialog = null)
+                CategoryScreenState.Loading -> it
+                is CategoryScreenState.Success -> it.copy(dialog = null)
             }
         }
     }
 }
 
-sealed interface AnimeCategoryDialog {
-    data object Create : AnimeCategoryDialog
-    data object SortAlphabetically : AnimeCategoryDialog
-    data class Rename(val category: Category) : AnimeCategoryDialog
-    data class Delete(val category: Category) : AnimeCategoryDialog
+sealed interface CategoryDialog {
+    data object Create : CategoryDialog
+    data object SortAlphabetically : CategoryDialog
+    data class Rename(val category: Category) : CategoryDialog
+    data class Delete(val category: Category) : CategoryDialog
 }
 
-sealed interface AnimeCategoryEvent {
-    sealed class LocalizedMessage(val stringRes: StringResource) : AnimeCategoryEvent
+sealed interface CategoryEvent {
+    sealed class LocalizedMessage(val stringRes: StringResource) : CategoryEvent
     data object InternalError : LocalizedMessage(MR.strings.internal_error)
 }
 
-sealed interface AnimeCategoryScreenState {
+sealed interface CategoryScreenState {
 
     @Immutable
-    data object Loading : AnimeCategoryScreenState
+    data object Loading : CategoryScreenState
 
     @Immutable
     data class Success(
         val categories: ImmutableList<Category>,
-        val dialog: AnimeCategoryDialog? = null,
-    ) : AnimeCategoryScreenState {
+        val dialog: CategoryDialog? = null,
+    ) : CategoryScreenState {
 
         val isEmpty: Boolean
             get() = categories.isEmpty()
