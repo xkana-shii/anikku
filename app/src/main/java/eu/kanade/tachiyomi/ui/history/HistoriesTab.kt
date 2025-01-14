@@ -18,9 +18,9 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import cafe.adriel.voyager.navigator.tab.TabOptions
 import eu.kanade.domain.ui.model.NavStyle
-import eu.kanade.presentation.history.AnimeHistoryScreen
-import eu.kanade.presentation.history.HistoryDeleteAllDialog
-import eu.kanade.presentation.history.HistoryDeleteDialog
+import eu.kanade.presentation.history.HistoryScreen
+import eu.kanade.presentation.history.components.HistoryDeleteAllDialog
+import eu.kanade.presentation.history.components.HistoryDeleteDialog
 import eu.kanade.presentation.util.Tab
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.connection.discord.DiscordRPCService
@@ -104,7 +104,7 @@ data object HistoriesTab : Tab {
             }
         }
 
-        AnimeHistoryScreen(
+        HistoryScreen(
             state = state,
             searchQuery = searchQuery,
             snackbarHostState = snackbarHostState,

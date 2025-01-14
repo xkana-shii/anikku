@@ -5,7 +5,7 @@ import tachiyomi.domain.anime.model.AnimeCover
 import tachiyomi.domain.history.model.AnimeHistoryWithRelations
 import java.util.Date
 
-internal class AnimeHistoryWithRelationsProvider : PreviewParameterProvider<AnimeHistoryWithRelations> {
+internal class HistoryWithRelationsProvider : PreviewParameterProvider<AnimeHistoryWithRelations> {
 
     private val simple = AnimeHistoryWithRelations(
         id = 1L,

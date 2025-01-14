@@ -34,7 +34,7 @@ import tachiyomi.presentation.core.i18n.stringResource
 private val HistoryItemHeight = 96.dp
 
 @Composable
-fun AnimeHistoryItem(
+fun HistoryItem(
     history: AnimeHistoryWithRelations,
     onClickCover: () -> Unit,
     onClickResume: () -> Unit,
@@ -98,12 +98,12 @@ fun AnimeHistoryItem(
 @PreviewLightDark
 @Composable
 private fun HistoryItemPreviews(
-    @PreviewParameter(AnimeHistoryWithRelationsProvider::class)
+    @PreviewParameter(HistoryWithRelationsProvider::class)
     historyWithRelations: AnimeHistoryWithRelations,
 ) {
     TachiyomiPreviewTheme {
         Surface {
-            AnimeHistoryItem(
+            HistoryItem(
                 history = historyWithRelations,
                 onClickCover = {},
                 onClickResume = {},

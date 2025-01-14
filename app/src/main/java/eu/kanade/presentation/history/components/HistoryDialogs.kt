@@ -1,4 +1,4 @@
-package eu.kanade.presentation.history
+package eu.kanade.presentation.history.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

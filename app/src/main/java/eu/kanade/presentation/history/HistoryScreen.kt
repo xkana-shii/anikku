@@ -16,7 +16,7 @@ import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.AppBarTitle
 import eu.kanade.presentation.components.SearchToolbar
 import eu.kanade.presentation.components.relativeDateText
-import eu.kanade.presentation.history.components.AnimeHistoryItem
+import eu.kanade.presentation.history.components.HistoryItem
 import eu.kanade.presentation.theme.TachiyomiPreviewTheme
 import eu.kanade.presentation.util.animateItemFastScroll
 import eu.kanade.tachiyomi.ui.history.AnimeHistoryScreenModel
@@ -32,7 +32,7 @@ import tachiyomi.presentation.core.screens.LoadingScreen
 import java.time.LocalDate
 
 @Composable
-fun AnimeHistoryScreen(
+fun HistoryScreen(
     state: AnimeHistoryScreenModel.State,
     snackbarHostState: SnackbarHostState,
     onSearchQueryChange: (String?) -> Unit,
@@ -89,7 +89,7 @@ fun AnimeHistoryScreen(
                     modifier = Modifier.padding(contentPadding),
                 )
             } else {
-                AnimeHistoryScreenContent(
+                HistoryScreenContent(
                     history = it,
                     contentPadding = contentPadding,
                     onClickCover = { history -> onClickCover(history.animeId) },
@@ -102,7 +102,7 @@ fun AnimeHistoryScreen(
 }
 
 @Composable
-private fun AnimeHistoryScreenContent(
+private fun HistoryScreenContent(
     history: List<AnimeHistoryUiModel>,
     contentPadding: PaddingValues,
     onClickCover: (AnimeHistoryWithRelations) -> Unit,
@@ -131,7 +131,7 @@ private fun AnimeHistoryScreenContent(
                 }
                 is AnimeHistoryUiModel.Item -> {
                     val value = item.item
-                    AnimeHistoryItem(
+                    HistoryItem(
                         modifier = Modifier.animateItemFastScroll(),
                         history = value,
                         onClickCover = { onClickCover(value) },
@@ -152,11 +152,11 @@ sealed interface AnimeHistoryUiModel {
 @PreviewLightDark
 @Composable
 internal fun HistoryScreenPreviews(
-    @PreviewParameter(AnimeHistoryScreenModelStateProvider::class)
+    @PreviewParameter(HistoryScreenModelStateProvider::class)
     historyState: AnimeHistoryScreenModel.State,
 ) {
     TachiyomiPreviewTheme {
-        AnimeHistoryScreen(
+        HistoryScreen(
             state = historyState,
             snackbarHostState = SnackbarHostState(),
             searchQuery = null,
