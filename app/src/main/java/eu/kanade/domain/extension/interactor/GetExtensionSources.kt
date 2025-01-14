@@ -6,11 +6,11 @@ import eu.kanade.tachiyomi.extension.model.AnimeExtension
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-class GetAnimeExtensionSources(
+class GetExtensionSources(
     private val preferences: SourcePreferences,
 ) {
 
-    fun subscribe(extension: AnimeExtension.Installed): Flow<List<AnimeExtensionSourceItem>> {
+    fun subscribe(extension: AnimeExtension.Installed): Flow<List<ExtensionSourceItem>> {
         val isMultiSource = extension.sources.size > 1
         val isMultiLangSingleSource =
             isMultiSource && extension.sources.map { it.name }.distinct().size == 1
@@ -20,7 +20,7 @@ class GetAnimeExtensionSources(
 
             extension.sources
                 .map { source ->
-                    AnimeExtensionSourceItem(
+                    ExtensionSourceItem(
                         source = source,
                         enabled = source.isEnabled(),
                         labelAsName = isMultiSource && !isMultiLangSingleSource,
@@ -30,7 +30,7 @@ class GetAnimeExtensionSources(
     }
 }
 
-data class AnimeExtensionSourceItem(
+data class ExtensionSourceItem(
     val source: AnimeSource,
     val enabled: Boolean,
     val labelAsName: Boolean,

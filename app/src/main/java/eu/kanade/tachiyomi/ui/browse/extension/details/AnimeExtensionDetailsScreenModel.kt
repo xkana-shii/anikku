@@ -4,8 +4,8 @@ import android.content.Context
 import androidx.compose.runtime.Immutable
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
-import eu.kanade.domain.extension.interactor.AnimeExtensionSourceItem
-import eu.kanade.domain.extension.interactor.GetAnimeExtensionSources
+import eu.kanade.domain.extension.interactor.ExtensionSourceItem
+import eu.kanade.domain.extension.interactor.GetExtensionSources
 import eu.kanade.domain.source.interactor.ToggleAnimeSource
 import eu.kanade.tachiyomi.animesource.online.AnimeHttpSource
 import eu.kanade.tachiyomi.extension.AnimeExtensionManager
@@ -34,7 +34,7 @@ class AnimeExtensionDetailsScreenModel(
     context: Context,
     private val network: NetworkHelper = Injekt.get(),
     private val extensionManager: AnimeExtensionManager = Injekt.get(),
-    private val getExtensionSources: GetAnimeExtensionSources = Injekt.get(),
+    private val getExtensionSources: GetExtensionSources = Injekt.get(),
     private val toggleSource: ToggleAnimeSource = Injekt.get(),
 ) : StateScreenModel<AnimeExtensionDetailsScreenModel.State>(State()) {
 
@@ -124,10 +124,10 @@ class AnimeExtensionDetailsScreenModel(
     @Immutable
     data class State(
         val extension: AnimeExtension.Installed? = null,
-        private val _sources: ImmutableList<AnimeExtensionSourceItem>? = null,
+        private val _sources: ImmutableList<ExtensionSourceItem>? = null,
     ) {
 
-        val sources: ImmutableList<AnimeExtensionSourceItem>
+        val sources: ImmutableList<ExtensionSourceItem>
             get() = _sources ?: persistentListOf()
 
         val isLoading: Boolean

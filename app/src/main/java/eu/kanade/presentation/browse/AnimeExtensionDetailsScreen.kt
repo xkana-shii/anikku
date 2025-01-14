@@ -41,7 +41,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import eu.kanade.domain.extension.interactor.AnimeExtensionSourceItem
+import eu.kanade.domain.extension.interactor.ExtensionSourceItem
 import eu.kanade.presentation.browse.components.AnimeExtensionIcon
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
@@ -151,7 +151,7 @@ fun AnimeExtensionDetailsScreen(
 private fun AnimeExtensionDetails(
     contentPadding: PaddingValues,
     extension: AnimeExtension.Installed,
-    sources: ImmutableList<AnimeExtensionSourceItem>,
+    sources: ImmutableList<ExtensionSourceItem>,
     onClickSourcePreferences: (sourceId: Long) -> Unit,
     onClickUninstall: () -> Unit,
     onClickSource: (sourceId: Long) -> Unit,
@@ -390,7 +390,7 @@ private fun InfoDivider() {
 
 @Composable
 private fun SourceSwitchPreference(
-    source: AnimeExtensionSourceItem,
+    source: ExtensionSourceItem,
     onClickSourcePreferences: (sourceId: Long) -> Unit,
     onClickSource: (sourceId: Long) -> Unit,
     modifier: Modifier = Modifier,

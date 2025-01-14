@@ -5,10 +5,10 @@ import eu.kanade.domain.anime.interactor.UpdateAnime
 import eu.kanade.domain.download.interactor.DeleteDownload
 import eu.kanade.domain.episode.interactor.SetSeenStatus
 import eu.kanade.domain.episode.interactor.SyncEpisodesWithSource
-import eu.kanade.domain.extension.interactor.GetAnimeExtensionLanguages
-import eu.kanade.domain.extension.interactor.GetAnimeExtensionSources
-import eu.kanade.domain.extension.interactor.GetAnimeExtensionsByType
-import eu.kanade.domain.extension.interactor.TrustAnimeExtension
+import eu.kanade.domain.extension.interactor.GetExtensionLanguages
+import eu.kanade.domain.extension.interactor.GetExtensionSources
+import eu.kanade.domain.extension.interactor.GetExtensionsByType
+import eu.kanade.domain.extension.interactor.TrustExtension
 import eu.kanade.domain.source.interactor.GetAnimeSourcesWithFavoriteCount
 import eu.kanade.domain.source.interactor.GetEnabledAnimeSources
 import eu.kanade.domain.source.interactor.GetLanguagesWithAnimeSources
@@ -159,9 +159,9 @@ class DomainModule : InjektModule {
 
         addFactory { DeleteDownload(get(), get()) }
 
-        addFactory { GetAnimeExtensionsByType(get(), get()) }
-        addFactory { GetAnimeExtensionSources(get()) }
-        addFactory { GetAnimeExtensionLanguages(get(), get()) }
+        addFactory { GetExtensionsByType(get(), get()) }
+        addFactory { GetExtensionSources(get()) }
+        addFactory { GetExtensionLanguages(get(), get()) }
 
         addSingletonFactory<AnimeUpdatesRepository> { AnimeUpdatesRepositoryImpl(get()) }
         addFactory { GetAnimeUpdates(get()) }
@@ -178,7 +178,7 @@ class DomainModule : InjektModule {
 
         addFactory { SetMigrateSorting(get()) }
         addFactory { ToggleLanguage(get()) }
-        addFactory { TrustAnimeExtension(get(), get()) }
+        addFactory { TrustExtension(get(), get()) }
 
         addFactory { ExtensionRepoService(get(), get()) }
 

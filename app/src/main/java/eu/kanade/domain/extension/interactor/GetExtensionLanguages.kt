@@ -6,7 +6,7 @@ import eu.kanade.tachiyomi.util.system.LocaleHelper
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 
-class GetAnimeExtensionLanguages(
+class GetExtensionLanguages(
     private val preferences: SourcePreferences,
     private val extensionManager: AnimeExtensionManager,
 ) {

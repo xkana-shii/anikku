@@ -1,18 +1,18 @@
 package eu.kanade.domain.extension.interactor
 
-import eu.kanade.domain.extension.model.AnimeExtensions
+import eu.kanade.domain.extension.model.Extensions
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.extension.AnimeExtensionManager
 import eu.kanade.tachiyomi.extension.model.AnimeExtension
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 
-class GetAnimeExtensionsByType(
+class GetExtensionsByType(
     private val preferences: SourcePreferences,
     private val extensionManager: AnimeExtensionManager,
 ) {
 
-    fun subscribe(): Flow<AnimeExtensions> {
+    fun subscribe(): Flow<Extensions> {
         val showNsfwSources = preferences.showNsfwSource().get()
 
         return combine(
@@ -54,7 +54,7 @@ class GetAnimeExtensionsByType(
                 }
                 .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.name })
 
-            AnimeExtensions(updates, installed, available, untrusted)
+            Extensions(updates, installed, available, untrusted)
         }
     }
 }

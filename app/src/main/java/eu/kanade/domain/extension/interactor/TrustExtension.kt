@@ -6,7 +6,7 @@ import eu.kanade.domain.source.service.SourcePreferences
 import mihon.domain.extensionrepo.repository.AnimeExtensionRepoRepository
 import tachiyomi.core.common.preference.getAndSet
 
-class TrustAnimeExtension(
+class TrustExtension(
     private val animeExtensionRepoRepository: AnimeExtensionRepoRepository,
     private val preferences: SourcePreferences,
 ) {
