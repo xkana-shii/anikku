@@ -84,10 +84,10 @@ import kotlin.random.Random
 /**
  * Typealias for the library anime, using the category as keys, and list of anime as values.
  */
-typealias AnimeLibraryMap = Map<Category, List<AnimeLibraryItem>>
+typealias AnimeLibraryMap = Map<Category, List<LibraryItem>>
 
 @Suppress("LargeClass")
-class AnimeLibraryScreenModel(
+class LibraryScreenModel(
     private val getLibraryAnime: GetLibraryAnime = Injekt.get(),
     private val getCategories: GetVisibleAnimeCategories = Injekt.get(),
     private val getTracksPerAnime: GetTracksPerAnime = Injekt.get(),
@@ -106,7 +106,7 @@ class AnimeLibraryScreenModel(
     // SY -->
     private val getTracks: GetAnimeTracks = Injekt.get(),
     // SY <--
-) : StateScreenModel<AnimeLibraryScreenModel.State>(State()) {
+) : StateScreenModel<LibraryScreenModel.State>(State()) {
 
     var activeCategoryIndex: Int by libraryPreferences.lastUsedAnimeCategory().asState(
         screenModelScope,
@@ -225,7 +225,7 @@ class AnimeLibraryScreenModel(
         val includedTracks = trackingFilter.mapNotNull { if (it.value == TriState.ENABLED_IS) it.key else null }
         val trackFiltersIsIgnored = includedTracks.isEmpty() && excludedTracks.isEmpty()
 
-        val filterFnDownloaded: (AnimeLibraryItem) -> Boolean = {
+        val filterFnDownloaded: (LibraryItem) -> Boolean = {
             applyFilter(filterDownloaded) {
                 it.libraryAnime.anime.isLocal() ||
                     it.downloadCount > 0 ||
@@ -233,23 +233,23 @@ class AnimeLibraryScreenModel(
             }
         }
 
-        val filterFnUnseen: (AnimeLibraryItem) -> Boolean = {
+        val filterFnUnseen: (LibraryItem) -> Boolean = {
             applyFilter(filterUnseen) { it.libraryAnime.unseenCount > 0 }
         }
 
-        val filterFnStarted: (AnimeLibraryItem) -> Boolean = {
+        val filterFnStarted: (LibraryItem) -> Boolean = {
             applyFilter(filterStarted) { it.libraryAnime.hasStarted }
         }
 
-        val filterFnBookmarked: (AnimeLibraryItem) -> Boolean = {
+        val filterFnBookmarked: (LibraryItem) -> Boolean = {
             applyFilter(filterBookmarked) { it.libraryAnime.hasBookmarks }
         }
 
-        val filterFnCompleted: (AnimeLibraryItem) -> Boolean = {
+        val filterFnCompleted: (LibraryItem) -> Boolean = {
             applyFilter(filterCompleted) { it.libraryAnime.anime.status.toInt() == SAnime.COMPLETED }
         }
 
-        val filterFnIntervalCustom: (AnimeLibraryItem) -> Boolean = {
+        val filterFnIntervalCustom: (LibraryItem) -> Boolean = {
             if (skipOutsideReleasePeriod) {
                 applyFilter(filterIntervalCustom) { it.libraryAnime.anime.fetchInterval < 0 }
             } else {
@@ -257,7 +257,7 @@ class AnimeLibraryScreenModel(
             }
         }
 
-        val filterFnTracking: (AnimeLibraryItem) -> Boolean = tracking@{ item ->
+        val filterFnTracking: (LibraryItem) -> Boolean = tracking@{ item ->
             if (isNotLoggedInAnyTrack || trackFiltersIsIgnored) return@tracking true
 
             val animeTracks = trackMap
@@ -270,7 +270,7 @@ class AnimeLibraryScreenModel(
             !isExcluded && isIncluded
         }
 
-        val filterFn: (AnimeLibraryItem) -> Boolean = {
+        val filterFn: (LibraryItem) -> Boolean = {
             filterFnDownloaded(it) &&
                 filterFnUnseen(it) &&
                 filterFnStarted(it) &&
@@ -288,7 +288,7 @@ class AnimeLibraryScreenModel(
         groupSort: AnimeLibrarySort? = null,
         loggedInTrackerIds: Set<Long>,
     ): AnimeLibraryMap {
-        val sortAlphabetically: (AnimeLibraryItem, AnimeLibraryItem) -> Int = { i1, i2 ->
+        val sortAlphabetically: (LibraryItem, LibraryItem) -> Int = { i1, i2 ->
             i1.libraryAnime.anime.title.lowercase().compareToWithCollator(i2.libraryAnime.anime.title.lowercase())
         }
 
@@ -306,7 +306,7 @@ class AnimeLibraryScreenModel(
             }
         }
 
-        fun AnimeLibrarySort.comparator(): Comparator<AnimeLibraryItem> = Comparator { i1, i2 ->
+        fun AnimeLibrarySort.comparator(): Comparator<LibraryItem> = Comparator { i1, i2 ->
             // SY -->
             val sort = groupSort ?: keys.find { it.id == i1.libraryAnime.category }!!.sort
             // SY <--
@@ -416,7 +416,7 @@ class AnimeLibraryScreenModel(
             animelibAnimeList
                 .map { animelibAnime ->
                     // Display mode based on user preference: take it from global library setting or category
-                    AnimeLibraryItem(
+                    LibraryItem(
                         animelibAnime,
                         downloadCount = if (prefs.downloadBadge) {
                             downloadManager.getDownloadCount(animelibAnime.anime).toLong()
@@ -670,7 +670,7 @@ class AnimeLibraryScreenModel(
         )
     }
 
-    suspend fun getRandomAnimelibItemForCurrentCategory(): AnimeLibraryItem? {
+    suspend fun getRandomAnimelibItemForCurrentCategory(): LibraryItem? {
         if (state.value.categories.isEmpty()) return null
 
         return withIOContext {
@@ -821,7 +821,7 @@ class AnimeLibraryScreenModel(
     @Suppress("MagicNumber", "LongMethod", "CyclomaticComplexMethod")
     private fun getGroupedAnimeItems(
         groupType: Int,
-        libraryAnime: List<AnimeLibraryItem>,
+        libraryAnime: List<LibraryItem>,
     ): AnimeLibraryMap {
         val context = preferences.context
         return when (groupType) {
@@ -983,11 +983,11 @@ class AnimeLibraryScreenModel(
                     anime.status != anime.ogStatus
             }
         }
-        fun getAnimelibItemsByCategoryId(categoryId: Long): List<AnimeLibraryItem>? {
+        fun getAnimelibItemsByCategoryId(categoryId: Long): List<LibraryItem>? {
             return library.firstNotNullOfOrNull { (k, v) -> v.takeIf { k.id == categoryId } }
         }
 
-        fun getAnimelibItemsByPage(page: Int): List<AnimeLibraryItem> {
+        fun getAnimelibItemsByPage(page: Int): List<LibraryItem> {
             return library.values.toTypedArray().getOrNull(page).orEmpty()
         }
 

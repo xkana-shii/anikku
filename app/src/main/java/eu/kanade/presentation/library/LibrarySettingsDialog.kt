@@ -22,7 +22,7 @@ import androidx.compose.ui.util.fastForEach
 import eu.kanade.presentation.components.TabbedDialog
 import eu.kanade.presentation.components.TabbedDialogPaddings
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.ui.library.AnimeLibrarySettingsScreenModel
+import eu.kanade.tachiyomi.ui.library.LibrarySettingsScreenModel
 import eu.kanade.tachiyomi.util.system.isDevFlavor
 import eu.kanade.tachiyomi.util.system.isPreviewBuildType
 import kotlinx.collections.immutable.persistentListOf
@@ -49,7 +49,7 @@ import tachiyomi.presentation.core.util.collectAsState
 @Suppress("MagicNumber")
 fun LibrarySettingsDialog(
     onDismissRequest: () -> Unit,
-    screenModel: AnimeLibrarySettingsScreenModel,
+    screenModel: LibrarySettingsScreenModel,
     category: Category?,
     // SY -->
     hasCategories: Boolean,
@@ -95,7 +95,7 @@ fun LibrarySettingsDialog(
 
 @Composable
 private fun ColumnScope.FilterPage(
-    screenModel: AnimeLibrarySettingsScreenModel,
+    screenModel: LibrarySettingsScreenModel,
 ) {
     val filterDownloaded by screenModel.libraryPreferences.filterDownloadedAnime().collectAsState()
     val downloadedOnly by screenModel.preferences.downloadedOnly().collectAsState()
@@ -183,7 +183,7 @@ private fun ColumnScope.FilterPage(
 @Composable
 private fun ColumnScope.SortPage(
     category: Category?,
-    screenModel: AnimeLibrarySettingsScreenModel,
+    screenModel: LibrarySettingsScreenModel,
 ) {
     val trackers by screenModel.trackersFlow.collectAsState()
     // SY -->
@@ -265,7 +265,7 @@ private val displayModes = listOf(
 
 @Composable
 private fun ColumnScope.DisplayPage(
-    screenModel: AnimeLibrarySettingsScreenModel,
+    screenModel: LibrarySettingsScreenModel,
 ) {
     val displayMode by screenModel.libraryPreferences.displayMode().collectAsState()
     SettingsChipRow(MR.strings.action_display_mode) {
@@ -350,7 +350,7 @@ private fun groupTypeDrawableRes(type: Int): Int {
 
 @Composable
 private fun ColumnScope.GroupPage(
-    screenModel: AnimeLibrarySettingsScreenModel,
+    screenModel: LibrarySettingsScreenModel,
     hasCategories: Boolean,
 ) {
     val trackers by screenModel.trackersFlow.collectAsState()

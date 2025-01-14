@@ -22,7 +22,7 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import kotlin.time.Duration.Companion.seconds
 
-class AnimeLibrarySettingsScreenModel(
+class LibrarySettingsScreenModel(
     val preferences: BasePreferences = Injekt.get(),
     val libraryPreferences: LibraryPreferences = Injekt.get(),
     private val setAnimeDisplayMode: SetAnimeDisplayMode = Injekt.get(),

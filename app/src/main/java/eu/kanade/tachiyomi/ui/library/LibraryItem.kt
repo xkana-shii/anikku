@@ -6,7 +6,7 @@ import tachiyomi.domain.source.service.AnimeSourceManager
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
-data class AnimeLibraryItem(
+data class LibraryItem(
     val libraryAnime: LibraryAnime,
     var downloadCount: Long = -1,
     var unseenCount: Long = -1,

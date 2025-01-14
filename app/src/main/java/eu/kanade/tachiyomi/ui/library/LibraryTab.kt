@@ -71,7 +71,7 @@ import tachiyomi.presentation.core.screens.LoadingScreen
 import tachiyomi.source.local.isLocal
 import uy.kohesive.injekt.injectLazy
 
-data object AnimeLibraryTab : Tab {
+data object LibraryTab : Tab {
 
     @OptIn(ExperimentalAnimationGraphicsApi::class)
     override val options: TabOptions
@@ -101,8 +101,8 @@ data object AnimeLibraryTab : Tab {
         val scope = rememberCoroutineScope()
         val haptic = LocalHapticFeedback.current
 
-        val screenModel = rememberScreenModel { AnimeLibraryScreenModel() }
-        val settingsScreenModel = rememberScreenModel { AnimeLibrarySettingsScreenModel() }
+        val screenModel = rememberScreenModel { LibraryScreenModel() }
+        val settingsScreenModel = rememberScreenModel { LibrarySettingsScreenModel() }
         val state by screenModel.state.collectAsState()
 
         val snackbarHostState = remember { SnackbarHostState() }
@@ -267,7 +267,7 @@ data object AnimeLibraryTab : Tab {
 
         val onDismissRequest = screenModel::closeDialog
         when (val dialog = state.dialog) {
-            is AnimeLibraryScreenModel.Dialog.SettingsSheet -> run {
+            is LibraryScreenModel.Dialog.SettingsSheet -> run {
                 val category = state.categories.getOrNull(screenModel.activeCategoryIndex)
                 if (category == null) {
                     onDismissRequest()
@@ -282,7 +282,7 @@ data object AnimeLibraryTab : Tab {
                     // SY <--
                 )
             }
-            is AnimeLibraryScreenModel.Dialog.ChangeCategory -> {
+            is LibraryScreenModel.Dialog.ChangeCategory -> {
                 ChangeCategoryDialog(
                     initialSelection = dialog.initialSelection,
                     onDismissRequest = onDismissRequest,
@@ -296,7 +296,7 @@ data object AnimeLibraryTab : Tab {
                     },
                 )
             }
-            is AnimeLibraryScreenModel.Dialog.DeleteAnime -> {
+            is LibraryScreenModel.Dialog.DeleteAnime -> {
                 DeleteLibraryAnimeDialog(
                     containsLocalEntry = dialog.anime.any(Anime::isLocal),
                     onDismissRequest = onDismissRequest,

@@ -42,7 +42,7 @@ import eu.kanade.tachiyomi.ui.anime.AnimeScreen
 import eu.kanade.tachiyomi.ui.browse.BrowseTab
 import eu.kanade.tachiyomi.ui.download.DownloadQueueScreen
 import eu.kanade.tachiyomi.ui.history.HistoryTab
-import eu.kanade.tachiyomi.ui.library.AnimeLibraryTab
+import eu.kanade.tachiyomi.ui.library.LibraryTab
 import eu.kanade.tachiyomi.ui.more.MoreTab
 import eu.kanade.tachiyomi.ui.updates.UpdatesTab
 import kotlinx.coroutines.channels.Channel
@@ -144,12 +144,12 @@ object HomeScreen : Screen() {
                 if (defaultTab != moreTab) {
                     tabNavigator.current = defaultTab
                 } else {
-                    tabNavigator.current = AnimeLibraryTab
+                    tabNavigator.current = LibraryTab
                 }
             }
             BackHandler(
                 enabled = (tabNavigator.current == moreTab || tabNavigator.current != defaultTab) &&
-                    (tabNavigator.current != AnimeLibraryTab || defaultTab != moreTab),
+                    (tabNavigator.current != LibraryTab || defaultTab != moreTab),
                 onBack = goToStartScreen,
             )
 
@@ -158,7 +158,7 @@ object HomeScreen : Screen() {
                     librarySearchEvent.receiveAsFlow().collectLatest {
                         goToStartScreen()
                         when (defaultTab) {
-                            AnimeLibraryTab -> AnimeLibraryTab.search(it)
+                            LibraryTab -> LibraryTab.search(it)
                             else -> {}
                         }
                     }
@@ -166,7 +166,7 @@ object HomeScreen : Screen() {
                 launch {
                     openTabEvent.receiveAsFlow().collectLatest {
                         tabNavigator.current = when (it) {
-                            is Tab.AnimeLib -> AnimeLibraryTab
+                            is Tab.AnimeLib -> LibraryTab
                             is Tab.Updates -> UpdatesTab
                             is Tab.History -> HistoryTab
                             is Tab.Browse -> {
