@@ -9,16 +9,16 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.ui.anime.AnimeScreen
 
-class UpcomingAnimeScreen : Screen() {
+class UpcomingScreen : Screen() {
 
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
 
-        val screenModel = rememberScreenModel { UpcomingAnimeScreenModel() }
+        val screenModel = rememberScreenModel { UpcomingScreenModel() }
         val state by screenModel.state.collectAsState()
 
-        UpcomingAnimeScreenContent(
+        UpcomingScreenContent(
             state = state,
             setSelectedYearMonth = screenModel::setSelectedYearMonth,
             onClickUpcoming = { navigator.push(AnimeScreen(it.id)) },

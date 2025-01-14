@@ -22,9 +22,9 @@ import uy.kohesive.injekt.api.get
 import java.time.LocalDate
 import java.time.YearMonth
 
-class UpcomingAnimeScreenModel(
+class UpcomingScreenModel(
     private val getUpcomingAnime: GetUpcomingAnime = Injekt.get(),
-) : StateScreenModel<UpcomingAnimeScreenModel.State>(State()) {
+) : StateScreenModel<UpcomingScreenModel.State>(State()) {
 
     init {
         screenModelScope.launch {
@@ -41,9 +41,9 @@ class UpcomingAnimeScreenModel(
         }
     }
 
-    private fun List<Anime>.toUpcomingAnimeUIModels(): ImmutableList<UpcomingAnimeUIModel> {
+    private fun List<Anime>.toUpcomingAnimeUIModels(): ImmutableList<UpcomingUIModel> {
         var animeCount = 0
-        return fastMap { UpcomingAnimeUIModel.Item(it) }
+        return fastMap { UpcomingUIModel.Item(it) }
             .insertSeparatorsReversed { before, after ->
                 if (after != null) animeCount++
 
@@ -51,7 +51,7 @@ class UpcomingAnimeScreenModel(
                 val afterDate = after?.anime?.expectedNextUpdate?.toLocalDate()
 
                 if (beforeDate != afterDate && afterDate != null) {
-                    UpcomingAnimeUIModel.Header(afterDate, animeCount).also { animeCount = 0 }
+                    UpcomingUIModel.Header(afterDate, animeCount).also { animeCount = 0 }
                 } else {
                     null
                 }
@@ -59,15 +59,15 @@ class UpcomingAnimeScreenModel(
             .toImmutableList()
     }
 
-    private fun List<UpcomingAnimeUIModel>.toEvents(): ImmutableMap<LocalDate, Int> {
-        return filterIsInstance<UpcomingAnimeUIModel.Header>()
+    private fun List<UpcomingUIModel>.toEvents(): ImmutableMap<LocalDate, Int> {
+        return filterIsInstance<UpcomingUIModel.Header>()
             .associate { it.date to it.animeCount }
             .toImmutableMap()
     }
 
-    private fun List<UpcomingAnimeUIModel>.getHeaderIndexes(): ImmutableMap<LocalDate, Int> {
+    private fun List<UpcomingUIModel>.getHeaderIndexes(): ImmutableMap<LocalDate, Int> {
         return fastMapIndexedNotNull { index, upcomingUIModel ->
-            if (upcomingUIModel is UpcomingAnimeUIModel.Header) {
+            if (upcomingUIModel is UpcomingUIModel.Header) {
                 upcomingUIModel.date to index
             } else {
                 null
@@ -83,7 +83,7 @@ class UpcomingAnimeScreenModel(
 
     data class State(
         val selectedYearMonth: YearMonth = YearMonth.now(),
-        val items: ImmutableList<UpcomingAnimeUIModel> = persistentListOf(),
+        val items: ImmutableList<UpcomingUIModel> = persistentListOf(),
         val events: ImmutableMap<LocalDate, Int> = persistentMapOf(),
         val headerIndexes: ImmutableMap<LocalDate, Int> = persistentMapOf(),
     )

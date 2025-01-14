@@ -42,8 +42,8 @@ import java.time.LocalDate
 import java.time.YearMonth
 
 @Composable
-fun UpcomingAnimeScreenContent(
-    state: UpcomingAnimeScreenModel.State,
+fun UpcomingScreenContent(
+    state: UpcomingScreenModel.State,
     setSelectedYearMonth: (YearMonth) -> Unit,
     onClickUpcoming: (anime: Anime) -> Unit,
     modifier: Modifier = Modifier,
@@ -62,7 +62,7 @@ fun UpcomingAnimeScreenContent(
         modifier = modifier,
     ) { paddingValues ->
         if (isTabletUi()) {
-            UpcomingAnimeScreenLargeImpl(
+            UpcomingScreenLargeImpl(
                 listState = listState,
                 items = state.items,
                 events = state.events,
@@ -73,7 +73,7 @@ fun UpcomingAnimeScreenContent(
                 onClickUpcoming = onClickUpcoming,
             )
         } else {
-            UpcomingAnimeScreenSmallImpl(
+            UpcomingScreenSmallImpl(
                 listState = listState,
                 items = state.items,
                 events = state.events,
@@ -134,9 +134,9 @@ private fun DateHeading(
 }
 
 @Composable
-private fun UpcomingAnimeScreenSmallImpl(
+private fun UpcomingScreenSmallImpl(
     listState: LazyListState,
-    items: ImmutableList<UpcomingAnimeUIModel>,
+    items: ImmutableList<UpcomingUIModel>,
     events: ImmutableMap<LocalDate, Int>,
     paddingValues: PaddingValues,
     selectedYearMonth: YearMonth,
@@ -161,19 +161,19 @@ private fun UpcomingAnimeScreenSmallImpl(
             key = { "upcoming-${it.hashCode()}" },
             contentType = {
                 when (it) {
-                    is UpcomingAnimeUIModel.Header -> "header"
-                    is UpcomingAnimeUIModel.Item -> "item"
+                    is UpcomingUIModel.Header -> "header"
+                    is UpcomingUIModel.Item -> "item"
                 }
             },
         ) { item ->
             when (item) {
-                is UpcomingAnimeUIModel.Item -> {
+                is UpcomingUIModel.Item -> {
                     UpcomingItem(
                         upcoming = item.anime,
                         onClick = { onClickUpcoming(item.anime) },
                     )
                 }
-                is UpcomingAnimeUIModel.Header -> {
+                is UpcomingUIModel.Header -> {
                     DateHeading(
                         date = item.date,
                         animeCount = item.animeCount,
@@ -185,9 +185,9 @@ private fun UpcomingAnimeScreenSmallImpl(
 }
 
 @Composable
-private fun UpcomingAnimeScreenLargeImpl(
+private fun UpcomingScreenLargeImpl(
     listState: LazyListState,
-    items: ImmutableList<UpcomingAnimeUIModel>,
+    items: ImmutableList<UpcomingUIModel>,
     events: ImmutableMap<LocalDate, Int>,
     paddingValues: PaddingValues,
     selectedYearMonth: YearMonth,
@@ -212,19 +212,19 @@ private fun UpcomingAnimeScreenLargeImpl(
                     key = { "upcoming-${it.hashCode()}" },
                     contentType = {
                         when (it) {
-                            is UpcomingAnimeUIModel.Header -> "header"
-                            is UpcomingAnimeUIModel.Item -> "item"
+                            is UpcomingUIModel.Header -> "header"
+                            is UpcomingUIModel.Item -> "item"
                         }
                     },
                 ) { item ->
                     when (item) {
-                        is UpcomingAnimeUIModel.Item -> {
+                        is UpcomingUIModel.Item -> {
                             UpcomingItem(
                                 upcoming = item.anime,
                                 onClick = { onClickUpcoming(item.anime) },
                             )
                         }
-                        is UpcomingAnimeUIModel.Header -> {
+                        is UpcomingUIModel.Header -> {
                             DateHeading(
                                 date = item.date,
                                 animeCount = item.animeCount,

@@ -32,7 +32,7 @@ import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.player.settings.PlayerPreferences
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import mihon.feature.upcoming.UpcomingAnimeScreen
+import mihon.feature.upcoming.UpcomingScreen
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.i18n.MR
@@ -115,7 +115,7 @@ data object UpdatesTab : Tab {
                 }
                 Unit
             },
-            onCalendarClicked = { navigator.push(UpcomingAnimeScreen()) },
+            onCalendarClicked = { navigator.push(UpcomingScreen()) },
             navigateUp = navigateUp,
         )
 
