@@ -18,11 +18,11 @@ import eu.kanade.presentation.util.Tab
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.connection.discord.DiscordRPCService
 import eu.kanade.tachiyomi.data.connection.discord.DiscordScreen
-import eu.kanade.tachiyomi.ui.browse.anime.extension.AnimeExtensionsScreenModel
-import eu.kanade.tachiyomi.ui.browse.anime.extension.animeExtensionsTab
-import eu.kanade.tachiyomi.ui.browse.anime.migration.sources.migrateAnimeSourceTab
-import eu.kanade.tachiyomi.ui.browse.anime.source.animeSourcesTab
-import eu.kanade.tachiyomi.ui.browse.anime.source.globalsearch.GlobalAnimeSearchScreen
+import eu.kanade.tachiyomi.ui.browse.extension.AnimeExtensionsScreenModel
+import eu.kanade.tachiyomi.ui.browse.extension.animeExtensionsTab
+import eu.kanade.tachiyomi.ui.browse.migration.sources.migrateAnimeSourceTab
+import eu.kanade.tachiyomi.ui.browse.source.animeSourcesTab
+import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalAnimeSearchScreen
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.channels.BufferOverflow

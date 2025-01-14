@@ -39,9 +39,6 @@ import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.DropdownMenu
 import eu.kanade.presentation.components.NestedMenuItem
-import eu.kanade.tachiyomi.ui.download.anime.AnimeDownloadHeaderItem
-import eu.kanade.tachiyomi.ui.download.anime.AnimeDownloadQueueScreen
-import eu.kanade.tachiyomi.ui.download.anime.AnimeDownloadQueueScreenModel
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.Pill

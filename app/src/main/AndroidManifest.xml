@@ -132,7 +132,7 @@
 
 
         <activity
-            android:name=".ui.deeplink.anime.DeepLinkAnimeActivity"
+            android:name=".ui.deeplink.DeepLinkAnimeActivity"
             android:exported="true"
             android:label="@string/action_global_anime_search"
             android:launchMode="singleTask"
@@ -241,7 +241,7 @@
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
 
         <activity
-            android:name=".extension.anime.util.AnimeExtensionInstallActivity"
+            android:name=".extension.util.AnimeExtensionInstallActivity"
             android:exported="false"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
 
@@ -316,7 +316,7 @@
             android:foregroundServiceType="shortService" />
 
         <service
-            android:name=".extension.anime.util.AnimeExtensionInstallService"
+            android:name=".extension.util.AnimeExtensionInstallService"
             android:exported="false"
             android:foregroundServiceType="shortService" />
         <service

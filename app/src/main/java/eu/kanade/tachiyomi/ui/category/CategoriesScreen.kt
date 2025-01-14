@@ -15,10 +15,6 @@ import eu.kanade.presentation.category.components.CategoryCreateDialog
 import eu.kanade.presentation.category.components.CategoryDeleteDialog
 import eu.kanade.presentation.category.components.CategoryRenameDialog
 import eu.kanade.presentation.category.components.CategorySortAlphabeticallyDialog
-import eu.kanade.tachiyomi.ui.category.anime.AnimeCategoryDialog
-import eu.kanade.tachiyomi.ui.category.anime.AnimeCategoryEvent
-import eu.kanade.tachiyomi.ui.category.anime.AnimeCategoryScreenModel
-import eu.kanade.tachiyomi.ui.category.anime.AnimeCategoryScreenState
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.collections.immutable.toImmutableList
