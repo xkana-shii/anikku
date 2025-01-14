@@ -10,7 +10,7 @@ import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import eu.kanade.presentation.category.AnimeCategoryScreen
+import eu.kanade.presentation.category.CategoryScreen
 import eu.kanade.presentation.category.components.CategoryCreateDialog
 import eu.kanade.presentation.category.components.CategoryDeleteDialog
 import eu.kanade.presentation.category.components.CategoryRenameDialog
@@ -37,7 +37,7 @@ object CategoriesScreen : Screen {
         } else {
             val successState = state as AnimeCategoryScreenState.Success
 
-            AnimeCategoryScreen(
+            CategoryScreen(
                 state = successState,
                 onClickCreate = { screenModel.showDialog(AnimeCategoryDialog.Create) },
                 onClickSortAlphabetically = { screenModel.showDialog(AnimeCategoryDialog.SortAlphabetically) },

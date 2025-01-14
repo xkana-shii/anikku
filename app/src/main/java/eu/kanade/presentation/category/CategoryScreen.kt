@@ -28,7 +28,7 @@ import tachiyomi.presentation.core.screens.EmptyScreen
 import tachiyomi.presentation.core.util.plus
 
 @Composable
-fun AnimeCategoryScreen(
+fun CategoryScreen(
     state: AnimeCategoryScreenState.Success,
     onClickCreate: () -> Unit,
     onClickSortAlphabetically: () -> Unit,

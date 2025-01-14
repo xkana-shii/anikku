@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.anime.DownloadAction
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
-import eu.kanade.presentation.components.EntryDownloadDropdownMenu
+import eu.kanade.presentation.components.DownloadDropdownMenu
 import eu.kanade.presentation.components.UpIcon
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.i18n.MR
@@ -97,7 +97,7 @@ fun AnimeToolbar(
                     var downloadExpanded by remember { mutableStateOf(false) }
                     if (onClickDownload != null) {
                         val onDismissRequest = { downloadExpanded = false }
-                        EntryDownloadDropdownMenu(
+                        DownloadDropdownMenu(
                             expanded = downloadExpanded,
                             onDismissRequest = onDismissRequest,
                             onDownloadClicked = onClickDownload,

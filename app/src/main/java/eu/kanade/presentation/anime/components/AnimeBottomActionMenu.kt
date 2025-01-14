@@ -52,7 +52,7 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.anime.DownloadAction
-import eu.kanade.presentation.components.EntryDownloadDropdownMenu
+import eu.kanade.presentation.components.DownloadDropdownMenu
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.player.settings.PlayerPreferences
 import kotlinx.coroutines.Job
@@ -343,7 +343,7 @@ fun LibraryBottomActionMenu(
                         onClick = { downloadExpanded = !downloadExpanded },
                     ) {
                         val onDismissRequest = { downloadExpanded = false }
-                        EntryDownloadDropdownMenu(
+                        DownloadDropdownMenu(
                             expanded = downloadExpanded,
                             onDismissRequest = onDismissRequest,
                             onDownloadClicked = onDownloadClicked,
