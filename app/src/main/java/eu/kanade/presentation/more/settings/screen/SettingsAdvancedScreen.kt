@@ -27,7 +27,7 @@ import eu.kanade.domain.extension.interactor.TrustExtension
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.source.service.SourcePreferences.DataSaver
 import eu.kanade.presentation.more.settings.Preference
-import eu.kanade.presentation.more.settings.screen.advanced.ClearAnimeDatabaseScreen
+import eu.kanade.presentation.more.settings.screen.advanced.ClearDatabaseScreen
 import eu.kanade.presentation.more.settings.screen.debug.DebugInfoScreen
 import eu.kanade.tachiyomi.data.download.AnimeDownloadCache
 import eu.kanade.tachiyomi.data.library.AnimeLibraryUpdateJob
@@ -188,7 +188,7 @@ object SettingsAdvancedScreen : SearchableSettings {
                 Preference.PreferenceItem.TextPreference(
                     title = stringResource(MR.strings.pref_clear_anime_database),
                     subtitle = stringResource(MR.strings.pref_clear_anime_database_summary),
-                    onClick = { navigator.push(ClearAnimeDatabaseScreen()) },
+                    onClick = { navigator.push(ClearDatabaseScreen()) },
                 ),
             ),
         )

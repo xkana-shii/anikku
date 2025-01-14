@@ -20,7 +20,7 @@ import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.coroutines.flow.collectLatest
 import tachiyomi.presentation.core.screens.LoadingScreen
 
-class AnimeExtensionReposScreen(
+class ExtensionReposScreen(
     private val url: String? = null,
 ) : Screen() {
 
@@ -29,7 +29,7 @@ class AnimeExtensionReposScreen(
         val context = LocalContext.current
         val navigator = LocalNavigator.currentOrThrow
 
-        val screenModel = rememberScreenModel { AnimeExtensionReposScreenModel() }
+        val screenModel = rememberScreenModel { ExtensionReposScreenModel() }
         val state by screenModel.state.collectAsState()
 
         LaunchedEffect(url) {

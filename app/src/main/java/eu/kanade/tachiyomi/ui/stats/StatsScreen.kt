@@ -10,7 +10,7 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.components.AppBar
-import eu.kanade.presentation.more.stats.AnimeStatsScreenContent
+import eu.kanade.presentation.more.stats.StatsScreenContent
 import eu.kanade.presentation.more.stats.StatsScreenState
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import tachiyomi.i18n.MR
@@ -45,7 +45,7 @@ object StatsScreen : Screen {
             if (state is StatsScreenState.Loading) {
                 LoadingScreen()
             } else {
-                AnimeStatsScreenContent(
+                StatsScreenContent(
                     state = state as StatsScreenState.SuccessAnime,
                     paddingValues = contentPadding,
                 )

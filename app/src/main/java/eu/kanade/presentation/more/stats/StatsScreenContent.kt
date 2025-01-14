@@ -30,7 +30,7 @@ import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
 @Composable
-fun AnimeStatsScreenContent(
+fun StatsScreenContent(
     state: StatsScreenState.SuccessAnime,
     paddingValues: PaddingValues,
 ) {

@@ -21,7 +21,7 @@ import tachiyomi.i18n.MR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
-class AnimeExtensionReposScreenModel(
+class ExtensionReposScreenModel(
     private val getExtensionRepo: GetAnimeExtensionRepo = Injekt.get(),
     private val createExtensionRepo: CreateAnimeExtensionRepo = Injekt.get(),
     private val deleteExtensionRepo: DeleteAnimeExtensionRepo = Injekt.get(),

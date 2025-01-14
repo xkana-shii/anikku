@@ -58,19 +58,19 @@ import tachiyomi.presentation.core.util.selectedBackground
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
-class ClearAnimeDatabaseScreen : Screen() {
+class ClearDatabaseScreen : Screen() {
 
     @Composable
     override fun Content() {
         val context = LocalContext.current
         val navigator = LocalNavigator.currentOrThrow
-        val model = rememberScreenModel { ClearAnimeDatabaseScreenModel() }
+        val model = rememberScreenModel { ClearDatabaseScreenModel() }
         val state by model.state.collectAsState()
         val scope = rememberCoroutineScope()
 
         when (val s = state) {
-            is ClearAnimeDatabaseScreenModel.State.Loading -> LoadingScreen()
-            is ClearAnimeDatabaseScreenModel.State.Ready -> {
+            is ClearDatabaseScreenModel.State.Loading -> LoadingScreen()
+            is ClearDatabaseScreenModel.State.Ready -> {
                 if (s.showConfirmation) {
                     AlertDialog(
                         onDismissRequest = model::hideConfirmation,
@@ -210,7 +210,7 @@ class ClearAnimeDatabaseScreen : Screen() {
     }
 }
 
-private class ClearAnimeDatabaseScreenModel : StateScreenModel<ClearAnimeDatabaseScreenModel.State>(
+private class ClearDatabaseScreenModel : StateScreenModel<ClearDatabaseScreenModel.State>(
     State.Loading,
 ) {
     private val getSourcesWithNonLibraryAnime: GetAnimeSourcesWithNonLibraryAnime = Injekt.get()
