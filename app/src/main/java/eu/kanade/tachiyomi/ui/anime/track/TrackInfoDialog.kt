@@ -89,7 +89,7 @@ import java.time.ZoneId
 import java.time.ZoneOffset
 import tachiyomi.domain.track.model.AnimeTrack as DbAnimeTrack
 
-data class AnimeTrackInfoDialogHomeScreen(
+data class TrackInfoDialogHomeScreen(
     private val animeId: Long,
     private val animeTitle: String,
     private val sourceId: Long,
@@ -183,14 +183,14 @@ data class AnimeTrackInfoDialogHomeScreen(
     /**
      * Opens registered tracker url in browser
      */
-    private fun openTrackerInBrowser(context: Context, trackItem: AnimeTrackItem) {
+    private fun openTrackerInBrowser(context: Context, trackItem: TrackItem) {
         val url = trackItem.track?.remoteUrl ?: return
         if (url.isNotBlank()) {
             context.openInBrowser(url)
         }
     }
 
-    private fun Context.copyTrackerLink(trackItem: AnimeTrackItem) {
+    private fun Context.copyTrackerLink(trackItem: TrackItem) {
         val url = trackItem.track?.remoteUrl ?: return
         if (url.isNotBlank()) {
             copyToClipboard(url, url)
@@ -223,7 +223,7 @@ data class AnimeTrackInfoDialogHomeScreen(
             }
         }
 
-        fun registerEnhancedTracking(item: AnimeTrackItem) {
+        fun registerEnhancedTracking(item: TrackItem) {
             item.tracker as EnhancedAnimeTracker
             screenModelScope.launchNonCancellable {
                 val anime = Injekt.get<GetAnime>().await(animeId) ?: return@launchNonCancellable
@@ -258,21 +258,21 @@ data class AnimeTrackInfoDialogHomeScreen(
                 }
         }
 
-        private fun List<AnimeTrack>.mapToTrackItem(): List<AnimeTrackItem> {
+        private fun List<AnimeTrack>.mapToTrackItem(): List<TrackItem> {
             val loggedInTrackers = Injekt.get<TrackerManager>().loggedInTrackers().filter {
                 it is AnimeTracker
             }
             val source = Injekt.get<AnimeSourceManager>().getOrStub(sourceId)
             return loggedInTrackers
                 // Map to TrackItem
-                .map { service -> AnimeTrackItem(find { it.trackerId == service.id }, service) }
+                .map { service -> TrackItem(find { it.trackerId == service.id }, service) }
                 // Show only if the service supports this anime's source
                 .filter { (it.tracker as? EnhancedAnimeTracker)?.accept(source) ?: true }
         }
 
         @Immutable
         data class State(
-            val trackItems: List<AnimeTrackItem> = emptyList(),
+            val trackItems: List<TrackItem> = emptyList(),
         )
     }
 }
@@ -635,7 +635,7 @@ private data class TrackDateRemoverScreen(
                     FilledTonalButton(
                         onClick = {
                             screenModel.removeDate()
-                            navigator.popUntil { it is AnimeTrackInfoDialogHomeScreen }
+                            navigator.popUntil { it is TrackInfoDialogHomeScreen }
                         },
                         colors = ButtonDefaults.filledTonalButtonColors(
                             containerColor = MaterialTheme.colorScheme.errorContainer,

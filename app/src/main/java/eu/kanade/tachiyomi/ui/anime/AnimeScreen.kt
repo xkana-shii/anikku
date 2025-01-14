@@ -45,7 +45,7 @@ import eu.kanade.tachiyomi.data.torrentServer.TorrentServerUtils
 import eu.kanade.tachiyomi.data.torrentServer.service.TorrentServerService
 import eu.kanade.tachiyomi.source.isLocalOrStub
 import eu.kanade.tachiyomi.source.isSourceForTorrents
-import eu.kanade.tachiyomi.ui.anime.track.AnimeTrackInfoDialogHomeScreen
+import eu.kanade.tachiyomi.ui.anime.track.TrackInfoDialogHomeScreen
 import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateAnimeDialog
 import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateAnimeDialogScreenModel
 import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateAnimeSearchScreen
@@ -271,12 +271,12 @@ class AnimeScreen(
             )
             AnimeScreenModel.Dialog.TrackSheet -> {
                 NavigatorAdaptiveSheet(
-                    screen = AnimeTrackInfoDialogHomeScreen(
+                    screen = TrackInfoDialogHomeScreen(
                         animeId = successState.anime.id,
                         animeTitle = successState.anime.title,
                         sourceId = successState.source.id,
                     ),
-                    enableSwipeDismiss = { it.lastItem is AnimeTrackInfoDialogHomeScreen },
+                    enableSwipeDismiss = { it.lastItem is TrackInfoDialogHomeScreen },
                     onDismissRequest = onDismissRequest,
                 )
             }

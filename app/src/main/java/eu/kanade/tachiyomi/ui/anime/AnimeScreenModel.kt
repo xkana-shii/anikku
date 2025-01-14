@@ -36,7 +36,7 @@ import eu.kanade.tachiyomi.data.track.EnhancedAnimeTracker
 import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.network.HttpException
 import eu.kanade.tachiyomi.source.isSourceForTorrents
-import eu.kanade.tachiyomi.ui.anime.track.AnimeTrackItem
+import eu.kanade.tachiyomi.ui.anime.track.TrackItem
 import eu.kanade.tachiyomi.ui.player.settings.GesturePreferences
 import eu.kanade.tachiyomi.ui.player.settings.PlayerPreferences
 import eu.kanade.tachiyomi.util.AniChartApi
@@ -1145,7 +1145,7 @@ class AnimeScreenModel(
             ) { animeTracks, loggedInTrackers ->
                 loggedInTrackers
                     .map { service ->
-                        AnimeTrackItem(
+                        TrackItem(
                             animeTracks.find {
                                 it.trackerId == (service as BaseTracker).id
                             },
@@ -1162,7 +1162,7 @@ class AnimeScreenModel(
 
     private suspend fun updateAiringTime(
         anime: Anime,
-        trackItems: List<AnimeTrackItem>,
+        trackItems: List<TrackItem>,
         manualFetch: Boolean,
     ) {
         val airingEpisodeData = AniChartApi().loadAiringTime(anime, trackItems, manualFetch)
@@ -1254,7 +1254,7 @@ class AnimeScreenModel(
             val isRefreshingData: Boolean = false,
             val dialog: Dialog? = null,
             val hasPromptedToAddBefore: Boolean = false,
-            val trackItems: List<AnimeTrackItem> = emptyList(),
+            val trackItems: List<TrackItem> = emptyList(),
             val nextAiringEpisode: Pair<Int, Long> = Pair(
                 anime.nextEpisodeToAir,
                 anime.nextEpisodeAiringAt,
