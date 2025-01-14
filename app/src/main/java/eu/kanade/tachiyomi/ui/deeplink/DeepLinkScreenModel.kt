@@ -22,14 +22,14 @@ import tachiyomi.domain.source.service.AnimeSourceManager
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
-class DeepLinkAnimeScreenModel(
+class DeepLinkScreenModel(
     query: String = "",
     private val sourceManager: AnimeSourceManager = Injekt.get(),
     private val networkToLocalAnime: NetworkToLocalAnime = Injekt.get(),
     private val getEpisodeByUrlAndAnimeId: GetEpisodeByUrlAndAnimeId = Injekt.get(),
     private val getAnimeByUrlAndSourceId: GetAnimeByUrlAndSourceId = Injekt.get(),
     private val syncEpisodesWithSource: SyncEpisodesWithSource = Injekt.get(),
-) : StateScreenModel<DeepLinkAnimeScreenModel.State>(State.Loading) {
+) : StateScreenModel<DeepLinkScreenModel.State>(State.Loading) {
 
     init {
         screenModelScope.launchIO {

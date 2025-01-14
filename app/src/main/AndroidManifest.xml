@@ -132,7 +132,7 @@
 
 
         <activity
-            android:name=".ui.deeplink.DeepLinkAnimeActivity"
+            android:name=".ui.deeplink.DeepLinkActivity"
             android:exported="true"
             android:label="@string/action_global_anime_search"
             android:launchMode="singleTask"

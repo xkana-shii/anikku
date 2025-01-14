@@ -81,8 +81,7 @@ import eu.kanade.tachiyomi.ui.anime.AnimeScreen
 import eu.kanade.tachiyomi.ui.base.activity.BaseActivity
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreen
-import eu.kanade.tachiyomi.ui.deeplink.DeepLinkAnimeScreen
-import eu.kanade.tachiyomi.ui.deeplink.DeepLinkScreenType
+import eu.kanade.tachiyomi.ui.deeplink.DeepLinkScreen
 import eu.kanade.tachiyomi.ui.home.HomeScreen
 import eu.kanade.tachiyomi.ui.more.NewUpdateScreen
 import eu.kanade.tachiyomi.ui.more.OnboardingScreen
@@ -459,16 +458,8 @@ class MainActivity : BaseActivity() {
                 if (!query.isNullOrEmpty()) {
                     navigator.popUntilRoot()
 
-                    val screenType = intent.getStringExtra(INTENT_SEARCH_TYPE).orEmpty()
-                        .ifBlank { "ANIME" }
-                        .let(DeepLinkScreenType::valueOf)
-
-                    when (screenType) {
-                        DeepLinkScreenType.ANIME -> {
-                            navigator.push(GlobalSearchScreen(query))
-                            navigator.push(DeepLinkAnimeScreen(query))
-                        }
-                    }
+                    navigator.push(GlobalSearchScreen(query))
+                    navigator.push(DeepLinkScreen(query))
                 }
                 null
             }
@@ -511,7 +502,6 @@ class MainActivity : BaseActivity() {
         const val INTENT_ANIMESEARCH = "eu.kanade.tachiyomi.ANIMESEARCH"
         const val INTENT_SEARCH_QUERY = "query"
         const val INTENT_SEARCH_FILTER = "filter"
-        const val INTENT_SEARCH_TYPE = "type"
 
         private var externalPlayerResult: ActivityResultLauncher<Intent>? = null
 

@@ -19,7 +19,7 @@ import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.LoadingScreen
 
-class DeepLinkAnimeScreen(
+class DeepLinkScreen(
     val query: String = "",
 ) : Screen() {
 
@@ -29,7 +29,7 @@ class DeepLinkAnimeScreen(
         val navigator = LocalNavigator.currentOrThrow
 
         val screenModel = rememberScreenModel {
-            DeepLinkAnimeScreenModel(query = query)
+            DeepLinkScreenModel(query = query)
         }
         val state by screenModel.state.collectAsState()
         Scaffold(
@@ -42,14 +42,14 @@ class DeepLinkAnimeScreen(
             },
         ) { contentPadding ->
             when (state) {
-                is DeepLinkAnimeScreenModel.State.Loading -> {
+                is DeepLinkScreenModel.State.Loading -> {
                     LoadingScreen(Modifier.padding(contentPadding))
                 }
-                is DeepLinkAnimeScreenModel.State.NoResults -> {
+                is DeepLinkScreenModel.State.NoResults -> {
                     navigator.replace(GlobalSearchScreen(query))
                 }
-                is DeepLinkAnimeScreenModel.State.Result -> {
-                    val resultState = state as DeepLinkAnimeScreenModel.State.Result
+                is DeepLinkScreenModel.State.Result -> {
+                    val resultState = state as DeepLinkScreenModel.State.Result
                     if (resultState.episodeId == null) {
                         navigator.replace(
                             AnimeScreen(
