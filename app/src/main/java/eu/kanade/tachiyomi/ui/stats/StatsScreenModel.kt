@@ -28,7 +28,7 @@ import tachiyomi.source.local.isLocal
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
-class AnimeStatsScreenModel(
+class StatsScreenModel(
     private val downloadManager: AnimeDownloadManager = Injekt.get(),
     private val getAnimelibAnime: GetLibraryAnime = Injekt.get(),
     private val getEpisodesByAnimeId: GetEpisodesByAnimeId = Injekt.get(),

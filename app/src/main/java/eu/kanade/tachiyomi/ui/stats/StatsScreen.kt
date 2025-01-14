@@ -27,7 +27,7 @@ object StatsScreen : Screen {
 
         val navigator = LocalNavigator.currentOrThrow
 
-        val animeScreenModel = rememberScreenModel { AnimeStatsScreenModel() }
+        val animeScreenModel = rememberScreenModel { StatsScreenModel() }
         val state by animeScreenModel.state.collectAsState()
 
         if (state is StatsScreenState.Loading) {

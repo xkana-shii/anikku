@@ -66,7 +66,7 @@ data object UpdatesTab : Tab {
     override fun Content() {
         val context = LocalContext.current
         val navigator = LocalNavigator.currentOrThrow
-        val screenModel = rememberScreenModel { AnimeUpdatesScreenModel() }
+        val screenModel = rememberScreenModel { UpdatesScreenModel() }
         val state by screenModel.state.collectAsState()
         val fromMore = currentNavigationStyle() == NavStyle.MOVE_UPDATES_TO_MORE
 
@@ -83,7 +83,7 @@ data object UpdatesTab : Tab {
             null
         }
 
-        suspend fun openEpisode(updateItem: AnimeUpdatesItem, altPlayer: Boolean = false) {
+        suspend fun openEpisode(updateItem: UpdatesItem, altPlayer: Boolean = false) {
             val playerPreferences: PlayerPreferences by injectLazy()
             val update = updateItem.update
             val extPlayer = playerPreferences.alwaysUseExternalPlayer().get() != altPlayer
@@ -109,7 +109,7 @@ data object UpdatesTab : Tab {
             onMultiMarkAsSeenClicked = screenModel::markUpdatesSeen,
             onMultiDeleteClicked = screenModel::showConfirmDeleteEpisodes,
             onUpdateSelected = screenModel::toggleSelection,
-            onOpenEpisode = { updateItem: AnimeUpdatesItem, altPlayer: Boolean ->
+            onOpenEpisode = { updateItem: UpdatesItem, altPlayer: Boolean ->
                 scope.launchIO {
                     openEpisode(updateItem, altPlayer)
                 }
@@ -121,7 +121,7 @@ data object UpdatesTab : Tab {
 
         val onDismissDialog = { screenModel.setDialog(null) }
         when (val dialog = state.dialog) {
-            is AnimeUpdatesScreenModel.Dialog.DeleteConfirmation -> {
+            is UpdatesScreenModel.Dialog.DeleteConfirmation -> {
                 UpdatesDeleteConfirmationDialog(
                     onDismissRequest = onDismissDialog,
                     onConfirm = { screenModel.deleteEpisodes(dialog.toDelete) },
@@ -129,7 +129,7 @@ data object UpdatesTab : Tab {
                 )
             }
 
-            is AnimeUpdatesScreenModel.Dialog.ShowQualities -> {
+            is UpdatesScreenModel.Dialog.ShowQualities -> {
                 EpisodeOptionsDialogScreen.onDismissDialog = onDismissDialog
                 NavigatorAdaptiveSheet(
                     screen = EpisodeOptionsDialogScreen(
@@ -152,13 +152,13 @@ data object UpdatesTab : Tab {
             // <-- AM (DISCORD)
             screenModel.events.collectLatest { event ->
                 when (event) {
-                    AnimeUpdatesScreenModel.Event.InternalError -> screenModel.snackbarHostState.showSnackbar(
+                    UpdatesScreenModel.Event.InternalError -> screenModel.snackbarHostState.showSnackbar(
                         context.stringResource(
                             MR.strings.internal_error,
                         ),
                     )
 
-                    is AnimeUpdatesScreenModel.Event.LibraryUpdateTriggered -> {
+                    is UpdatesScreenModel.Event.LibraryUpdateTriggered -> {
                         val msg = if (event.started) {
                             MR.strings.updating_library
                         } else {

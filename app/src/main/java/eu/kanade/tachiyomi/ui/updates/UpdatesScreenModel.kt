@@ -48,7 +48,7 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.time.ZonedDateTime
 
-class AnimeUpdatesScreenModel(
+class UpdatesScreenModel(
     private val sourceManager: AnimeSourceManager = Injekt.get(),
     private val downloadManager: AnimeDownloadManager = Injekt.get(),
     private val downloadCache: AnimeDownloadCache = Injekt.get(),
@@ -60,7 +60,7 @@ class AnimeUpdatesScreenModel(
     private val libraryPreferences: LibraryPreferences = Injekt.get(),
     val snackbarHostState: SnackbarHostState = SnackbarHostState(),
     downloadPreferences: DownloadPreferences = Injekt.get(),
-) : StateScreenModel<AnimeUpdatesScreenModel.State>(State()) {
+) : StateScreenModel<UpdatesScreenModel.State>(State()) {
 
     private val _events: Channel<Event> = Channel(Int.MAX_VALUE)
     val events: Flow<Event> = _events.receiveAsFlow()
@@ -100,11 +100,11 @@ class AnimeUpdatesScreenModel(
         screenModelScope.launchIO {
             merge(downloadManager.statusFlow(), downloadManager.progressFlow())
                 .catch { logcat(LogPriority.ERROR, it) }
-                .collect(this@AnimeUpdatesScreenModel::updateDownloadState)
+                .collect(this@UpdatesScreenModel::updateDownloadState)
         }
     }
 
-    private fun List<AnimeUpdatesWithRelations>.toUpdateItems(): PersistentList<AnimeUpdatesItem> {
+    private fun List<AnimeUpdatesWithRelations>.toUpdateItems(): PersistentList<UpdatesItem> {
         return this
             .map { update ->
                 val activeDownload = downloadManager.getQueuedDownloadOrNull(update.episodeId)
@@ -119,7 +119,7 @@ class AnimeUpdatesScreenModel(
                     downloaded -> AnimeDownload.State.DOWNLOADED
                     else -> AnimeDownload.State.NOT_DOWNLOADED
                 }
-                AnimeUpdatesItem(
+                UpdatesItem(
                     update = update,
                     downloadStateProvider = { downloadState },
                     downloadProgressProvider = { activeDownload?.progress ?: 0 },
@@ -161,7 +161,7 @@ class AnimeUpdatesScreenModel(
         }
     }
 
-    fun downloadEpisodes(items: List<AnimeUpdatesItem>, action: EpisodeDownloadAction) {
+    fun downloadEpisodes(items: List<UpdatesItem>, action: EpisodeDownloadAction) {
         if (items.isEmpty()) return
         screenModelScope.launch {
             when (action) {
@@ -206,7 +206,7 @@ class AnimeUpdatesScreenModel(
      * @param updates the list of selected updates.
      * @param seen whether to mark episodes as seen or unseen.
      */
-    fun markUpdatesSeen(updates: List<AnimeUpdatesItem>, seen: Boolean) {
+    fun markUpdatesSeen(updates: List<UpdatesItem>, seen: Boolean) {
         screenModelScope.launchIO {
             setSeenStatus.await(
                 seen = seen,
@@ -222,7 +222,7 @@ class AnimeUpdatesScreenModel(
      * Bookmarks the given list of episodes.
      * @param updates the list of episodes to bookmark.
      */
-    fun bookmarkUpdates(updates: List<AnimeUpdatesItem>, bookmark: Boolean) {
+    fun bookmarkUpdates(updates: List<UpdatesItem>, bookmark: Boolean) {
         screenModelScope.launchIO {
             updates
                 .filterNot { it.update.bookmark == bookmark }
@@ -236,7 +236,7 @@ class AnimeUpdatesScreenModel(
      * Downloads the given list of episodes with the manager.
      * @param updatesItem the list of episodes to download.
      */
-    private fun downloadEpisodes(updatesItem: List<AnimeUpdatesItem>, alt: Boolean = false) {
+    private fun downloadEpisodes(updatesItem: List<UpdatesItem>, alt: Boolean = false) {
         screenModelScope.launchNonCancellable {
             val groupedUpdates = updatesItem.groupBy { it.update.animeId }.values
             for (updates in groupedUpdates) {
@@ -255,7 +255,7 @@ class AnimeUpdatesScreenModel(
      *
      * @param updatesItem list of episodes
      */
-    fun deleteEpisodes(updatesItem: List<AnimeUpdatesItem>) {
+    fun deleteEpisodes(updatesItem: List<UpdatesItem>) {
         screenModelScope.launchNonCancellable {
             updatesItem
                 .groupBy { it.update.animeId }
@@ -270,7 +270,7 @@ class AnimeUpdatesScreenModel(
         toggleAllSelection(false)
     }
 
-    fun showConfirmDeleteEpisodes(updatesItem: List<AnimeUpdatesItem>) {
+    fun showConfirmDeleteEpisodes(updatesItem: List<UpdatesItem>) {
         setDialog(Dialog.DeleteConfirmation(updatesItem))
     }
 
@@ -286,7 +286,7 @@ class AnimeUpdatesScreenModel(
     }
 
     fun toggleSelection(
-        item: AnimeUpdatesItem,
+        item: UpdatesItem,
         selected: Boolean,
         userSelected: Boolean = false,
         fromLongPress: Boolean = false,
@@ -385,7 +385,7 @@ class AnimeUpdatesScreenModel(
     @Immutable
     data class State(
         val isLoading: Boolean = true,
-        val items: PersistentList<AnimeUpdatesItem> = persistentListOf(),
+        val items: PersistentList<UpdatesItem> = persistentListOf(),
         val dialog: Dialog? = null,
     ) {
         val selected = items.filter { it.selected }
@@ -407,7 +407,7 @@ class AnimeUpdatesScreenModel(
     }
 
     sealed interface Dialog {
-        data class DeleteConfirmation(val toDelete: List<AnimeUpdatesItem>) : Dialog
+        data class DeleteConfirmation(val toDelete: List<UpdatesItem>) : Dialog
         data class ShowQualities(
             val episodeTitle: String,
             val episodeId: Long,
@@ -423,7 +423,7 @@ class AnimeUpdatesScreenModel(
 }
 
 @Immutable
-data class AnimeUpdatesItem(
+data class UpdatesItem(
     val update: AnimeUpdatesWithRelations,
     val downloadStateProvider: () -> AnimeDownload.State,
     val downloadProgressProvider: () -> Int,
