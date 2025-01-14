@@ -9,14 +9,14 @@ import android.content.IntentFilter
 import android.content.pm.PackageInstaller
 import android.os.Build
 import androidx.core.content.ContextCompat
-import eu.kanade.tachiyomi.extension.InstallStep
+import eu.kanade.tachiyomi.extension.model.InstallStep
 import eu.kanade.tachiyomi.util.lang.use
 import eu.kanade.tachiyomi.util.system.getParcelableExtraCompat
 import eu.kanade.tachiyomi.util.system.getUriSize
 import logcat.LogPriority
 import tachiyomi.core.common.util.system.logcat
 
-class PackageInstallerInstallerAnime(private val service: Service) : InstallerAnime(service) {
+class PackageInstallerInstaller(private val service: Service) : Installer(service) {
 
     private val packageInstaller = service.packageManager.packageInstaller
 

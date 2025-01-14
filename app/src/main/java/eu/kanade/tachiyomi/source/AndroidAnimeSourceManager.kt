@@ -5,7 +5,7 @@ import eu.kanade.tachiyomi.animesource.AnimeCatalogueSource
 import eu.kanade.tachiyomi.animesource.AnimeSource
 import eu.kanade.tachiyomi.animesource.online.AnimeHttpSource
 import eu.kanade.tachiyomi.data.download.AnimeDownloadManager
-import eu.kanade.tachiyomi.extension.AnimeExtensionManager
+import eu.kanade.tachiyomi.extension.ExtensionManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -28,7 +28,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 class AndroidAnimeSourceManager(
     private val context: Context,
-    private val extensionManager: AnimeExtensionManager,
+    private val extensionManager: ExtensionManager,
     private val sourceRepository: AnimeStubSourceRepository,
 ) : AnimeSourceManager {
 

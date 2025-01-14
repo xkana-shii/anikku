@@ -8,8 +8,8 @@ import eu.kanade.domain.extension.interactor.ExtensionSourceItem
 import eu.kanade.domain.extension.interactor.GetExtensionSources
 import eu.kanade.domain.source.interactor.ToggleSource
 import eu.kanade.tachiyomi.animesource.online.AnimeHttpSource
-import eu.kanade.tachiyomi.extension.AnimeExtensionManager
-import eu.kanade.tachiyomi.extension.model.AnimeExtension
+import eu.kanade.tachiyomi.extension.ExtensionManager
+import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import kotlinx.collections.immutable.ImmutableList
@@ -33,7 +33,7 @@ class ExtensionDetailsScreenModel(
     pkgName: String,
     context: Context,
     private val network: NetworkHelper = Injekt.get(),
-    private val extensionManager: AnimeExtensionManager = Injekt.get(),
+    private val extensionManager: ExtensionManager = Injekt.get(),
     private val getExtensionSources: GetExtensionSources = Injekt.get(),
     private val toggleSource: ToggleSource = Injekt.get(),
 ) : StateScreenModel<ExtensionDetailsScreenModel.State>(State()) {
@@ -123,7 +123,7 @@ class ExtensionDetailsScreenModel(
 
     @Immutable
     data class State(
-        val extension: AnimeExtension.Installed? = null,
+        val extension: Extension.Installed? = null,
         private val _sources: ImmutableList<ExtensionSourceItem>? = null,
     ) {
 

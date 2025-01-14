@@ -3,7 +3,7 @@ package eu.kanade.tachiyomi.extension.installer
 import android.app.Service
 import android.content.pm.PackageManager
 import android.os.Process
-import eu.kanade.tachiyomi.extension.InstallStep
+import eu.kanade.tachiyomi.extension.model.InstallStep
 import eu.kanade.tachiyomi.util.system.getUriSize
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.coroutines.CoroutineScope
@@ -18,7 +18,7 @@ import tachiyomi.i18n.MR
 import java.io.BufferedReader
 import java.io.InputStream
 
-class ShizukuInstallerAnime(private val service: Service) : InstallerAnime(service) {
+class ShizukuInstaller(private val service: Service) : Installer(service) {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 

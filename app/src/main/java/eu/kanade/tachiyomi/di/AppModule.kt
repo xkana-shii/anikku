@@ -17,7 +17,7 @@ import eu.kanade.tachiyomi.data.download.AnimeDownloadProvider
 import eu.kanade.tachiyomi.data.saver.ImageSaver
 import eu.kanade.tachiyomi.data.sync.service.GoogleDriveService
 import eu.kanade.tachiyomi.data.track.TrackerManager
-import eu.kanade.tachiyomi.extension.AnimeExtensionManager
+import eu.kanade.tachiyomi.extension.ExtensionManager
 import eu.kanade.tachiyomi.network.JavaScriptEngine
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.source.AndroidAnimeSourceManager
@@ -127,7 +127,7 @@ class AppModule(val app: Application) : InjektModule {
 
         addSingletonFactory<AnimeSourceManager> { AndroidAnimeSourceManager(app, get(), get()) }
 
-        addSingletonFactory { AnimeExtensionManager(app) }
+        addSingletonFactory { ExtensionManager(app) }
 
         addSingletonFactory { AnimeDownloadProvider(app) }
         addSingletonFactory { AnimeDownloadManager(app) }

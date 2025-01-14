@@ -4,7 +4,7 @@ import android.graphics.drawable.Drawable
 import eu.kanade.tachiyomi.animesource.AnimeSource
 import tachiyomi.domain.source.model.StubAnimeSource
 
-sealed class AnimeExtension {
+sealed class Extension {
 
     abstract val name: String
     abstract val pkgName: String
@@ -31,7 +31,7 @@ sealed class AnimeExtension {
         val isObsolete: Boolean = false,
         val isShared: Boolean,
         val repoUrl: String? = null,
-    ) : AnimeExtension()
+    ) : Extension()
 
     data class Available(
         override val name: String,
@@ -46,7 +46,7 @@ sealed class AnimeExtension {
         val apkName: String,
         val iconUrl: String,
         val repoUrl: String,
-    ) : AnimeExtension() {
+    ) : Extension() {
 
         data class AnimeSource(
             val id: Long,
@@ -74,5 +74,5 @@ sealed class AnimeExtension {
         override val lang: String? = null,
         override val isNsfw: Boolean = false,
         override val isTorrent: Boolean = false,
-    ) : AnimeExtension()
+    ) : Extension()
 }

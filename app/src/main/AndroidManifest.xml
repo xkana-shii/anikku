@@ -241,7 +241,7 @@
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
 
         <activity
-            android:name=".extension.util.AnimeExtensionInstallActivity"
+            android:name=".extension.util.ExtensionInstallActivity"
             android:exported="false"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
 
@@ -316,7 +316,7 @@
             android:foregroundServiceType="shortService" />
 
         <service
-            android:name=".extension.util.AnimeExtensionInstallService"
+            android:name=".extension.util.ExtensionInstallService"
             android:exported="false"
             android:foregroundServiceType="shortService" />
         <service

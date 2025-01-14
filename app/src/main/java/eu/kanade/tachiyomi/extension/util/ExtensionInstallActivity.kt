@@ -3,8 +3,8 @@ package eu.kanade.tachiyomi.extension.util
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import eu.kanade.tachiyomi.extension.AnimeExtensionManager
-import eu.kanade.tachiyomi.extension.InstallStep
+import eu.kanade.tachiyomi.extension.ExtensionManager
+import eu.kanade.tachiyomi.extension.model.InstallStep
 import eu.kanade.tachiyomi.util.system.hasMiuiPackageInstaller
 import eu.kanade.tachiyomi.util.system.toast
 import uy.kohesive.injekt.Injekt
@@ -15,7 +15,7 @@ import kotlin.time.Duration.Companion.seconds
  * Activity used to install extensions, because we can only receive the result of the installation
  * with [startActivityForResult], which we need to update the UI.
  */
-class AnimeExtensionInstallActivity : Activity() {
+class ExtensionInstallActivity : Activity() {
 
     // MIUI package installer bug workaround
     private var ignoreUntil = 0L
@@ -64,8 +64,8 @@ class AnimeExtensionInstallActivity : Activity() {
     }
 
     private fun checkInstallationResult(resultCode: Int) {
-        val downloadId = intent.extras!!.getLong(AnimeExtensionInstaller.EXTRA_DOWNLOAD_ID)
-        val extensionManager = Injekt.get<AnimeExtensionManager>()
+        val downloadId = intent.extras!!.getLong(ExtensionInstaller.EXTRA_DOWNLOAD_ID)
+        val extensionManager = Injekt.get<ExtensionManager>()
         val newStep = when (resultCode) {
             RESULT_OK -> InstallStep.Installed
             RESULT_CANCELED -> InstallStep.Idle

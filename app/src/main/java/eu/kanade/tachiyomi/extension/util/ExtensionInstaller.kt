@@ -11,10 +11,10 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import androidx.core.net.toUri
 import eu.kanade.domain.base.BasePreferences
-import eu.kanade.tachiyomi.extension.AnimeExtensionManager
-import eu.kanade.tachiyomi.extension.InstallStep
-import eu.kanade.tachiyomi.extension.installer.InstallerAnime
-import eu.kanade.tachiyomi.extension.model.AnimeExtension
+import eu.kanade.tachiyomi.extension.ExtensionManager
+import eu.kanade.tachiyomi.extension.installer.Installer
+import eu.kanade.tachiyomi.extension.model.Extension
+import eu.kanade.tachiyomi.extension.model.InstallStep
 import eu.kanade.tachiyomi.util.storage.getUriCompat
 import eu.kanade.tachiyomi.util.system.isPackageInstalled
 import kotlinx.coroutines.delay
@@ -39,7 +39,7 @@ import kotlin.time.Duration.Companion.seconds
  *
  * @param context The application context.
  */
-internal class AnimeExtensionInstaller(private val context: Context) {
+internal class ExtensionInstaller(private val context: Context) {
 
     /**
      * The system's download manager
@@ -68,7 +68,7 @@ internal class AnimeExtensionInstaller(private val context: Context) {
      * @param url The url of the apk.
      * @param extension The extension to install.
      */
-    fun downloadAndInstall(url: String, extension: AnimeExtension): Flow<InstallStep> {
+    fun downloadAndInstall(url: String, extension: Extension): Flow<InstallStep> {
         val pkgName = extension.pkgName
 
         val oldDownload = activeDownloads[pkgName]
@@ -158,7 +158,7 @@ internal class AnimeExtensionInstaller(private val context: Context) {
     fun installApk(downloadId: Long, uri: Uri) {
         when (val installer = extensionInstaller.get()) {
             BasePreferences.ExtensionInstaller.LEGACY -> {
-                val intent = Intent(context, AnimeExtensionInstallActivity::class.java)
+                val intent = Intent(context, ExtensionInstallActivity::class.java)
                     .setDataAndType(uri, APK_MIME)
                     .putExtra(EXTRA_DOWNLOAD_ID, downloadId)
                     .setFlags(
@@ -168,7 +168,7 @@ internal class AnimeExtensionInstaller(private val context: Context) {
                 context.startActivity(intent)
             }
             BasePreferences.ExtensionInstaller.PRIVATE -> {
-                val extensionManager = Injekt.get<AnimeExtensionManager>()
+                val extensionManager = Injekt.get<ExtensionManager>()
                 val tempFile = File(context.cacheDir, "temp_$downloadId")
 
                 if (tempFile.exists() && !tempFile.delete()) {
@@ -184,7 +184,7 @@ internal class AnimeExtensionInstaller(private val context: Context) {
                         }
                     }
 
-                    if (AnimeExtensionLoader.installPrivateExtensionFile(context, tempFile)) {
+                    if (ExtensionLoader.installPrivateExtensionFile(context, tempFile)) {
                         extensionManager.updateInstallStep(downloadId, InstallStep.Installed)
                     } else {
                         extensionManager.updateInstallStep(downloadId, InstallStep.Error)
@@ -198,7 +198,7 @@ internal class AnimeExtensionInstaller(private val context: Context) {
             }
             else -> {
                 val intent =
-                    AnimeExtensionInstallService.getIntent(context, downloadId, uri, installer)
+                    ExtensionInstallService.getIntent(context, downloadId, uri, installer)
                 ContextCompat.startForegroundService(context, intent)
             }
         }
@@ -210,7 +210,7 @@ internal class AnimeExtensionInstaller(private val context: Context) {
     fun cancelInstall(pkgName: String) {
         val downloadId = activeDownloads.remove(pkgName) ?: return
         downloadManager.remove(downloadId)
-        InstallerAnime.cancelInstallQueue(context, downloadId)
+        Installer.cancelInstallQueue(context, downloadId)
     }
 
     /**
@@ -225,8 +225,8 @@ internal class AnimeExtensionInstaller(private val context: Context) {
                 .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             context.startActivity(intent)
         } else {
-            AnimeExtensionLoader.uninstallPrivateExtension(context, pkgName)
-            AnimeExtensionInstallReceiver.notifyRemoved(context, pkgName)
+            ExtensionLoader.uninstallPrivateExtension(context, pkgName)
+            ExtensionInstallReceiver.notifyRemoved(context, pkgName)
         }
     }
 
@@ -321,7 +321,7 @@ internal class AnimeExtensionInstaller(private val context: Context) {
 
     companion object {
         const val APK_MIME = "application/vnd.android.package-archive"
-        const val EXTRA_DOWNLOAD_ID = "AnimeExtensionInstaller.extra.DOWNLOAD_ID"
+        const val EXTRA_DOWNLOAD_ID = "ExtensionInstaller.extra.DOWNLOAD_ID"
         const val FILE_SCHEME = "file://"
     }
 }

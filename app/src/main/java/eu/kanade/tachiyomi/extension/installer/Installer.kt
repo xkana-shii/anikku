@@ -8,8 +8,8 @@ import android.content.IntentFilter
 import android.net.Uri
 import androidx.annotation.CallSuper
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import eu.kanade.tachiyomi.extension.AnimeExtensionManager
-import eu.kanade.tachiyomi.extension.InstallStep
+import eu.kanade.tachiyomi.extension.ExtensionManager
+import eu.kanade.tachiyomi.extension.model.InstallStep
 import uy.kohesive.injekt.injectLazy
 import java.util.Collections
 import java.util.concurrent.atomic.AtomicReference
@@ -17,9 +17,9 @@ import java.util.concurrent.atomic.AtomicReference
 /**
  * Base implementation class for extension installer. To be used inside a foreground [Service].
  */
-abstract class InstallerAnime(private val service: Service) {
+abstract class Installer(private val service: Service) {
 
-    private val extensionManager: AnimeExtensionManager by injectLazy()
+    private val extensionManager: ExtensionManager by injectLazy()
 
     private var waitingInstall = AtomicReference<Entry>(null)
     private val queue = Collections.synchronizedList(mutableListOf<Entry>())
@@ -153,8 +153,8 @@ abstract class InstallerAnime(private val service: Service) {
     }
 
     companion object {
-        private const val ACTION_CANCEL_QUEUE = "InstallerAnime.action.CANCEL_QUEUE"
-        private const val EXTRA_DOWNLOAD_ID = "InstallerAnime.extra.DOWNLOAD_ID"
+        private const val ACTION_CANCEL_QUEUE = "Installer.action.CANCEL_QUEUE"
+        private const val EXTRA_DOWNLOAD_ID = "Installer.extra.DOWNLOAD_ID"
 
         /**
          * Attempts to cancel the installation entry for the provided download ID.

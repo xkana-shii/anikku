@@ -10,9 +10,9 @@ import eu.kanade.domain.extension.interactor.GetExtensionsByType
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.presentation.components.SEARCH_DEBOUNCE_MILLIS
 import eu.kanade.tachiyomi.animesource.online.AnimeHttpSource
-import eu.kanade.tachiyomi.extension.AnimeExtensionManager
-import eu.kanade.tachiyomi.extension.InstallStep
-import eu.kanade.tachiyomi.extension.model.AnimeExtension
+import eu.kanade.tachiyomi.extension.ExtensionManager
+import eu.kanade.tachiyomi.extension.model.Extension
+import eu.kanade.tachiyomi.extension.model.InstallStep
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -37,7 +37,7 @@ import kotlin.time.Duration.Companion.seconds
 class ExtensionsScreenModel(
     preferences: SourcePreferences = Injekt.get(),
     basePreferences: BasePreferences = Injekt.get(),
-    private val extensionManager: AnimeExtensionManager = Injekt.get(),
+    private val extensionManager: ExtensionManager = Injekt.get(),
     private val getExtensions: GetExtensionsByType = Injekt.get(),
 ) : StateScreenModel<ExtensionsScreenModel.State>(State()) {
 
@@ -45,19 +45,19 @@ class ExtensionsScreenModel(
 
     init {
         val context = Injekt.get<Application>()
-        val extensionMapper: (Map<String, InstallStep>) -> ((AnimeExtension) -> ExtensionUiModel.Item) = { map ->
+        val extensionMapper: (Map<String, InstallStep>) -> ((Extension) -> ExtensionUiModel.Item) = { map ->
             {
                 ExtensionUiModel.Item(it, map[it.pkgName] ?: InstallStep.Idle)
             }
         }
-        val queryFilter: (String) -> ((AnimeExtension) -> Boolean) = { query ->
+        val queryFilter: (String) -> ((Extension) -> Boolean) = { query ->
             filter@{ extension ->
                 if (query.isEmpty()) return@filter true
                 query.split(",").any { _input ->
                     val input = _input.trim()
                     if (input.isEmpty()) return@any false
                     when (extension) {
-                        is AnimeExtension.Available -> {
+                        is Extension.Available -> {
                             extension.sources.any {
                                 it.name.contains(input, ignoreCase = true) ||
                                     it.baseUrl.contains(input, ignoreCase = true) ||
@@ -65,7 +65,7 @@ class ExtensionsScreenModel(
                             } ||
                                 extension.name.contains(input, ignoreCase = true)
                         }
-                        is AnimeExtension.Installed -> {
+                        is Extension.Installed -> {
                             extension.sources.any {
                                 it.name.contains(input, ignoreCase = true) ||
                                     it.id == input.toLongOrNull() ||
@@ -80,7 +80,7 @@ class ExtensionsScreenModel(
                             } ||
                                 extension.name.contains(input, ignoreCase = true)
                         }
-                        is AnimeExtension.Untrusted -> extension.name.contains(
+                        is Extension.Untrusted -> extension.name.contains(
                             input,
                             ignoreCase = true,
                         )
@@ -162,43 +162,43 @@ class ExtensionsScreenModel(
         screenModelScope.launchIO {
             state.value.items.values.flatten()
                 .map { it.extension }
-                .filterIsInstance<AnimeExtension.Installed>()
+                .filterIsInstance<Extension.Installed>()
                 .filter { it.hasUpdate }
                 .forEach(::updateExtension)
         }
     }
 
-    fun installExtension(extension: AnimeExtension.Available) {
+    fun installExtension(extension: Extension.Available) {
         screenModelScope.launchIO {
             extensionManager.installExtension(extension).collectToInstallUpdate(extension)
         }
     }
 
-    fun updateExtension(extension: AnimeExtension.Installed) {
+    fun updateExtension(extension: Extension.Installed) {
         screenModelScope.launchIO {
             extensionManager.updateExtension(extension).collectToInstallUpdate(extension)
         }
     }
 
-    fun cancelInstallUpdateExtension(extension: AnimeExtension) {
+    fun cancelInstallUpdateExtension(extension: Extension) {
         extensionManager.cancelInstallUpdateExtension(extension)
     }
 
-    private fun addDownloadState(extension: AnimeExtension, installStep: InstallStep) {
+    private fun addDownloadState(extension: Extension, installStep: InstallStep) {
         currentDownloads.update { it + Pair(extension.pkgName, installStep) }
     }
 
-    private fun removeDownloadState(extension: AnimeExtension) {
+    private fun removeDownloadState(extension: Extension) {
         currentDownloads.update { it - extension.pkgName }
     }
 
-    private suspend fun Flow<InstallStep>.collectToInstallUpdate(extension: AnimeExtension) =
+    private suspend fun Flow<InstallStep>.collectToInstallUpdate(extension: Extension) =
         this
             .onEach { installStep -> addDownloadState(extension, installStep) }
             .onCompletion { removeDownloadState(extension) }
             .collect()
 
-    fun uninstallExtension(extension: AnimeExtension) {
+    fun uninstallExtension(extension: Extension) {
         extensionManager.uninstallExtension(extension)
     }
 
@@ -214,7 +214,7 @@ class ExtensionsScreenModel(
         }
     }
 
-    fun trustExtension(extension: AnimeExtension.Untrusted) {
+    fun trustExtension(extension: Extension.Untrusted) {
         screenModelScope.launch {
             extensionManager.trust(extension)
         }
@@ -241,7 +241,7 @@ object ExtensionUiModel {
         data class Text(val text: String) : Header
     }
     data class Item(
-        val extension: AnimeExtension,
+        val extension: Extension,
         val installStep: InstallStep,
     )
 }

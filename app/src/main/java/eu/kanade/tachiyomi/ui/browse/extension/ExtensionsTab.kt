@@ -16,7 +16,7 @@ import eu.kanade.presentation.browse.ExtensionScreen
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.TabContent
 import eu.kanade.presentation.more.settings.screen.browse.ExtensionReposScreen
-import eu.kanade.tachiyomi.extension.model.AnimeExtension
+import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.ui.browse.extension.details.ExtensionDetailsScreen
 import eu.kanade.tachiyomi.ui.webview.WebViewScreen
 import eu.kanade.tachiyomi.util.system.isPackageInstalled
@@ -32,7 +32,7 @@ fun extensionsTab(
     val context = LocalContext.current
 
     val state by extensionsScreenModel.state.collectAsState()
-    var privateExtensionToUninstall by remember { mutableStateOf<AnimeExtension?>(null) }
+    var privateExtensionToUninstall by remember { mutableStateOf<Extension?>(null) }
 
     return TabContent(
         titleRes = MR.strings.label_anime_extensions,
@@ -59,7 +59,7 @@ fun extensionsTab(
                 searchQuery = state.searchQuery,
                 onLongClickItem = { extension ->
                     when (extension) {
-                        is AnimeExtension.Available -> extensionsScreenModel.installExtension(
+                        is Extension.Available -> extensionsScreenModel.installExtension(
                             extension,
                         )
                         else -> {

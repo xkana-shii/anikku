@@ -1,11 +1,10 @@
 package eu.kanade.tachiyomi.extension.api
 
 import android.content.Context
-import eu.kanade.tachiyomi.extension.AnimeExtensionManager
-import eu.kanade.tachiyomi.extension.ExtensionUpdateNotifier
-import eu.kanade.tachiyomi.extension.model.AnimeExtension
-import eu.kanade.tachiyomi.extension.model.AnimeLoadResult
-import eu.kanade.tachiyomi.extension.util.AnimeExtensionLoader
+import eu.kanade.tachiyomi.extension.ExtensionManager
+import eu.kanade.tachiyomi.extension.model.Extension
+import eu.kanade.tachiyomi.extension.model.LoadResult
+import eu.kanade.tachiyomi.extension.util.ExtensionLoader
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.awaitSuccess
@@ -26,20 +25,20 @@ import uy.kohesive.injekt.injectLazy
 import java.time.Instant
 import kotlin.time.Duration.Companion.days
 
-internal class AnimeExtensionApi {
+internal class ExtensionApi {
 
     private val networkService: NetworkHelper by injectLazy()
     private val preferenceStore: PreferenceStore by injectLazy()
     private val getExtensionRepo: GetAnimeExtensionRepo by injectLazy()
     private val updateExtensionRepo: UpdateAnimeExtensionRepo by injectLazy()
-    private val animeExtensionManager: AnimeExtensionManager by injectLazy()
+    private val extensionManager: ExtensionManager by injectLazy()
     private val json: Json by injectLazy()
 
     private val lastExtCheck: Preference<Long> by lazy {
         preferenceStore.getLong("last_ext_check", 0)
     }
 
-    suspend fun findExtensions(): List<AnimeExtension.Available> {
+    suspend fun findExtensions(): List<Extension.Available> {
         return withIOContext {
             getExtensionRepo.getAll()
                 .map { async { getExtensions(it) } }
@@ -48,7 +47,7 @@ internal class AnimeExtensionApi {
         }
     }
 
-    private suspend fun getExtensions(extRepo: ExtensionRepo): List<AnimeExtension.Available> {
+    private suspend fun getExtensions(extRepo: ExtensionRepo): List<Extension.Available> {
         val repoBaseUrl = extRepo.baseUrl
         return try {
             val response = networkService.client
@@ -57,7 +56,7 @@ internal class AnimeExtensionApi {
 
             with(json) {
                 response
-                    .parseAs<List<AnimeExtensionJsonObject>>()
+                    .parseAs<List<ExtensionJsonObject>>()
                     .toExtensions(repoBaseUrl)
             }
         } catch (e: Throwable) {
@@ -69,7 +68,7 @@ internal class AnimeExtensionApi {
     suspend fun checkForUpdates(
         context: Context,
         fromAvailableExtensionList: Boolean = false,
-    ): List<AnimeExtension.Installed>? {
+    ): List<Extension.Installed>? {
         // Limit checks to once a day at most
         if (fromAvailableExtensionList &&
             Instant.now().toEpochMilli() < lastExtCheck.get() + 1.days.inWholeMilliseconds
@@ -81,16 +80,16 @@ internal class AnimeExtensionApi {
         updateExtensionRepo.awaitAll()
 
         val extensions = if (fromAvailableExtensionList) {
-            animeExtensionManager.availableExtensionsFlow.value
+            extensionManager.availableExtensionsFlow.value
         } else {
             findExtensions().also { lastExtCheck.set(Instant.now().toEpochMilli()) }
         }
 
-        val installedExtensions = AnimeExtensionLoader.loadExtensions(context)
-            .filterIsInstance<AnimeLoadResult.Success>()
+        val installedExtensions = ExtensionLoader.loadExtensions(context)
+            .filterIsInstance<LoadResult.Success>()
             .map { it.extension }
 
-        val extensionsWithUpdate = mutableListOf<AnimeExtension.Installed>()
+        val extensionsWithUpdate = mutableListOf<Extension.Installed>()
         for (installedExt in installedExtensions) {
             val pkgName = installedExt.pkgName
             val availableExt = extensions.find { it.pkgName == pkgName } ?: continue
@@ -110,14 +109,14 @@ internal class AnimeExtensionApi {
         return extensionsWithUpdate
     }
 
-    private fun List<AnimeExtensionJsonObject>.toExtensions(repoUrl: String): List<AnimeExtension.Available> {
+    private fun List<ExtensionJsonObject>.toExtensions(repoUrl: String): List<Extension.Available> {
         return this
             .filter {
                 val libVersion = it.extractLibVersion()
-                libVersion >= AnimeExtensionLoader.LIB_VERSION_MIN && libVersion <= AnimeExtensionLoader.LIB_VERSION_MAX
+                libVersion >= ExtensionLoader.LIB_VERSION_MIN && libVersion <= ExtensionLoader.LIB_VERSION_MAX
             }
             .map {
-                AnimeExtension.Available(
+                Extension.Available(
                     name = it.name.substringAfter("Aniyomi: "),
                     pkgName = it.pkg,
                     versionName = it.version,
@@ -126,7 +125,7 @@ internal class AnimeExtensionApi {
                     lang = it.lang,
                     isNsfw = it.nsfw == 1,
                     isTorrent = it.torrent == 1,
-                    sources = it.sources?.map(extensionAnimeSourceMapper).orEmpty(),
+                    sources = it.sources?.map(extensionSourceMapper).orEmpty(),
                     apkName = it.apk,
                     iconUrl = "$repoUrl/icon/${it.pkg}.png",
                     repoUrl = repoUrl,
@@ -134,17 +133,17 @@ internal class AnimeExtensionApi {
             }
     }
 
-    fun getApkUrl(extension: AnimeExtension.Available): String {
+    fun getApkUrl(extension: Extension.Available): String {
         return "${extension.repoUrl}/apk/${extension.apkName}"
     }
 
-    private fun AnimeExtensionJsonObject.extractLibVersion(): Double {
+    private fun ExtensionJsonObject.extractLibVersion(): Double {
         return version.substringBeforeLast('.').toDouble()
     }
 }
 
 @Serializable
-private data class AnimeExtensionJsonObject(
+private data class ExtensionJsonObject(
     val name: String,
     val pkg: String,
     val apk: String,
@@ -153,19 +152,19 @@ private data class AnimeExtensionJsonObject(
     val version: String,
     val nsfw: Int,
     val torrent: Int = 0,
-    val sources: List<AnimeExtensionSourceJsonObject>?,
+    val sources: List<ExtensionSourceJsonObject>?,
 )
 
 @Serializable
-private data class AnimeExtensionSourceJsonObject(
+private data class ExtensionSourceJsonObject(
     val id: Long,
     val lang: String,
     val name: String,
     val baseUrl: String,
 )
 
-private val extensionAnimeSourceMapper: (AnimeExtensionSourceJsonObject) -> AnimeExtension.Available.AnimeSource = {
-    AnimeExtension.Available.AnimeSource(
+private val extensionSourceMapper: (ExtensionSourceJsonObject) -> Extension.Available.AnimeSource = {
+    Extension.Available.AnimeSource(
         id = it.id,
         lang = it.lang,
         name = it.name,

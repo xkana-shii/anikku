@@ -8,10 +8,10 @@ import android.os.IBinder
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.notification.Notifications
-import eu.kanade.tachiyomi.extension.installer.InstallerAnime
-import eu.kanade.tachiyomi.extension.installer.PackageInstallerInstallerAnime
-import eu.kanade.tachiyomi.extension.installer.ShizukuInstallerAnime
-import eu.kanade.tachiyomi.extension.util.AnimeExtensionInstaller.Companion.EXTRA_DOWNLOAD_ID
+import eu.kanade.tachiyomi.extension.installer.Installer
+import eu.kanade.tachiyomi.extension.installer.PackageInstallerInstaller
+import eu.kanade.tachiyomi.extension.installer.ShizukuInstaller
+import eu.kanade.tachiyomi.extension.util.ExtensionInstaller.Companion.EXTRA_DOWNLOAD_ID
 import eu.kanade.tachiyomi.util.system.getSerializableExtraCompat
 import eu.kanade.tachiyomi.util.system.notificationBuilder
 import logcat.LogPriority
@@ -19,9 +19,9 @@ import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.i18n.MR
 
-class AnimeExtensionInstallService : Service() {
+class ExtensionInstallService : Service() {
 
-    private var installer: InstallerAnime? = null
+    private var installer: Installer? = null
 
     override fun onCreate() {
         val notification = notificationBuilder(Notifications.CHANNEL_EXTENSIONS_UPDATE) {
@@ -48,10 +48,10 @@ class AnimeExtensionInstallService : Service() {
 
         if (installer == null) {
             installer = when (installerUsed) {
-                BasePreferences.ExtensionInstaller.PACKAGEINSTALLER -> PackageInstallerInstallerAnime(
+                BasePreferences.ExtensionInstaller.PACKAGEINSTALLER -> PackageInstallerInstaller(
                     this,
                 )
-                BasePreferences.ExtensionInstaller.SHIZUKU -> ShizukuInstallerAnime(this)
+                BasePreferences.ExtensionInstaller.SHIZUKU -> ShizukuInstaller(this)
                 else -> {
                     logcat(LogPriority.ERROR) { "Not implemented for installer $installerUsed" }
                     stopSelf()
@@ -79,8 +79,8 @@ class AnimeExtensionInstallService : Service() {
             uri: Uri,
             installer: BasePreferences.ExtensionInstaller,
         ): Intent {
-            return Intent(context, AnimeExtensionInstallService::class.java)
-                .setDataAndType(uri, AnimeExtensionInstaller.APK_MIME)
+            return Intent(context, ExtensionInstallService::class.java)
+                .setDataAndType(uri, ExtensionInstaller.APK_MIME)
                 .putExtra(EXTRA_DOWNLOAD_ID, downloadId)
                 .putExtra(EXTRA_INSTALLER, installer)
         }
