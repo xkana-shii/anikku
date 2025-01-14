@@ -13,7 +13,7 @@ enum class EditCoverAction {
     DELETE,
 }
 
-enum class EntryScreenItem {
+enum class AnimeScreenItem {
     INFO_BOX,
     ACTION_ROW,
     DESCRIPTION_WITH_TAG,

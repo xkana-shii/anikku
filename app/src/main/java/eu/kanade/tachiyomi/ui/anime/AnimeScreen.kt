@@ -31,7 +31,7 @@ import eu.kanade.presentation.anime.EditCoverAction
 import eu.kanade.presentation.anime.EpisodeOptionsDialogScreen
 import eu.kanade.presentation.anime.EpisodeSettingsDialog
 import eu.kanade.presentation.anime.components.AnimeCoverDialog
-import eu.kanade.presentation.anime.components.DeleteItemsDialog
+import eu.kanade.presentation.anime.components.DeleteEpisodesDialog
 import eu.kanade.presentation.anime.components.SetIntervalDialog
 import eu.kanade.presentation.category.components.ChangeCategoryDialog
 import eu.kanade.presentation.components.NavigatorAdaptiveSheet
@@ -229,7 +229,7 @@ class AnimeScreen(
                 )
             }
             is AnimeScreenModel.Dialog.DeleteEpisodes -> {
-                DeleteItemsDialog(
+                DeleteEpisodesDialog(
                     onDismissRequest = onDismissRequest,
                     onConfirm = {
                         screenModel.toggleAllSelection(false)

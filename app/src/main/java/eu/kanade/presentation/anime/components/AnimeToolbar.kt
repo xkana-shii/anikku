@@ -34,7 +34,7 @@ import tachiyomi.presentation.core.theme.active
 
 @Composable
 @Suppress("LongMethod", "CyclomaticComplexMethod")
-fun EntryToolbar(
+fun AnimeToolbar(
     title: String,
     titleAlphaProvider: () -> Float,
     hasFilters: Boolean,

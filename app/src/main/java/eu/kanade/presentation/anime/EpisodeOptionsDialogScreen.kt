@@ -287,7 +287,7 @@ private fun VideoList(
                     onCastClicked = {
                         scope.launch {
                             if (playerPreferences.enableCast().get()) {
-                                sendChaptersToCast(
+                                sendEpisodesToCast(
                                     context,
                                     anime.title,
                                     episode.name,
@@ -439,7 +439,7 @@ private fun ClickableRow(
 
 // Start tail cast
 
-private fun sendChaptersToCast(
+private fun sendEpisodesToCast(
     context: Context,
     title: String,
     episode: String,

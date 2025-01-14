@@ -38,7 +38,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import eu.kanade.presentation.anime.components.ItemCover
+import eu.kanade.presentation.anime.components.AnimeCover
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.BadgeGroup
 import tachiyomi.presentation.core.i18n.stringResource
@@ -87,7 +87,7 @@ fun EntryCompactGridItem(
     ) {
         EntryGridCover(
             cover = {
-                ItemCover.Book(
+                AnimeCover.Book(
                     modifier = Modifier
                         .fillMaxWidth()
                         .alpha(if (isSelected) GRID_SELECTED_COVER_ALPHA else coverAlpha),
@@ -194,7 +194,7 @@ fun EntryComfortableGridItem(
         Column {
             EntryGridCover(
                 cover = {
-                    ItemCover.Book(
+                    AnimeCover.Book(
                         modifier = Modifier
                             .fillMaxWidth()
                             .alpha(if (isSelected) GRID_SELECTED_COVER_ALPHA else coverAlpha),
@@ -241,7 +241,7 @@ private fun EntryGridCover(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .aspectRatio(ItemCover.Book.ratio),
+            .aspectRatio(AnimeCover.Book.ratio),
     ) {
         cover()
         content?.invoke(this)
@@ -350,7 +350,7 @@ fun EntryListItem(
             .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        ItemCover.Square(
+        AnimeCover.Square(
             modifier = Modifier
                 .fillMaxHeight()
                 .alpha(coverAlpha),

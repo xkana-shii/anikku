@@ -18,7 +18,7 @@ import tachiyomi.presentation.core.i18n.pluralStringResource
 import tachiyomi.presentation.core.i18n.stringResource
 
 @Composable
-fun ItemHeader(
+fun EpisodeHeader(
     enabled: Boolean,
     itemCount: Int?,
     missingItemsCount: Int,
@@ -48,12 +48,12 @@ fun ItemHeader(
             color = MaterialTheme.colorScheme.onBackground,
         )
 
-        MissingItemsWarning(missingItemsCount)
+        MissingEpisodesWarning(missingItemsCount)
     }
 }
 
 @Composable
-private fun MissingItemsWarning(count: Int) {
+private fun MissingEpisodesWarning(count: Int) {
     if (count == 0) {
         return
     }

@@ -22,7 +22,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
-import eu.kanade.presentation.anime.components.ItemCover
+import eu.kanade.presentation.anime.components.AnimeCover
 import eu.kanade.presentation.theme.TachiyomiPreviewTheme
 import eu.kanade.presentation.util.formatEpisodeNumber
 import eu.kanade.tachiyomi.util.lang.toTimestampString
@@ -51,7 +51,7 @@ fun AnimeHistoryItem(
             ),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        ItemCover.Book(
+        AnimeCover.Book(
             modifier = Modifier.fillMaxHeight(),
             data = history.coverData,
             onClick = onClickCover,

@@ -33,7 +33,7 @@ import java.time.temporal.ChronoUnit
 import kotlin.math.absoluteValue
 
 @Composable
-fun DeleteItemsDialog(
+fun DeleteEpisodesDialog(
     onDismissRequest: () -> Unit,
     onConfirm: () -> Unit,
 ) {
