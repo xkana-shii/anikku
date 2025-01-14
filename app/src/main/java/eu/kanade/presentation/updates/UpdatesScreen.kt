@@ -44,7 +44,7 @@ import java.time.LocalDate
 import kotlin.time.Duration.Companion.seconds
 
 @Composable
-fun AnimeUpdateScreen(
+fun UpdateScreen(
     state: AnimeUpdatesScreenModel.State,
     snackbarHostState: SnackbarHostState,
     lastUpdated: Long,
@@ -77,7 +77,7 @@ fun AnimeUpdateScreen(
             )
         },
         bottomBar = {
-            AnimeUpdatesBottomBar(
+            UpdatesBottomBar(
                 selected = state.selected,
                 onDownloadEpisode = onDownloadEpisode,
                 onMultiBookmarkClicked = onMultiBookmarkClicked,
@@ -116,9 +116,9 @@ fun AnimeUpdateScreen(
                     FastScrollLazyColumn(
                         contentPadding = contentPadding,
                     ) {
-                        animeUpdatesLastUpdatedItem(lastUpdated)
+                        updatesLastUpdatedItem(lastUpdated)
 
-                        animeUpdatesUiItems(
+                        updatesUiItems(
                             uiModels = state.getUiModel(),
                             selectionMode = state.selectionMode,
                             onUpdateSelected = onUpdateSelected,
@@ -189,7 +189,7 @@ private fun UpdatesAppBar(
 }
 
 @Composable
-private fun AnimeUpdatesBottomBar(
+private fun UpdatesBottomBar(
     selected: List<AnimeUpdatesItem>,
     onDownloadEpisode: (List<AnimeUpdatesItem>, EpisodeDownloadAction) -> Unit,
     onMultiBookmarkClicked: (List<AnimeUpdatesItem>, bookmark: Boolean) -> Unit,
@@ -231,7 +231,7 @@ private fun AnimeUpdatesBottomBar(
     )
 }
 
-sealed interface AnimeUpdatesUiModel {
-    data class Header(val date: LocalDate) : AnimeUpdatesUiModel
-    data class Item(val item: AnimeUpdatesItem) : AnimeUpdatesUiModel
+sealed interface UpdatesUiModel {
+    data class Header(val date: LocalDate) : UpdatesUiModel
+    data class Item(val item: AnimeUpdatesItem) : UpdatesUiModel
 }

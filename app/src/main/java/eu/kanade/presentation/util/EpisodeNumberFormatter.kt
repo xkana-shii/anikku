@@ -8,10 +8,6 @@ private val formatter = DecimalFormat(
     DecimalFormatSymbols().apply { decimalSeparator = '.' },
 )
 
-fun formatChapterNumber(chapterNumber: Double): String {
-    return formatter.format(chapterNumber)
-}
-
 fun formatEpisodeNumber(episodeNumber: Double): String {
     return formatter.format(episodeNumber)
 }

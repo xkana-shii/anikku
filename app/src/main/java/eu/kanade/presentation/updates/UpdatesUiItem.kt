@@ -56,7 +56,7 @@ import tachiyomi.presentation.core.util.selectedBackground
 import uy.kohesive.injekt.injectLazy
 import java.util.concurrent.TimeUnit
 
-internal fun LazyListScope.animeUpdatesLastUpdatedItem(
+internal fun LazyListScope.updatesLastUpdatedItem(
     lastUpdated: Long,
 ) {
     item(key = "animeUpdates-lastUpdated") {
@@ -76,8 +76,8 @@ internal fun LazyListScope.animeUpdatesLastUpdatedItem(
     }
 }
 
-internal fun LazyListScope.animeUpdatesUiItems(
-    uiModels: List<AnimeUpdatesUiModel>,
+internal fun LazyListScope.updatesUiItems(
+    uiModels: List<UpdatesUiModel>,
     selectionMode: Boolean,
     onUpdateSelected: (AnimeUpdatesItem, Boolean, Boolean, Boolean) -> Unit,
     onClickCover: (AnimeUpdatesItem) -> Unit,
@@ -88,27 +88,27 @@ internal fun LazyListScope.animeUpdatesUiItems(
         items = uiModels,
         contentType = {
             when (it) {
-                is AnimeUpdatesUiModel.Header -> "header"
-                is AnimeUpdatesUiModel.Item -> "item"
+                is UpdatesUiModel.Header -> "header"
+                is UpdatesUiModel.Item -> "item"
             }
         },
         key = {
             when (it) {
-                is AnimeUpdatesUiModel.Header -> "animeUpdatesHeader-${it.hashCode()}"
-                is AnimeUpdatesUiModel.Item -> "animeUpdates-${it.item.update.animeId}-${it.item.update.episodeId}"
+                is UpdatesUiModel.Header -> "animeUpdatesHeader-${it.hashCode()}"
+                is UpdatesUiModel.Item -> "animeUpdates-${it.item.update.animeId}-${it.item.update.episodeId}"
             }
         },
     ) { item ->
         when (item) {
-            is AnimeUpdatesUiModel.Header -> {
+            is UpdatesUiModel.Header -> {
                 ListGroupHeader(
                     modifier = Modifier.animateItemFastScroll(),
                     text = relativeDateText(item.date),
                 )
             }
-            is AnimeUpdatesUiModel.Item -> {
+            is UpdatesUiModel.Item -> {
                 val updatesItem = item.item
-                AnimeUpdatesUiItem(
+                UpdatesUiItem(
                     modifier = Modifier.animateItemFastScroll(),
                     update = updatesItem.update,
                     selected = updatesItem.selected,
@@ -151,7 +151,7 @@ internal fun LazyListScope.animeUpdatesUiItems(
 }
 
 @Composable
-private fun AnimeUpdatesUiItem(
+private fun UpdatesUiItem(
     update: AnimeUpdatesWithRelations,
     selected: Boolean,
     watchProgress: String?,
