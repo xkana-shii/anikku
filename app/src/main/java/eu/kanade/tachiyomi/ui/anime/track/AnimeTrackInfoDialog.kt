@@ -38,7 +38,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import dev.icerock.moko.resources.StringResource
-import eu.kanade.domain.track.interactor.RefreshAnimeTracks
+import eu.kanade.domain.track.interactor.RefreshTracks
 import eu.kanade.domain.track.model.toDbTrack
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.track.AnimeTrackInfoDialogHome
@@ -237,7 +237,7 @@ data class AnimeTrackInfoDialogHomeScreen(
         }
 
         private suspend fun refreshTrackers() {
-            val refreshTracks = Injekt.get<RefreshAnimeTracks>()
+            val refreshTracks = Injekt.get<RefreshTracks>()
             val context = Injekt.get<Application>()
 
             refreshTracks.await(animeId)

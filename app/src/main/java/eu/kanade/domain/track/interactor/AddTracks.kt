@@ -21,7 +21,7 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.time.ZoneOffset
 
-class AddAnimeTracks(
+class AddTracks(
     private val insertTrack: InsertAnimeTrack,
     private val syncChapterProgressWithTrack: SyncEpisodeProgressWithTrack,
     private val getEpisodesByAnimeId: GetEpisodesByAnimeId,

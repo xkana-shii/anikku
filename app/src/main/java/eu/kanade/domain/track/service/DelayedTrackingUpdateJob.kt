@@ -9,7 +9,7 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkerParameters
 import eu.kanade.domain.track.interactor.TrackEpisode
-import eu.kanade.domain.track.store.DelayedAnimeTrackingStore
+import eu.kanade.domain.track.store.DelayedTrackingStore
 import eu.kanade.tachiyomi.util.system.workManager
 import logcat.LogPriority
 import tachiyomi.core.common.util.lang.withIOContext
@@ -20,7 +20,7 @@ import uy.kohesive.injekt.api.get
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.toJavaDuration
 
-class DelayedAnimeTrackingUpdateJob(private val context: Context, workerParams: WorkerParameters) :
+class DelayedTrackingUpdateJob(private val context: Context, workerParams: WorkerParameters) :
     CoroutineWorker(context, workerParams) {
 
     override suspend fun doWork(): Result {
@@ -31,7 +31,7 @@ class DelayedAnimeTrackingUpdateJob(private val context: Context, workerParams: 
         val getTracks = Injekt.get<GetAnimeTracks>()
         val trackEpisode = Injekt.get<TrackEpisode>()
 
-        val delayedTrackingStore = Injekt.get<DelayedAnimeTrackingStore>()
+        val delayedTrackingStore = Injekt.get<DelayedTrackingStore>()
 
         withIOContext {
             delayedTrackingStore.getAnimeItems()
@@ -67,7 +67,7 @@ class DelayedAnimeTrackingUpdateJob(private val context: Context, workerParams: 
                 requiredNetworkType = NetworkType.CONNECTED,
             )
 
-            val request = OneTimeWorkRequestBuilder<DelayedAnimeTrackingUpdateJob>()
+            val request = OneTimeWorkRequestBuilder<DelayedTrackingUpdateJob>()
                 .setConstraints(constraints)
                 .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 5.minutes.toJavaDuration())
                 .addTag(TAG)

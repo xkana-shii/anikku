@@ -10,7 +10,7 @@ import kotlinx.coroutines.supervisorScope
 import tachiyomi.domain.track.interactor.GetAnimeTracks
 import tachiyomi.domain.track.interactor.InsertAnimeTrack
 
-class RefreshAnimeTracks(
+class RefreshTracks(
     private val getTracks: GetAnimeTracks,
     private val trackerManager: TrackerManager,
     private val insertTrack: InsertAnimeTrack,

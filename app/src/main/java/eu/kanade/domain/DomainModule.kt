@@ -16,8 +16,8 @@ import eu.kanade.domain.source.interactor.SetMigrateSorting
 import eu.kanade.domain.source.interactor.ToggleLanguage
 import eu.kanade.domain.source.interactor.ToggleSource
 import eu.kanade.domain.source.interactor.ToggleSourcePin
-import eu.kanade.domain.track.interactor.AddAnimeTracks
-import eu.kanade.domain.track.interactor.RefreshAnimeTracks
+import eu.kanade.domain.track.interactor.AddTracks
+import eu.kanade.domain.track.interactor.RefreshTracks
 import eu.kanade.domain.track.interactor.SyncEpisodeProgressWithTrack
 import eu.kanade.domain.track.interactor.TrackEpisode
 import mihon.data.repository.AnimeExtensionRepoRepositoryImpl
@@ -134,8 +134,8 @@ class DomainModule : InjektModule {
 
         addSingletonFactory<AnimeTrackRepository> { AnimeTrackRepositoryImpl(get()) }
         addFactory { TrackEpisode(get(), get(), get(), get()) }
-        addFactory { AddAnimeTracks(get(), get(), get(), get()) }
-        addFactory { RefreshAnimeTracks(get(), get(), get(), get()) }
+        addFactory { AddTracks(get(), get(), get(), get()) }
+        addFactory { RefreshTracks(get(), get(), get(), get()) }
         addFactory { DeleteAnimeTrack(get()) }
         addFactory { GetTracksPerAnime(get()) }
         addFactory { GetAnimeTracks(get()) }
