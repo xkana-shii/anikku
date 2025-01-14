@@ -10,17 +10,17 @@ import eu.kanade.presentation.browse.MigrateSearchScreen
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.ui.anime.AnimeScreen
 
-class MigrateAnimeSearchScreen(private val animeId: Long) : Screen() {
+class MigrateSearchScreen(private val animeId: Long) : Screen() {
 
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
 
-        val screenModel = rememberScreenModel { MigrateAnimeSearchScreenModel(animeId = animeId) }
+        val screenModel = rememberScreenModel { MigrateSearchScreenModel(animeId = animeId) }
         val state by screenModel.state.collectAsState()
 
         val dialogScreenModel = rememberScreenModel {
-            AnimeMigrateSearchScreenDialogScreenModel(
+            MigrateSearchScreenDialogScreenModel(
                 animeId = animeId,
             )
         }
@@ -37,23 +37,23 @@ class MigrateAnimeSearchScreen(private val animeId: Long) : Screen() {
             onToggleResults = screenModel::toggleFilterResults,
             onClickSource = {
                 navigator.push(
-                    AnimeSourceSearchScreen(dialogState.anime!!, it.id, state.searchQuery),
+                    SourceSearchScreen(dialogState.anime!!, it.id, state.searchQuery),
                 )
             },
             onClickItem = {
                 dialogScreenModel.setDialog(
-                    (AnimeMigrateSearchScreenDialogScreenModel.Dialog.Migrate(it)),
+                    (MigrateSearchScreenDialogScreenModel.Dialog.Migrate(it)),
                 )
             },
             onLongClickItem = { navigator.push(AnimeScreen(it.id, true)) },
         )
 
         when (val dialog = dialogState.dialog) {
-            is AnimeMigrateSearchScreenDialogScreenModel.Dialog.Migrate -> {
-                MigrateAnimeDialog(
+            is MigrateSearchScreenDialogScreenModel.Dialog.Migrate -> {
+                MigrateDialog(
                     oldAnime = dialogState.anime!!,
                     newAnime = dialog.anime,
-                    screenModel = rememberScreenModel { MigrateAnimeDialogScreenModel() },
+                    screenModel = rememberScreenModel { MigrateDialogScreenModel() },
                     onDismissRequest = { dialogScreenModel.setDialog(null) },
                     onClickTitle = {
                         navigator.push(AnimeScreen(dialog.anime.id, true))

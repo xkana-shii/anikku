@@ -24,14 +24,14 @@ import tachiyomi.core.common.util.system.logcat
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
-class AnimeExtensionFilterScreenModel(
+class ExtensionFilterScreenModel(
     private val preferences: SourcePreferences = Injekt.get(),
     private val getExtensionLanguages: GetExtensionLanguages = Injekt.get(),
     private val toggleLanguage: ToggleLanguage = Injekt.get(),
-) : StateScreenModel<AnimeExtensionFilterState>(AnimeExtensionFilterState.Loading) {
+) : StateScreenModel<ExtensionFilterState>(ExtensionFilterState.Loading) {
 
-    private val _events: Channel<AnimeExtensionFilterEvent> = Channel()
-    val events: Flow<AnimeExtensionFilterEvent> = _events.receiveAsFlow()
+    private val _events: Channel<ExtensionFilterEvent> = Channel()
+    val events: Flow<ExtensionFilterEvent> = _events.receiveAsFlow()
 
     init {
         screenModelScope.launch {
@@ -41,11 +41,11 @@ class AnimeExtensionFilterScreenModel(
             ) { a, b -> a to b }
                 .catch { throwable ->
                     logcat(LogPriority.ERROR, throwable)
-                    _events.send(AnimeExtensionFilterEvent.FailedFetchingLanguages)
+                    _events.send(ExtensionFilterEvent.FailedFetchingLanguages)
                 }
                 .collectLatest { (extensionLanguages, enabledLanguages) ->
                     mutableState.update {
-                        AnimeExtensionFilterState.Success(
+                        ExtensionFilterState.Success(
                             languages = extensionLanguages.toImmutableList(),
                             enabledLanguages = enabledLanguages.toImmutableSet(),
                         )
@@ -59,20 +59,20 @@ class AnimeExtensionFilterScreenModel(
     }
 }
 
-sealed interface AnimeExtensionFilterEvent {
-    data object FailedFetchingLanguages : AnimeExtensionFilterEvent
+sealed interface ExtensionFilterEvent {
+    data object FailedFetchingLanguages : ExtensionFilterEvent
 }
 
-sealed interface AnimeExtensionFilterState {
+sealed interface ExtensionFilterState {
 
     @Immutable
-    data object Loading : AnimeExtensionFilterState
+    data object Loading : ExtensionFilterState
 
     @Immutable
     data class Success(
         val languages: ImmutableList<String>,
         val enabledLanguages: ImmutableSet<String> = persistentSetOf(),
-    ) : AnimeExtensionFilterState {
+    ) : ExtensionFilterState {
 
         val isEmpty: Boolean
             get() = languages.isEmpty()

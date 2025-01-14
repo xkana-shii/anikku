@@ -47,10 +47,10 @@ import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.animesource.AnimeCatalogueSource
 import eu.kanade.tachiyomi.animesource.online.AnimeHttpSource
 import eu.kanade.tachiyomi.ui.anime.AnimeScreen
-import eu.kanade.tachiyomi.ui.browse.extension.details.AnimeSourcePreferencesScreen
-import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateAnimeDialog
-import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateAnimeDialogScreenModel
-import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseAnimeSourceScreenModel.Listing
+import eu.kanade.tachiyomi.ui.browse.extension.details.SourcePreferencesScreen
+import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateDialog
+import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateDialogScreenModel
+import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel.Listing
 import eu.kanade.tachiyomi.ui.category.CategoriesScreen
 import eu.kanade.tachiyomi.ui.webview.WebViewScreen
 import kotlinx.coroutines.channels.Channel
@@ -66,7 +66,7 @@ import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.LoadingScreen
 import tachiyomi.source.local.LocalAnimeSource
 
-data class BrowseAnimeSourceScreen(
+data class BrowseSourceScreen(
     private val sourceId: Long,
     private val listingQuery: String?,
 ) : Screen(), AssistContentScreen {
@@ -82,7 +82,7 @@ data class BrowseAnimeSourceScreen(
             return
         }
 
-        val screenModel = rememberScreenModel { BrowseAnimeSourceScreenModel(sourceId, listingQuery) }
+        val screenModel = rememberScreenModel { BrowseSourceScreenModel(sourceId, listingQuery) }
         val state by screenModel.state.collectAsState()
 
         val navigator = LocalNavigator.currentOrThrow
@@ -136,7 +136,7 @@ data class BrowseAnimeSourceScreen(
                         navigateUp = navigateUp,
                         onWebViewClick = onWebViewClick,
                         onHelpClick = onHelpClick,
-                        onSettingsClick = { navigator.push(AnimeSourcePreferencesScreen(sourceId)) },
+                        onSettingsClick = { navigator.push(SourcePreferencesScreen(sourceId)) },
                         onSearch = screenModel::search,
                     )
 
@@ -226,10 +226,10 @@ data class BrowseAnimeSourceScreen(
                         val duplicateAnime = screenModel.getDuplicateAnimelibAnime(anime)
                         when {
                             anime.favorite -> screenModel.setDialog(
-                                BrowseAnimeSourceScreenModel.Dialog.RemoveAnime(anime),
+                                BrowseSourceScreenModel.Dialog.RemoveAnime(anime),
                             )
                             duplicateAnime != null -> screenModel.setDialog(
-                                BrowseAnimeSourceScreenModel.Dialog.AddDuplicateAnime(
+                                BrowseSourceScreenModel.Dialog.AddDuplicateAnime(
                                     anime,
                                     duplicateAnime,
                                 ),
@@ -244,8 +244,8 @@ data class BrowseAnimeSourceScreen(
 
         val onDismissRequest = { screenModel.setDialog(null) }
         when (val dialog = state.dialog) {
-            is BrowseAnimeSourceScreenModel.Dialog.Filter -> {
-                SourceFilterAnimeDialog(
+            is BrowseSourceScreenModel.Dialog.Filter -> {
+                SourceFilterDialog(
                     onDismissRequest = onDismissRequest,
                     filters = state.filters,
                     onReset = screenModel::resetFilters,
@@ -253,24 +253,24 @@ data class BrowseAnimeSourceScreen(
                     onUpdate = screenModel::setFilters,
                 )
             }
-            is BrowseAnimeSourceScreenModel.Dialog.AddDuplicateAnime -> {
+            is BrowseSourceScreenModel.Dialog.AddDuplicateAnime -> {
                 DuplicateAnimeDialog(
                     onDismissRequest = onDismissRequest,
                     onConfirm = { screenModel.addFavorite(dialog.anime) },
                     onOpenAnime = { navigator.push(AnimeScreen(dialog.duplicate.id)) },
                     onMigrate = {
                         screenModel.setDialog(
-                            BrowseAnimeSourceScreenModel.Dialog.Migrate(dialog.anime, dialog.duplicate),
+                            BrowseSourceScreenModel.Dialog.Migrate(dialog.anime, dialog.duplicate),
                         )
                     },
                 )
             }
 
-            is BrowseAnimeSourceScreenModel.Dialog.Migrate -> {
-                MigrateAnimeDialog(
+            is BrowseSourceScreenModel.Dialog.Migrate -> {
+                MigrateDialog(
                     oldAnime = dialog.oldAnime,
                     newAnime = dialog.newAnime,
-                    screenModel = MigrateAnimeDialogScreenModel(),
+                    screenModel = MigrateDialogScreenModel(),
                     onDismissRequest = onDismissRequest,
                     onClickTitle = { navigator.push(AnimeScreen(dialog.oldAnime.id)) },
                     onPopScreen = {
@@ -278,7 +278,7 @@ data class BrowseAnimeSourceScreen(
                     },
                 )
             }
-            is BrowseAnimeSourceScreenModel.Dialog.RemoveAnime -> {
+            is BrowseSourceScreenModel.Dialog.RemoveAnime -> {
                 RemoveAnimeDialog(
                     onDismissRequest = onDismissRequest,
                     onConfirm = {
@@ -287,7 +287,7 @@ data class BrowseAnimeSourceScreen(
                     entryToRemove = dialog.anime.title,
                 )
             }
-            is BrowseAnimeSourceScreenModel.Dialog.ChangeAnimeCategory -> {
+            is BrowseSourceScreenModel.Dialog.ChangeAnimeCategory -> {
                 ChangeCategoryDialog(
                     initialSelection = dialog.initialSelection,
                     onDismissRequest = onDismissRequest,

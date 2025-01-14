@@ -10,10 +10,10 @@ import tachiyomi.domain.anime.model.Anime
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
-class AnimeMigrateSearchScreenDialogScreenModel(
+class MigrateSearchScreenDialogScreenModel(
     val animeId: Long,
     getAnime: GetAnime = Injekt.get(),
-) : StateScreenModel<AnimeMigrateSearchScreenDialogScreenModel.State>(State()) {
+) : StateScreenModel<MigrateSearchScreenDialogScreenModel.State>(State()) {
 
     init {
         screenModelScope.launch {

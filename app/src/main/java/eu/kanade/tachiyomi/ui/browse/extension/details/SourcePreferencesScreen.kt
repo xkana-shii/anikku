@@ -45,7 +45,7 @@ import tachiyomi.presentation.core.screens.LoadingScreen
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
-class AnimeSourcePreferencesScreen(val sourceId: Long) : Screen() {
+class SourcePreferencesScreen(val sourceId: Long) : Screen() {
 
     @Composable
     override fun Content() {

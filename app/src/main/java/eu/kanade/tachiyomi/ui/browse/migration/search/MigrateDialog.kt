@@ -30,7 +30,7 @@ import eu.kanade.tachiyomi.data.cache.AnimeCoverCache
 import eu.kanade.tachiyomi.data.download.AnimeDownloadManager
 import eu.kanade.tachiyomi.data.track.EnhancedAnimeTracker
 import eu.kanade.tachiyomi.data.track.TrackerManager
-import eu.kanade.tachiyomi.ui.browse.migration.AnimeMigrationFlags
+import eu.kanade.tachiyomi.ui.browse.migration.MigrationFlags
 import kotlinx.coroutines.flow.update
 import tachiyomi.core.common.preference.Preference
 import tachiyomi.core.common.preference.PreferenceStore
@@ -56,10 +56,10 @@ import uy.kohesive.injekt.api.get
 import java.time.Instant
 
 @Composable
-internal fun MigrateAnimeDialog(
+internal fun MigrateDialog(
     oldAnime: Anime,
     newAnime: Anime,
-    screenModel: MigrateAnimeDialogScreenModel,
+    screenModel: MigrateDialogScreenModel,
     onDismissRequest: () -> Unit,
     onClickTitle: () -> Unit,
     onPopScreen: () -> Unit,
@@ -67,7 +67,7 @@ internal fun MigrateAnimeDialog(
     val scope = rememberCoroutineScope()
     val state by screenModel.state.collectAsState()
 
-    val flags = remember { AnimeMigrationFlags.getFlags(oldAnime, screenModel.migrateFlags.get()) }
+    val flags = remember { MigrationFlags.getFlags(oldAnime, screenModel.migrateFlags.get()) }
     val selectedFlags = remember { flags.map { it.isDefaultSelected }.toMutableStateList() }
 
     if (state.isMigrating) {
@@ -116,7 +116,7 @@ internal fun MigrateAnimeDialog(
                                     oldAnime,
                                     newAnime,
                                     false,
-                                    AnimeMigrationFlags.getSelectedFlagsBitMap(selectedFlags, flags),
+                                    MigrationFlags.getSelectedFlagsBitMap(selectedFlags, flags),
                                 )
                                 withUIContext { onPopScreen() }
                             }
@@ -131,7 +131,7 @@ internal fun MigrateAnimeDialog(
                                     oldAnime,
                                     newAnime,
                                     true,
-                                    AnimeMigrationFlags.getSelectedFlagsBitMap(selectedFlags, flags),
+                                    MigrationFlags.getSelectedFlagsBitMap(selectedFlags, flags),
                                 )
 
                                 withUIContext { onPopScreen() }
@@ -146,7 +146,7 @@ internal fun MigrateAnimeDialog(
     }
 }
 
-internal class MigrateAnimeDialogScreenModel(
+internal class MigrateDialogScreenModel(
     private val sourceManager: AnimeSourceManager = Injekt.get(),
     private val downloadManager: AnimeDownloadManager = Injekt.get(),
     private val updateAnime: UpdateAnime = Injekt.get(),
@@ -159,7 +159,7 @@ internal class MigrateAnimeDialogScreenModel(
     private val insertTrack: InsertAnimeTrack = Injekt.get(),
     private val coverCache: AnimeCoverCache = Injekt.get(),
     private val preferenceStore: PreferenceStore = Injekt.get(),
-) : StateScreenModel<MigrateAnimeDialogScreenModel.State>(State()) {
+) : StateScreenModel<MigrateDialogScreenModel.State>(State()) {
 
     val migrateFlags: Preference<Int> by lazy {
         preferenceStore.getInt("migrate_flags", Int.MAX_VALUE)
@@ -209,10 +209,10 @@ internal class MigrateAnimeDialogScreenModel(
         replace: Boolean,
         flags: Int,
     ) {
-        val migrateEpisodes = AnimeMigrationFlags.hasEpisodes(flags)
-        val migrateCategories = AnimeMigrationFlags.hasCategories(flags)
-        val migrateCustomCover = AnimeMigrationFlags.hasCustomCover(flags)
-        val deleteDownloaded = AnimeMigrationFlags.hasDeleteDownloaded(flags)
+        val migrateEpisodes = MigrationFlags.hasEpisodes(flags)
+        val migrateCategories = MigrationFlags.hasCategories(flags)
+        val migrateCustomCover = MigrationFlags.hasCustomCover(flags)
+        val deleteDownloaded = MigrationFlags.hasDeleteDownloaded(flags)
 
         try {
             syncEpisodesWithSource.await(sourceEpisodes, newAnime, newSource)

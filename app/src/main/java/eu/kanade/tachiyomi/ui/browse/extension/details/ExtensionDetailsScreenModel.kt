@@ -29,17 +29,17 @@ import tachiyomi.core.common.util.system.logcat
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
-class AnimeExtensionDetailsScreenModel(
+class ExtensionDetailsScreenModel(
     pkgName: String,
     context: Context,
     private val network: NetworkHelper = Injekt.get(),
     private val extensionManager: AnimeExtensionManager = Injekt.get(),
     private val getExtensionSources: GetExtensionSources = Injekt.get(),
     private val toggleSource: ToggleSource = Injekt.get(),
-) : StateScreenModel<AnimeExtensionDetailsScreenModel.State>(State()) {
+) : StateScreenModel<ExtensionDetailsScreenModel.State>(State()) {
 
-    private val _events: Channel<AnimeExtensionDetailsEvent> = Channel()
-    val events: Flow<AnimeExtensionDetailsEvent> = _events.receiveAsFlow()
+    private val _events: Channel<ExtensionDetailsEvent> = Channel()
+    val events: Flow<ExtensionDetailsEvent> = _events.receiveAsFlow()
 
     init {
         screenModelScope.launch {
@@ -48,7 +48,7 @@ class AnimeExtensionDetailsScreenModel(
                     .map { it.firstOrNull { extension -> extension.pkgName == pkgName } }
                     .collectLatest { extension ->
                         if (extension == null) {
-                            _events.send(AnimeExtensionDetailsEvent.Uninstalled)
+                            _events.send(ExtensionDetailsEvent.Uninstalled)
                             return@collectLatest
                         }
                         mutableState.update { state ->
@@ -135,6 +135,6 @@ class AnimeExtensionDetailsScreenModel(
     }
 }
 
-sealed interface AnimeExtensionDetailsEvent {
-    data object Uninstalled : AnimeExtensionDetailsEvent
+sealed interface ExtensionDetailsEvent {
+    data object Uninstalled : ExtensionDetailsEvent
 }

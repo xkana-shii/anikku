@@ -17,7 +17,7 @@ import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.TabContent
 import eu.kanade.presentation.more.settings.screen.browse.ExtensionReposScreen
 import eu.kanade.tachiyomi.extension.model.AnimeExtension
-import eu.kanade.tachiyomi.ui.browse.extension.details.AnimeExtensionDetailsScreen
+import eu.kanade.tachiyomi.ui.browse.extension.details.ExtensionDetailsScreen
 import eu.kanade.tachiyomi.ui.webview.WebViewScreen
 import eu.kanade.tachiyomi.util.system.isPackageInstalled
 import kotlinx.collections.immutable.persistentListOf
@@ -25,8 +25,8 @@ import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.i18n.stringResource
 
 @Composable
-fun animeExtensionsTab(
-    extensionsScreenModel: AnimeExtensionsScreenModel,
+fun extensionsTab(
+    extensionsScreenModel: ExtensionsScreenModel,
 ): TabContent {
     val navigator = LocalNavigator.currentOrThrow
     val context = LocalContext.current
@@ -43,7 +43,7 @@ fun animeExtensionsTab(
                 title = stringResource(MR.strings.action_filter),
                 onClick = {
                     navigator.push(
-                        AnimeExtensionFilterScreen(),
+                        ExtensionFilterScreen(),
                     )
                 },
             ),
@@ -85,7 +85,7 @@ fun animeExtensionsTab(
                     }
                 },
                 onInstallExtension = extensionsScreenModel::installExtension,
-                onOpenExtension = { navigator.push(AnimeExtensionDetailsScreen(it.pkgName)) },
+                onOpenExtension = { navigator.push(ExtensionDetailsScreen(it.pkgName)) },
                 onTrustExtension = { extensionsScreenModel.trustExtension(it) },
                 onUninstallExtension = { extensionsScreenModel.uninstallExtension(it) },
                 onUpdateExtension = extensionsScreenModel::updateExtension,

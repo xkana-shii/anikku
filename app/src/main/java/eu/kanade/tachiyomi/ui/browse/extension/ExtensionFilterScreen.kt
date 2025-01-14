@@ -15,21 +15,21 @@ import kotlinx.coroutines.flow.collectLatest
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.screens.LoadingScreen
 
-class AnimeExtensionFilterScreen : Screen() {
+class ExtensionFilterScreen : Screen() {
 
     @Composable
     override fun Content() {
         val context = LocalContext.current
         val navigator = LocalNavigator.currentOrThrow
-        val screenModel = rememberScreenModel { AnimeExtensionFilterScreenModel() }
+        val screenModel = rememberScreenModel { ExtensionFilterScreenModel() }
         val state by screenModel.state.collectAsState()
 
-        if (state is AnimeExtensionFilterState.Loading) {
+        if (state is ExtensionFilterState.Loading) {
             LoadingScreen()
             return
         }
 
-        val successState = state as AnimeExtensionFilterState.Success
+        val successState = state as ExtensionFilterState.Success
 
         ExtensionFilterScreen(
             navigateUp = navigator::pop,
@@ -40,7 +40,7 @@ class AnimeExtensionFilterScreen : Screen() {
         LaunchedEffect(Unit) {
             screenModel.events.collectLatest {
                 when (it) {
-                    AnimeExtensionFilterEvent.FailedFetchingLanguages -> {
+                    ExtensionFilterEvent.FailedFetchingLanguages -> {
                         context.toast(MR.strings.internal_error)
                     }
                 }

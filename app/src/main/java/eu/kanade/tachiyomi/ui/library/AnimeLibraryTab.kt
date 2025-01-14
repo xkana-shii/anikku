@@ -44,7 +44,7 @@ import eu.kanade.tachiyomi.data.connection.discord.DiscordScreen
 import eu.kanade.tachiyomi.data.library.AnimeLibraryUpdateJob
 import eu.kanade.tachiyomi.data.sync.SyncDataJob
 import eu.kanade.tachiyomi.ui.anime.AnimeScreen
-import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalAnimeSearchScreen
+import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreen
 import eu.kanade.tachiyomi.ui.category.CategoriesScreen
 import eu.kanade.tachiyomi.ui.home.HomeScreen
 import eu.kanade.tachiyomi.ui.main.MainActivity
@@ -250,7 +250,7 @@ data object AnimeLibraryTab : Tab {
                         onRefresh = onClickRefresh,
                         onGlobalSearchClicked = {
                             navigator.push(
-                                GlobalAnimeSearchScreen(screenModel.state.value.searchQuery ?: ""),
+                                GlobalSearchScreen(screenModel.state.value.searchQuery ?: ""),
                             )
                         },
                         getNumberOfAnimeForCategory = { state.getAnimeCountForCategory(it) },

@@ -34,20 +34,20 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import kotlin.time.Duration.Companion.seconds
 
-class AnimeExtensionsScreenModel(
+class ExtensionsScreenModel(
     preferences: SourcePreferences = Injekt.get(),
     basePreferences: BasePreferences = Injekt.get(),
     private val extensionManager: AnimeExtensionManager = Injekt.get(),
     private val getExtensions: GetExtensionsByType = Injekt.get(),
-) : StateScreenModel<AnimeExtensionsScreenModel.State>(State()) {
+) : StateScreenModel<ExtensionsScreenModel.State>(State()) {
 
     private val currentDownloads = MutableStateFlow<Map<String, InstallStep>>(hashMapOf())
 
     init {
         val context = Injekt.get<Application>()
-        val extensionMapper: (Map<String, InstallStep>) -> ((AnimeExtension) -> AnimeExtensionUiModel.Item) = { map ->
+        val extensionMapper: (Map<String, InstallStep>) -> ((AnimeExtension) -> ExtensionUiModel.Item) = { map ->
             {
-                AnimeExtensionUiModel.Item(it, map[it.pkgName] ?: InstallStep.Idle)
+                ExtensionUiModel.Item(it, map[it.pkgName] ?: InstallStep.Idle)
             }
         }
         val queryFilter: (String) -> ((AnimeExtension) -> Boolean) = { query ->
@@ -103,7 +103,7 @@ class AnimeExtensionsScreenModel(
                     extensionMapper(downloads),
                 )
                 if (updates.isNotEmpty()) {
-                    itemsGroups[AnimeExtensionUiModel.Header.Resource(MR.strings.ext_updates_pending)] = updates
+                    itemsGroups[ExtensionUiModel.Header.Resource(MR.strings.ext_updates_pending)] = updates
                 }
 
                 val installed = _installed.filter(queryFilter(searchQuery)).map(
@@ -113,7 +113,7 @@ class AnimeExtensionsScreenModel(
                     extensionMapper(downloads),
                 )
                 if (installed.isNotEmpty() || untrusted.isNotEmpty()) {
-                    itemsGroups[AnimeExtensionUiModel.Header.Resource(MR.strings.ext_installed)] = installed + untrusted
+                    itemsGroups[ExtensionUiModel.Header.Resource(MR.strings.ext_installed)] = installed + untrusted
                 }
 
                 val languagesWithExtensions = _available
@@ -121,7 +121,7 @@ class AnimeExtensionsScreenModel(
                     .groupBy { it.lang }
                     .toSortedMap(LocaleHelper.comparator)
                     .map { (lang, exts) ->
-                        AnimeExtensionUiModel.Header.Text(
+                        ExtensionUiModel.Header.Text(
                             LocaleHelper.getSourceDisplayName(lang, context),
                         ) to exts.map(extensionMapper(downloads))
                     }
@@ -233,9 +233,9 @@ class AnimeExtensionsScreenModel(
     }
 }
 
-typealias ItemGroups = MutableMap<AnimeExtensionUiModel.Header, List<AnimeExtensionUiModel.Item>>
+typealias ItemGroups = MutableMap<ExtensionUiModel.Header, List<ExtensionUiModel.Item>>
 
-object AnimeExtensionUiModel {
+object ExtensionUiModel {
     sealed interface Header {
         data class Resource(val textRes: StringResource) : Header
         data class Text(val text: String) : Header

@@ -46,11 +46,11 @@ import eu.kanade.tachiyomi.data.torrentServer.service.TorrentServerService
 import eu.kanade.tachiyomi.source.isLocalOrStub
 import eu.kanade.tachiyomi.source.isSourceForTorrents
 import eu.kanade.tachiyomi.ui.anime.track.TrackInfoDialogHomeScreen
-import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateAnimeDialog
-import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateAnimeDialogScreenModel
-import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateAnimeSearchScreen
-import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseAnimeSourceScreen
-import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalAnimeSearchScreen
+import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateDialog
+import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateDialogScreenModel
+import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateSearchScreen
+import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
+import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreen
 import eu.kanade.tachiyomi.ui.category.CategoriesScreen
 import eu.kanade.tachiyomi.ui.home.HomeScreen
 import eu.kanade.tachiyomi.ui.library.AnimeLibraryTab
@@ -196,7 +196,7 @@ class AnimeScreen(
                 successState.anime.favorite
             },
             onMigrateClicked = {
-                navigator.push(MigrateAnimeSearchScreen(successState.anime.id))
+                navigator.push(MigrateSearchScreen(successState.anime.id))
             }.takeIf { successState.anime.favorite },
             changeAnimeSkipIntro = screenModel::showAnimeSkipIntroDialog.takeIf { successState.anime.favorite },
             onMultiBookmarkClicked = screenModel::bookmarkEpisodes,
@@ -250,10 +250,10 @@ class AnimeScreen(
             }
 
             is AnimeScreenModel.Dialog.Migrate -> {
-                MigrateAnimeDialog(
+                MigrateDialog(
                     oldAnime = dialog.oldAnime,
                     newAnime = dialog.newAnime,
-                    screenModel = MigrateAnimeDialogScreenModel(),
+                    screenModel = MigrateDialogScreenModel(),
                     onDismissRequest = onDismissRequest,
                     onClickTitle = { navigator.push(AnimeScreen(dialog.oldAnime.id)) },
                     onPopScreen = { navigator.replace(AnimeScreen(dialog.newAnime.id)) },
@@ -434,7 +434,7 @@ class AnimeScreen(
      */
     private suspend fun performSearch(navigator: Navigator, query: String, global: Boolean) {
         if (global) {
-            navigator.push(GlobalAnimeSearchScreen(query))
+            navigator.push(GlobalSearchScreen(query))
             return
         }
 
@@ -447,7 +447,7 @@ class AnimeScreen(
                 navigator.pop()
                 AnimeLibraryTab.search(query)
             }
-            is BrowseAnimeSourceScreen -> {
+            is BrowseSourceScreen -> {
                 navigator.pop()
                 previousController.search(query)
             }
@@ -469,7 +469,7 @@ class AnimeScreen(
         }
 
         val previousController = navigator.items[navigator.size - 2]
-        if (previousController is BrowseAnimeSourceScreen && source is AnimeHttpSource) {
+        if (previousController is BrowseSourceScreen && source is AnimeHttpSource) {
             navigator.pop()
             previousController.searchGenre(genreName)
         } else {

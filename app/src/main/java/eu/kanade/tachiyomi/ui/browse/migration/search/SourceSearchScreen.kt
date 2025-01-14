@@ -24,8 +24,8 @@ import eu.kanade.presentation.components.SearchToolbar
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.animesource.online.AnimeHttpSource
 import eu.kanade.tachiyomi.ui.anime.AnimeScreen
-import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseAnimeSourceScreenModel
-import eu.kanade.tachiyomi.ui.browse.source.browse.SourceFilterAnimeDialog
+import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel
+import eu.kanade.tachiyomi.ui.browse.source.browse.SourceFilterDialog
 import eu.kanade.tachiyomi.ui.home.HomeScreen
 import eu.kanade.tachiyomi.ui.webview.WebViewScreen
 import kotlinx.coroutines.launch
@@ -38,7 +38,7 @@ import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.LoadingScreen
 import tachiyomi.source.local.LocalAnimeSource
 
-data class AnimeSourceSearchScreen(
+data class SourceSearchScreen(
     private val oldAnime: Anime,
     private val sourceId: Long,
     private val query: String?,
@@ -55,7 +55,7 @@ data class AnimeSourceSearchScreen(
         val navigator = LocalNavigator.currentOrThrow
         val scope = rememberCoroutineScope()
 
-        val screenModel = rememberScreenModel { BrowseAnimeSourceScreenModel(sourceId, query) }
+        val screenModel = rememberScreenModel { BrowseSourceScreenModel(sourceId, query) }
         val state by screenModel.state.collectAsState()
 
         val snackbarHostState = remember { SnackbarHostState() }
@@ -83,7 +83,7 @@ data class AnimeSourceSearchScreen(
         ) { paddingValues ->
             val pagingFlow by screenModel.animePagerFlowFlow.collectAsState()
             val openMigrateDialog: (Anime) -> Unit = {
-                screenModel.setDialog(BrowseAnimeSourceScreenModel.Dialog.Migrate(newAnime = it, oldAnime = oldAnime))
+                screenModel.setDialog(BrowseSourceScreenModel.Dialog.Migrate(newAnime = it, oldAnime = oldAnime))
             }
             BrowseSourceContent(
                 source = screenModel.source,
@@ -111,8 +111,8 @@ data class AnimeSourceSearchScreen(
 
         val onDismissRequest = { screenModel.setDialog(null) }
         when (val dialog = state.dialog) {
-            is BrowseAnimeSourceScreenModel.Dialog.Filter -> {
-                SourceFilterAnimeDialog(
+            is BrowseSourceScreenModel.Dialog.Filter -> {
+                SourceFilterDialog(
                     onDismissRequest = onDismissRequest,
                     filters = state.filters,
                     onReset = screenModel::resetFilters,
@@ -120,11 +120,11 @@ data class AnimeSourceSearchScreen(
                     onUpdate = screenModel::setFilters,
                 )
             }
-            is BrowseAnimeSourceScreenModel.Dialog.Migrate -> {
-                MigrateAnimeDialog(
+            is BrowseSourceScreenModel.Dialog.Migrate -> {
+                MigrateDialog(
                     oldAnime = oldAnime,
                     newAnime = dialog.newAnime,
-                    screenModel = rememberScreenModel { MigrateAnimeDialogScreenModel() },
+                    screenModel = rememberScreenModel { MigrateDialogScreenModel() },
                     onDismissRequest = onDismissRequest,
                     onClickTitle = { navigator.push(AnimeScreen(dialog.newAnime.id)) },
                     onPopScreen = {

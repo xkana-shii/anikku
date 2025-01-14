@@ -18,11 +18,11 @@ import eu.kanade.presentation.util.Tab
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.connection.discord.DiscordRPCService
 import eu.kanade.tachiyomi.data.connection.discord.DiscordScreen
-import eu.kanade.tachiyomi.ui.browse.extension.AnimeExtensionsScreenModel
-import eu.kanade.tachiyomi.ui.browse.extension.animeExtensionsTab
-import eu.kanade.tachiyomi.ui.browse.migration.sources.migrateAnimeSourceTab
-import eu.kanade.tachiyomi.ui.browse.source.animeSourcesTab
-import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalAnimeSearchScreen
+import eu.kanade.tachiyomi.ui.browse.extension.ExtensionsScreenModel
+import eu.kanade.tachiyomi.ui.browse.extension.extensionsTab
+import eu.kanade.tachiyomi.ui.browse.migration.sources.migrateSourceTab
+import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreen
+import eu.kanade.tachiyomi.ui.browse.source.sourcesTab
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.channels.BufferOverflow
@@ -48,7 +48,7 @@ data object BrowseTab : Tab {
 
     // TODO: Find a way to let it open Global Anime/Manga Search depending on what Tab(e.g. Anime/Manga Source Tab) is open
     override suspend fun onReselect(navigator: Navigator) {
-        navigator.push(GlobalAnimeSearchScreen())
+        navigator.push(GlobalSearchScreen())
     }
 
     private val switchToExtensionTabChannel = Channel<Unit>(1, BufferOverflow.DROP_OLDEST)
@@ -62,13 +62,13 @@ data object BrowseTab : Tab {
         val context = LocalContext.current
 
         // Hoisted for extensions tab's search bar
-        val animeExtensionsScreenModel = rememberScreenModel { AnimeExtensionsScreenModel() }
-        val animeExtensionsState by animeExtensionsScreenModel.state.collectAsState()
+        val extensionsScreenModel = rememberScreenModel { ExtensionsScreenModel() }
+        val animeExtensionsState by extensionsScreenModel.state.collectAsState()
 
         val tabs = persistentListOf(
-            animeSourcesTab(),
-            animeExtensionsTab(animeExtensionsScreenModel),
-            migrateAnimeSourceTab(),
+            sourcesTab(),
+            extensionsTab(extensionsScreenModel),
+            migrateSourceTab(),
         )
 
         val state = rememberPagerState { tabs.size }
@@ -78,7 +78,7 @@ data object BrowseTab : Tab {
             tabs = tabs,
             state = state,
             animeSearchQuery = animeExtensionsState.searchQuery,
-            onChangeAnimeSearchQuery = animeExtensionsScreenModel::search,
+            onChangeAnimeSearchQuery = extensionsScreenModel::search,
             scrollable = true,
         )
         LaunchedEffect(Unit) {

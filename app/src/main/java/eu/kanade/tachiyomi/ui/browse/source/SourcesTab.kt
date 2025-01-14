@@ -15,8 +15,8 @@ import eu.kanade.presentation.browse.SourceOptionsDialog
 import eu.kanade.presentation.browse.SourcesScreen
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.TabContent
-import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseAnimeSourceScreen
-import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalAnimeSearchScreen
+import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
+import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreen
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -24,9 +24,9 @@ import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.i18n.stringResource
 
 @Composable
-fun Screen.animeSourcesTab(): TabContent {
+fun Screen.sourcesTab(): TabContent {
     val navigator = LocalNavigator.currentOrThrow
-    val screenModel = rememberScreenModel { AnimeSourcesScreenModel() }
+    val screenModel = rememberScreenModel { SourcesScreenModel() }
     val state by screenModel.state.collectAsState()
 
     return TabContent(
@@ -35,12 +35,12 @@ fun Screen.animeSourcesTab(): TabContent {
             AppBar.Action(
                 title = stringResource(MR.strings.action_global_search),
                 icon = Icons.Outlined.TravelExplore,
-                onClick = { navigator.push(GlobalAnimeSearchScreen()) },
+                onClick = { navigator.push(GlobalSearchScreen()) },
             ),
             AppBar.Action(
                 title = stringResource(MR.strings.action_filter),
                 icon = Icons.Outlined.FilterList,
-                onClick = { navigator.push(AnimeSourcesFilterScreen()) },
+                onClick = { navigator.push(SourcesFilterScreen()) },
             ),
         ),
         content = { contentPadding, snackbarHostState ->
@@ -48,7 +48,7 @@ fun Screen.animeSourcesTab(): TabContent {
                 state = state,
                 contentPadding = contentPadding,
                 onClickItem = { source, listing ->
-                    navigator.push(BrowseAnimeSourceScreen(source.id, listing.query))
+                    navigator.push(BrowseSourceScreen(source.id, listing.query))
                 },
                 onClickPin = screenModel::togglePin,
                 onLongClickItem = screenModel::showSourceDialog,
@@ -74,7 +74,7 @@ fun Screen.animeSourcesTab(): TabContent {
             LaunchedEffect(Unit) {
                 screenModel.events.collectLatest { event ->
                     when (event) {
-                        AnimeSourcesScreenModel.Event.FailedFetchingSources -> {
+                        SourcesScreenModel.Event.FailedFetchingSources -> {
                             launch { snackbarHostState.showSnackbar(internalErrString) }
                         }
                     }

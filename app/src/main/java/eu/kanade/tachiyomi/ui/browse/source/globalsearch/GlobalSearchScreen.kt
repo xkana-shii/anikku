@@ -14,10 +14,10 @@ import eu.kanade.core.util.ifSourcesLoaded
 import eu.kanade.presentation.browse.GlobalSearchScreen
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.ui.anime.AnimeScreen
-import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseAnimeSourceScreen
+import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import tachiyomi.presentation.core.screens.LoadingScreen
 
-class GlobalAnimeSearchScreen(
+class GlobalSearchScreen(
     val searchQuery: String = "",
     private val extensionFilter: String? = null,
 ) : Screen() {
@@ -32,7 +32,7 @@ class GlobalAnimeSearchScreen(
         val navigator = LocalNavigator.currentOrThrow
 
         val screenModel = rememberScreenModel {
-            GlobalAnimeSearchScreenModel(
+            GlobalSearchScreenModel(
                 initialQuery = searchQuery,
                 initialExtensionFilter = extensionFilter,
             )
@@ -49,8 +49,8 @@ class GlobalAnimeSearchScreen(
 
             LaunchedEffect(state.items) {
                 when (val result = state.items.values.singleOrNull()) {
-                    AnimeSearchItemResult.Loading -> return@LaunchedEffect
-                    is AnimeSearchItemResult.Success -> {
+                    SearchItemResult.Loading -> return@LaunchedEffect
+                    is SearchItemResult.Success -> {
                         val anime = result.result.singleOrNull()
                         if (anime != null) {
                             navigator.replace(AnimeScreen(anime.id, true))
@@ -72,7 +72,7 @@ class GlobalAnimeSearchScreen(
                 onChangeSearchFilter = screenModel::setSourceFilter,
                 onToggleResults = screenModel::toggleFilterResults,
                 onClickSource = {
-                    navigator.push(BrowseAnimeSourceScreen(it.id, state.searchQuery))
+                    navigator.push(BrowseSourceScreen(it.id, state.searchQuery))
                 },
                 onClickItem = { navigator.push(AnimeScreen(it.id, true)) },
                 onLongClickItem = { navigator.push(AnimeScreen(it.id, true)) },

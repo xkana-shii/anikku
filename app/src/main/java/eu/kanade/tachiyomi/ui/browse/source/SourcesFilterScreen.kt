@@ -14,20 +14,20 @@ import eu.kanade.tachiyomi.util.system.toast
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.screens.LoadingScreen
 
-class AnimeSourcesFilterScreen : Screen() {
+class SourcesFilterScreen : Screen() {
 
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
-        val screenModel = rememberScreenModel { AnimeSourcesFilterScreenModel() }
+        val screenModel = rememberScreenModel { SourcesFilterScreenModel() }
         val state by screenModel.state.collectAsState()
 
-        if (state is AnimeSourcesFilterScreenModel.State.Loading) {
+        if (state is SourcesFilterScreenModel.State.Loading) {
             LoadingScreen()
             return
         }
 
-        if (state is AnimeSourcesFilterScreenModel.State.Error) {
+        if (state is SourcesFilterScreenModel.State.Error) {
             val context = LocalContext.current
             LaunchedEffect(Unit) {
                 context.toast(MR.strings.internal_error)
@@ -36,7 +36,7 @@ class AnimeSourcesFilterScreen : Screen() {
             return
         }
 
-        val successState = state as AnimeSourcesFilterScreenModel.State.Success
+        val successState = state as SourcesFilterScreenModel.State.Success
 
         SourcesFilterScreen(
             navigateUp = navigator::pop,

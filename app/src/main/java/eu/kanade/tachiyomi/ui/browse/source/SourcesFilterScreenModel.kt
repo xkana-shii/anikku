@@ -17,12 +17,12 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.util.SortedMap
 
-class AnimeSourcesFilterScreenModel(
+class SourcesFilterScreenModel(
     private val preferences: SourcePreferences = Injekt.get(),
     private val getLanguagesWithSources: GetLanguagesWithSources = Injekt.get(),
     private val toggleSource: ToggleSource = Injekt.get(),
     private val toggleLanguage: ToggleLanguage = Injekt.get(),
-) : StateScreenModel<AnimeSourcesFilterScreenModel.State>(State.Loading) {
+) : StateScreenModel<SourcesFilterScreenModel.State>(State.Loading) {
 
     init {
         screenModelScope.launch {

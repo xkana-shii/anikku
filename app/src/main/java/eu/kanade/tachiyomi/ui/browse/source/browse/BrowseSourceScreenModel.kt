@@ -55,7 +55,7 @@ import uy.kohesive.injekt.api.get
 import java.time.Instant
 import eu.kanade.tachiyomi.animesource.model.AnimeFilter as AnimeSourceModelFilter
 
-class BrowseAnimeSourceScreenModel(
+class BrowseSourceScreenModel(
     private val sourceId: Long,
     listingQuery: String?,
     sourceManager: AnimeSourceManager = Injekt.get(),
@@ -72,7 +72,7 @@ class BrowseAnimeSourceScreenModel(
     private val networkToLocalAnime: NetworkToLocalAnime = Injekt.get(),
     private val updateAnime: UpdateAnime = Injekt.get(),
     private val addTracks: AddTracks = Injekt.get(),
-) : StateScreenModel<BrowseAnimeSourceScreenModel.State>(State(Listing.valueOf(listingQuery))) {
+) : StateScreenModel<BrowseSourceScreenModel.State>(State(Listing.valueOf(listingQuery))) {
 
     var displayMode by sourcePreferences.sourceDisplayMode().asState(screenModelScope)
 

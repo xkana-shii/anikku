@@ -79,8 +79,8 @@ import eu.kanade.tachiyomi.data.updater.RELEASE_URL
 import eu.kanade.tachiyomi.extension.api.AnimeExtensionApi
 import eu.kanade.tachiyomi.ui.anime.AnimeScreen
 import eu.kanade.tachiyomi.ui.base.activity.BaseActivity
-import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseAnimeSourceScreen
-import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalAnimeSearchScreen
+import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
+import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreen
 import eu.kanade.tachiyomi.ui.deeplink.DeepLinkAnimeScreen
 import eu.kanade.tachiyomi.ui.deeplink.DeepLinkScreenType
 import eu.kanade.tachiyomi.ui.home.HomeScreen
@@ -237,7 +237,7 @@ class MainActivity : BaseActivity() {
                         .onEach {
                             val currentScreen = navigator.lastItem
                             if (
-                                currentScreen is BrowseAnimeSourceScreen ||
+                                currentScreen is BrowseSourceScreen ||
                                 (currentScreen is AnimeScreen && currentScreen.fromSource)
                             ) {
                                 navigator.popUntilRoot()
@@ -465,7 +465,7 @@ class MainActivity : BaseActivity() {
 
                     when (screenType) {
                         DeepLinkScreenType.ANIME -> {
-                            navigator.push(GlobalAnimeSearchScreen(query))
+                            navigator.push(GlobalSearchScreen(query))
                             navigator.push(DeepLinkAnimeScreen(query))
                         }
                     }
@@ -477,7 +477,7 @@ class MainActivity : BaseActivity() {
                 if (!query.isNullOrEmpty()) {
                     val filter = intent.getStringExtra(INTENT_SEARCH_FILTER)
                     navigator.popUntilRoot()
-                    navigator.push(GlobalAnimeSearchScreen(query, filter))
+                    navigator.push(GlobalSearchScreen(query, filter))
                 }
                 null
             }

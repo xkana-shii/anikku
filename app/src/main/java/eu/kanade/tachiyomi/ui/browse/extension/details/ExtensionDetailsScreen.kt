@@ -13,7 +13,7 @@ import eu.kanade.presentation.util.Screen
 import kotlinx.coroutines.flow.collectLatest
 import tachiyomi.presentation.core.screens.LoadingScreen
 
-data class AnimeExtensionDetailsScreen(
+data class ExtensionDetailsScreen(
     private val pkgName: String,
 ) : Screen() {
 
@@ -21,7 +21,7 @@ data class AnimeExtensionDetailsScreen(
     override fun Content() {
         val context = LocalContext.current
         val screenModel = rememberScreenModel {
-            AnimeExtensionDetailsScreenModel(
+            ExtensionDetailsScreenModel(
                 pkgName = pkgName,
                 context = context,
             )
@@ -38,7 +38,7 @@ data class AnimeExtensionDetailsScreen(
         ExtensionDetailsScreen(
             navigateUp = navigator::pop,
             state = state,
-            onClickSourcePreferences = { navigator.push(AnimeSourcePreferencesScreen(it)) },
+            onClickSourcePreferences = { navigator.push(SourcePreferencesScreen(it)) },
             onClickEnableAll = { screenModel.toggleSources(true) },
             onClickDisableAll = { screenModel.toggleSources(false) },
             onClickClearCookies = screenModel::clearCookies,
@@ -48,7 +48,7 @@ data class AnimeExtensionDetailsScreen(
 
         LaunchedEffect(Unit) {
             screenModel.events.collectLatest { event ->
-                if (event is AnimeExtensionDetailsEvent.Uninstalled) {
+                if (event is ExtensionDetailsEvent.Uninstalled) {
                     navigator.pop()
                 }
             }

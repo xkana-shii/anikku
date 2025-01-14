@@ -2,10 +2,10 @@ package eu.kanade.tachiyomi.ui.browse.source.globalsearch
 
 import eu.kanade.tachiyomi.animesource.AnimeCatalogueSource
 
-class GlobalAnimeSearchScreenModel(
+class GlobalSearchScreenModel(
     initialQuery: String = "",
     initialExtensionFilter: String? = null,
-) : AnimeSearchScreenModel(
+) : SearchScreenModel(
     State(
         searchQuery = initialQuery,
     ),
@@ -16,7 +16,7 @@ class GlobalAnimeSearchScreenModel(
         if (initialQuery.isNotBlank() || !initialExtensionFilter.isNullOrBlank()) {
             if (extensionFilter != null) {
                 // we're going to use custom extension filter instead
-                setSourceFilter(AnimeSourceFilter.All)
+                setSourceFilter(SourceFilter.All)
             }
             search()
         }
@@ -24,6 +24,6 @@ class GlobalAnimeSearchScreenModel(
 
     override fun getEnabledSources(): List<AnimeCatalogueSource> {
         return super.getEnabledSources()
-            .filter { state.value.sourceFilter != AnimeSourceFilter.PinnedOnly || "${it.id}" in pinnedSources }
+            .filter { state.value.sourceFilter != SourceFilter.PinnedOnly || "${it.id}" in pinnedSources }
     }
 }

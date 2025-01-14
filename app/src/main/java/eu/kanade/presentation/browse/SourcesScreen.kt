@@ -21,8 +21,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.browse.components.BaseSourceItem
-import eu.kanade.tachiyomi.ui.browse.source.AnimeSourcesScreenModel
-import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseAnimeSourceScreenModel.Listing
+import eu.kanade.tachiyomi.ui.browse.source.SourcesScreenModel
+import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel.Listing
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import tachiyomi.domain.source.model.AnimeSource
 import tachiyomi.domain.source.model.Pin
@@ -40,7 +40,7 @@ import tachiyomi.source.local.LocalAnimeSource
 
 @Composable
 fun SourcesScreen(
-    state: AnimeSourcesScreenModel.State,
+    state: SourcesScreenModel.State,
     contentPadding: PaddingValues,
     onClickItem: (AnimeSource, Listing) -> Unit,
     onClickPin: (AnimeSource) -> Unit,

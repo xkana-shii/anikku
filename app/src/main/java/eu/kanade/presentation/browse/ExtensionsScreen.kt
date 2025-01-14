@@ -52,8 +52,8 @@ import eu.kanade.presentation.util.animateItemFastScroll
 import eu.kanade.presentation.util.rememberRequestPackageInstallsPermissionState
 import eu.kanade.tachiyomi.extension.InstallStep
 import eu.kanade.tachiyomi.extension.model.AnimeExtension
-import eu.kanade.tachiyomi.ui.browse.extension.AnimeExtensionUiModel
-import eu.kanade.tachiyomi.ui.browse.extension.AnimeExtensionsScreenModel
+import eu.kanade.tachiyomi.ui.browse.extension.ExtensionUiModel
+import eu.kanade.tachiyomi.ui.browse.extension.ExtensionsScreenModel
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import eu.kanade.tachiyomi.util.system.launchRequestPackageInstallsPermission
 import kotlinx.collections.immutable.persistentListOf
@@ -72,7 +72,7 @@ import tachiyomi.presentation.core.util.secondaryItemAlpha
 
 @Composable
 fun ExtensionScreen(
-    state: AnimeExtensionsScreenModel.State,
+    state: ExtensionsScreenModel.State,
     contentPadding: PaddingValues,
     searchQuery: String?,
     onLongClickItem: (AnimeExtension) -> Unit,
@@ -134,7 +134,7 @@ fun ExtensionScreen(
 
 @Composable
 private fun ExtensionContent(
-    state: AnimeExtensionsScreenModel.State,
+    state: ExtensionsScreenModel.State,
     contentPadding: PaddingValues,
     onLongClickItem: (AnimeExtension) -> Unit,
     onOpenWebView: (AnimeExtension.Available) -> Unit,
@@ -170,7 +170,7 @@ private fun ExtensionContent(
                 key = "extensionHeader-${header.hashCode()}",
             ) {
                 when (header) {
-                    is AnimeExtensionUiModel.Header.Resource -> {
+                    is ExtensionUiModel.Header.Resource -> {
                         val action: @Composable RowScope.() -> Unit =
                             if (header.textRes == MR.strings.ext_updates_pending) {
                                 {
@@ -192,7 +192,7 @@ private fun ExtensionContent(
                             action = action,
                         )
                     }
-                    is AnimeExtensionUiModel.Header.Text -> {
+                    is ExtensionUiModel.Header.Text -> {
                         ExtensionHeader(
                             text = header.text,
                             modifier = Modifier.animateItemFastScroll(),
@@ -272,7 +272,7 @@ private fun ExtensionContent(
 
 @Composable
 private fun ExtensionItem(
-    item: AnimeExtensionUiModel.Item,
+    item: ExtensionUiModel.Item,
     onClickItem: (AnimeExtension) -> Unit,
     onLongClickItem: (AnimeExtension) -> Unit,
     onClickItemCancel: (AnimeExtension) -> Unit,

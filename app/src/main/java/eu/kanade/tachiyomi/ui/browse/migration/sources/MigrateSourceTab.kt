@@ -19,10 +19,10 @@ import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.i18n.stringResource
 
 @Composable
-fun Screen.migrateAnimeSourceTab(): TabContent {
+fun Screen.migrateSourceTab(): TabContent {
     val uriHandler = LocalUriHandler.current
     val navigator = LocalNavigator.currentOrThrow
-    val screenModel = rememberScreenModel { MigrateAnimeSourceScreenModel() }
+    val screenModel = rememberScreenModel { MigrateSourceScreenModel() }
     val state by screenModel.state.collectAsState()
 
     return TabContent(

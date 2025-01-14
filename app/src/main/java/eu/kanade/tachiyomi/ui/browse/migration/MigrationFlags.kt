@@ -8,14 +8,14 @@ import tachiyomi.domain.anime.model.Anime
 import tachiyomi.i18n.MR
 import uy.kohesive.injekt.injectLazy
 
-data class AnimeMigrationFlag(
+data class MigrationFlag(
     val flag: Int,
     val isDefaultSelected: Boolean,
     val titleId: StringResource,
 ) {
     companion object {
-        fun create(flag: Int, defaultSelectionMap: Int, titleId: StringResource): AnimeMigrationFlag {
-            return AnimeMigrationFlag(
+        fun create(flag: Int, defaultSelectionMap: Int, titleId: StringResource): MigrationFlag {
+            return MigrationFlag(
                 flag = flag,
                 isDefaultSelected = defaultSelectionMap and flag != 0,
                 titleId = titleId,
@@ -24,7 +24,7 @@ data class AnimeMigrationFlag(
     }
 }
 
-object AnimeMigrationFlags {
+object MigrationFlags {
 
     private const val EPISODES = 0b00001
     private const val CATEGORIES = 0b00010
@@ -51,21 +51,21 @@ object AnimeMigrationFlags {
     }
 
     /** Returns information about applicable flags with default selections. */
-    fun getFlags(anime: Anime?, defaultSelectedBitMap: Int): List<AnimeMigrationFlag> {
-        val flags = mutableListOf<AnimeMigrationFlag>()
-        flags += AnimeMigrationFlag.create(EPISODES, defaultSelectedBitMap, MR.strings.chapters)
-        flags += AnimeMigrationFlag.create(CATEGORIES, defaultSelectedBitMap, MR.strings.categories)
+    fun getFlags(anime: Anime?, defaultSelectedBitMap: Int): List<MigrationFlag> {
+        val flags = mutableListOf<MigrationFlag>()
+        flags += MigrationFlag.create(EPISODES, defaultSelectedBitMap, MR.strings.chapters)
+        flags += MigrationFlag.create(CATEGORIES, defaultSelectedBitMap, MR.strings.categories)
 
         if (anime != null) {
             if (anime.hasCustomCover(coverCache)) {
-                flags += AnimeMigrationFlag.create(
+                flags += MigrationFlag.create(
                     CUSTOM_COVER,
                     defaultSelectedBitMap,
                     MR.strings.custom_cover,
                 )
             }
             if (downloadCache.getDownloadCount(anime) > 0) {
-                flags += AnimeMigrationFlag.create(
+                flags += MigrationFlag.create(
                     DELETE_DOWNLOADED,
                     defaultSelectedBitMap,
                     MR.strings.delete_downloaded,
@@ -78,7 +78,7 @@ object AnimeMigrationFlags {
     /** Returns a bit map of selected flags. */
     fun getSelectedFlagsBitMap(
         selectedFlags: List<Boolean>,
-        flags: List<AnimeMigrationFlag>,
+        flags: List<MigrationFlag>,
     ): Int {
         return selectedFlags
             .zip(flags)

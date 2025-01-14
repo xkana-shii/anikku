@@ -31,7 +31,7 @@ import tachiyomi.presentation.core.components.TriStateItem
 import tachiyomi.presentation.core.i18n.stringResource
 
 @Composable
-fun SourceFilterAnimeDialog(
+fun SourceFilterDialog(
     onDismissRequest: () -> Unit,
     filters: AnimeFilterList,
     onReset: () -> Unit,

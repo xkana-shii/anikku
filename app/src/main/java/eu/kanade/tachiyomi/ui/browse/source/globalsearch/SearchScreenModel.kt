@@ -33,7 +33,7 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.util.concurrent.Executors
 
-abstract class AnimeSearchScreenModel(
+abstract class SearchScreenModel(
     initialState: State = State(),
     sourcePreferences: SourcePreferences = Injekt.get(),
     private val sourceManager: AnimeSourceManager = Injekt.get(),
@@ -41,7 +41,7 @@ abstract class AnimeSearchScreenModel(
     private val networkToLocalAnime: NetworkToLocalAnime = Injekt.get(),
     private val getAnime: GetAnime = Injekt.get(),
     private val preferences: SourcePreferences = Injekt.get(),
-) : StateScreenModel<AnimeSearchScreenModel.State>(initialState) {
+) : StateScreenModel<SearchScreenModel.State>(initialState) {
 
     private val coroutineDispatcher = Executors.newFixedThreadPool(5).asCoroutineDispatcher()
     private var searchJob: Job? = null
@@ -51,13 +51,13 @@ abstract class AnimeSearchScreenModel(
     protected val pinnedSources = sourcePreferences.pinnedAnimeSources().get()
 
     private var lastQuery: String? = null
-    private var lastSourceFilter: AnimeSourceFilter? = null
+    private var lastSourceFilter: SourceFilter? = null
 
     protected var extensionFilter: String? = null
 
-    private val sortComparator = { map: Map<AnimeCatalogueSource, AnimeSearchItemResult> ->
+    private val sortComparator = { map: Map<AnimeCatalogueSource, SearchItemResult> ->
         compareBy<AnimeCatalogueSource>(
-            { (map[it] as? AnimeSearchItemResult.Success)?.isEmpty ?: true },
+            { (map[it] as? SearchItemResult.Success)?.isEmpty ?: true },
             { "${it.id}" !in pinnedSources },
             { "${it.name.lowercase()} (${it.lang})" },
         )
@@ -112,7 +112,7 @@ abstract class AnimeSearchScreenModel(
         mutableState.update { it.copy(searchQuery = query) }
     }
 
-    fun setSourceFilter(filter: AnimeSourceFilter) {
+    fun setSourceFilter(filter: SourceFilter) {
         mutableState.update { it.copy(sourceFilter = filter) }
         search()
     }
@@ -139,13 +139,13 @@ abstract class AnimeSearchScreenModel(
             val existingResults = state.value.items
             updateItems(
                 sources
-                    .associateWith { existingResults[it] ?: AnimeSearchItemResult.Loading }
+                    .associateWith { existingResults[it] ?: SearchItemResult.Loading }
                     .toPersistentMap(),
             )
         } else {
             updateItems(
                 sources
-                    .associateWith { AnimeSearchItemResult.Loading }
+                    .associateWith { SearchItemResult.Loading }
                     .toPersistentMap(),
             )
         }
@@ -153,7 +153,7 @@ abstract class AnimeSearchScreenModel(
         searchJob = ioCoroutineScope.launch {
             sources.map { source ->
                 async {
-                    if (state.value.items[source] !is AnimeSearchItemResult.Loading) {
+                    if (state.value.items[source] !is SearchItemResult.Loading) {
                         return@async
                     }
                     try {
@@ -166,11 +166,11 @@ abstract class AnimeSearchScreenModel(
                         }
 
                         if (isActive) {
-                            updateItem(source, AnimeSearchItemResult.Success(titles))
+                            updateItem(source, SearchItemResult.Success(titles))
                         }
                     } catch (e: Exception) {
                         if (isActive) {
-                            updateItem(source, AnimeSearchItemResult.Error(e))
+                            updateItem(source, SearchItemResult.Error(e))
                         }
                     }
                 }
@@ -179,7 +179,7 @@ abstract class AnimeSearchScreenModel(
         }
     }
 
-    private fun updateItems(items: PersistentMap<AnimeCatalogueSource, AnimeSearchItemResult>) {
+    private fun updateItems(items: PersistentMap<AnimeCatalogueSource, SearchItemResult>) {
         mutableState.update {
             it.copy(
                 items = items
@@ -189,7 +189,7 @@ abstract class AnimeSearchScreenModel(
         }
     }
 
-    private fun updateItem(source: AnimeCatalogueSource, result: AnimeSearchItemResult) {
+    private fun updateItem(source: AnimeCatalogueSource, result: SearchItemResult) {
         val newItems = state.value.items.mutate {
             it[source] = result
         }
@@ -200,31 +200,31 @@ abstract class AnimeSearchScreenModel(
     data class State(
         val fromSourceId: Long? = null,
         val searchQuery: String? = null,
-        val sourceFilter: AnimeSourceFilter = AnimeSourceFilter.PinnedOnly,
+        val sourceFilter: SourceFilter = SourceFilter.PinnedOnly,
         val onlyShowHasResults: Boolean = false,
-        val items: PersistentMap<AnimeCatalogueSource, AnimeSearchItemResult> = persistentMapOf(),
+        val items: PersistentMap<AnimeCatalogueSource, SearchItemResult> = persistentMapOf(),
     ) {
-        val progress: Int = items.count { it.value !is AnimeSearchItemResult.Loading }
+        val progress: Int = items.count { it.value !is SearchItemResult.Loading }
         val total: Int = items.size
         val filteredItems = items.filter { (_, result) -> result.isVisible(onlyShowHasResults) }
     }
 }
 
-enum class AnimeSourceFilter {
+enum class SourceFilter {
     All,
     PinnedOnly,
 }
 
-sealed interface AnimeSearchItemResult {
-    data object Loading : AnimeSearchItemResult
+sealed interface SearchItemResult {
+    data object Loading : SearchItemResult
 
     data class Error(
         val throwable: Throwable,
-    ) : AnimeSearchItemResult
+    ) : SearchItemResult
 
     data class Success(
         val result: List<Anime>,
-    ) : AnimeSearchItemResult {
+    ) : SearchItemResult {
         val isEmpty: Boolean
             get() = result.isEmpty()
     }
