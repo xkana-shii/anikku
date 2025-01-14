@@ -6,7 +6,7 @@ import tachiyomi.domain.anime.model.Anime
 import tachiyomi.domain.episode.model.Episode
 import tachiyomi.domain.source.service.AnimeSourceManager
 
-class DeleteEpisodeDownload(
+class DeleteDownload(
     private val sourceManager: AnimeSourceManager,
     private val downloadManager: AnimeDownloadManager,
 ) {
