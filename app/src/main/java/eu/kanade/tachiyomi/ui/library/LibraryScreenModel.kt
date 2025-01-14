@@ -75,7 +75,7 @@ import tachiyomi.domain.source.service.AnimeSourceManager
 import tachiyomi.domain.track.interactor.GetAnimeTracks
 import tachiyomi.domain.track.interactor.GetTracksPerAnime
 import tachiyomi.domain.track.model.AnimeTrack
-import tachiyomi.source.local.LocalAnimeSource
+import tachiyomi.source.local.LocalSource
 import tachiyomi.source.local.isLocal
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -864,7 +864,7 @@ class LibraryScreenModel(
                 }.mapKeys {
                     Category(
                         id = it.key,
-                        name = if (it.key == LocalAnimeSource.ID) {
+                        name = if (it.key == LocalSource.ID) {
                             context.getString(R.string.local_source)
                         } else {
                             val source = sourceManager.getOrStub(it.key)

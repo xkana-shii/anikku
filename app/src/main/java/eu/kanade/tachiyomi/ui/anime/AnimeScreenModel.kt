@@ -93,7 +93,7 @@ import tachiyomi.domain.source.service.AnimeSourceManager
 import tachiyomi.domain.storage.service.StoragePreferences
 import tachiyomi.domain.track.interactor.GetAnimeTracks
 import tachiyomi.i18n.MR
-import tachiyomi.source.local.LocalAnimeSource
+import tachiyomi.source.local.LocalSource
 import tachiyomi.source.local.isLocal
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -320,7 +320,7 @@ class AnimeScreenModel(
                 ogStatus = status ?: 0,
                 lastUpdate = anime.lastUpdate + 1,
             )
-            (sourceManager.get(LocalAnimeSource.ID) as LocalAnimeSource).updateAnimeInfo(
+            (sourceManager.get(LocalSource.ID) as LocalSource).updateAnimeInfo(
                 anime.toSAnime(),
             )
             screenModelScope.launchNonCancellable {

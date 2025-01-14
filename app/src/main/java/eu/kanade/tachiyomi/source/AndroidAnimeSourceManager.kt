@@ -20,7 +20,7 @@ import kotlinx.coroutines.runBlocking
 import tachiyomi.domain.source.model.StubAnimeSource
 import tachiyomi.domain.source.repository.AnimeStubSourceRepository
 import tachiyomi.domain.source.service.AnimeSourceManager
-import tachiyomi.source.local.LocalAnimeSource
+import tachiyomi.source.local.LocalSource
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
@@ -53,7 +53,7 @@ class AndroidAnimeSourceManager(
                 .collectLatest { extensions ->
                     val mutableMap = ConcurrentHashMap<Long, AnimeSource>(
                         mapOf(
-                            LocalAnimeSource.ID to LocalAnimeSource(
+                            LocalSource.ID to LocalSource(
                                 context,
                                 Injekt.get(),
                                 Injekt.get(),

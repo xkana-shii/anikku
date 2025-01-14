@@ -8,7 +8,7 @@ import tachiyomi.domain.source.model.AnimeSource
 import tachiyomi.domain.source.model.Pin
 import tachiyomi.domain.source.model.Pins
 import tachiyomi.domain.source.repository.AnimeSourceRepository
-import tachiyomi.source.local.LocalAnimeSource
+import tachiyomi.source.local.LocalSource
 
 class GetEnabledSources(
     private val repository: AnimeSourceRepository,
@@ -24,7 +24,7 @@ class GetEnabledSources(
             repository.getAnimeSources(),
         ) { pinnedSourceIds, enabledLanguages, disabledSources, lastUsedSource, sources ->
             sources
-                .filter { it.lang in enabledLanguages || it.id == LocalAnimeSource.ID }
+                .filter { it.lang in enabledLanguages || it.id == LocalSource.ID }
                 .filterNot { it.id.toString() in disabledSources }
                 .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.name })
                 .flatMap {
