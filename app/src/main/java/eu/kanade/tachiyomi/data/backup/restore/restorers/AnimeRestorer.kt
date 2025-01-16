@@ -326,7 +326,7 @@ class AnimeRestorer(
 
     private suspend fun restoreHistory(backupHistory: List<BackupHistory>) {
         val toUpdate = backupHistory.mapNotNull { history ->
-            val dbHistory = handler.awaitOneOrNull { animehistoryQueries.getHistoryByEpisodeUrl(history.url) }
+            val dbHistory = handler.awaitOneOrNull { historyQueries.getHistoryByEpisodeUrl(history.url) }
             val item = history.getHistoryImpl()
 
             if (dbHistory == null) {
@@ -353,7 +353,7 @@ class AnimeRestorer(
         if (toUpdate.isNotEmpty()) {
             handler.await(true) {
                 toUpdate.forEach {
-                    animehistoryQueries.upsert(
+                    historyQueries.upsert(
                         it.episodeId,
                         it.seenAt,
                     )

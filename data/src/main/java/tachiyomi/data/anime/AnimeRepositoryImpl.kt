@@ -54,11 +54,11 @@ class AnimeRepositoryImpl(
     }
 
     override suspend fun getLibraryAnime(): List<LibraryAnime> {
-        return handler.awaitList { animelibViewQueries.animelib(AnimeMapper::mapLibraryAnime) }
+        return handler.awaitList { libraryViewQueries.library(AnimeMapper::mapLibraryAnime) }
     }
 
     override fun getLibraryAnimeAsFlow(): Flow<List<LibraryAnime>> {
-        return handler.subscribeToList { animelibViewQueries.animelib(AnimeMapper::mapLibraryAnime) }
+        return handler.subscribeToList { libraryViewQueries.library(AnimeMapper::mapLibraryAnime) }
     }
 
     override fun getAnimeFavoritesBySourceId(sourceId: Long): Flow<List<Anime>> {
