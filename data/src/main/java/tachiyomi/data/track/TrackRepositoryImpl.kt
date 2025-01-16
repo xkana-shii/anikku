@@ -11,13 +11,13 @@ class TrackRepositoryImpl(
 ) : TrackRepository {
 
     override suspend fun getTrackByAnimeId(id: Long): Track? {
-        return handler.awaitOneOrNull { anime_syncQueries.getTrackByAnimeId(id, TrackMapper::mapTrack) }
+        return handler.awaitOneOrNull { anime_syncQueries.getTrackById(id, TrackMapper::mapTrack) }
     }
 
     // SY -->
     override suspend fun getAnimeTracks(): List<Track> {
         return handler.awaitList {
-            anime_syncQueries.getAnimeTracks(::mapTrack)
+            anime_syncQueries.getTracks(::mapTrack)
         }
     }
 
@@ -36,7 +36,7 @@ class TrackRepositoryImpl(
 
     override fun getAnimeTracksAsFlow(): Flow<List<Track>> {
         return handler.subscribeToList {
-            anime_syncQueries.getAnimeTracks(TrackMapper::mapTrack)
+            anime_syncQueries.getTracks(TrackMapper::mapTrack)
         }
     }
 
