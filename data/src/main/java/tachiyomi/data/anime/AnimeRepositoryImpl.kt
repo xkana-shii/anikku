@@ -50,7 +50,7 @@ class AnimeRepositoryImpl(
     }
 
     override suspend fun getWatchedAnimeNotInLibrary(): List<Anime> {
-        return handler.awaitList { animesQueries.getWatchedAnimeNotInLibrary(AnimeMapper::mapAnime) }
+        return handler.awaitList { animesQueries.getSeenAnimeNotInLibrary(AnimeMapper::mapAnime) }
     }
 
     override suspend fun getLibraryAnime(): List<LibraryAnime> {
