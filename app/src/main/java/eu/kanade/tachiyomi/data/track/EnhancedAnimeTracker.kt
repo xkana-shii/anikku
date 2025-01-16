@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.data.track
 
 import eu.kanade.tachiyomi.animesource.AnimeSource
-import eu.kanade.tachiyomi.data.track.model.AnimeTrackSearch
+import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import tachiyomi.domain.anime.model.Anime
 import tachiyomi.domain.track.model.Track
 
@@ -27,7 +27,7 @@ interface EnhancedAnimeTracker {
     /**
      * match is similar to Tracker.search, but only return zero or one match.
      */
-    suspend fun match(anime: Anime): AnimeTrackSearch?
+    suspend fun match(anime: Anime): TrackSearch?
 
     /**
      * Checks whether the provided source/track/anime triplet is from this AnimeTracker

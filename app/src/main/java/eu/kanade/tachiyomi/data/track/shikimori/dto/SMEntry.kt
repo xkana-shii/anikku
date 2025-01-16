@@ -1,6 +1,6 @@
 package eu.kanade.tachiyomi.data.track.shikimori.dto
 
-import eu.kanade.tachiyomi.data.track.model.AnimeTrackSearch
+import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import eu.kanade.tachiyomi.data.track.shikimori.ShikimoriApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -19,8 +19,8 @@ data class SMEntry(
     @SerialName("aired_on")
     val airedOn: String?,
 ) {
-    fun toAnimeTrack(trackId: Long): AnimeTrackSearch {
-        return AnimeTrackSearch.create(trackId).apply {
+    fun toAnimeTrack(trackId: Long): TrackSearch {
+        return TrackSearch.create(trackId).apply {
             remote_id = this@SMEntry.id
             title = name
             total_episodes = episodes!!

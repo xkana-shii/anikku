@@ -40,8 +40,8 @@ import eu.kanade.presentation.anime.components.EpisodeDownloadIndicator
 import eu.kanade.presentation.components.relativeDateText
 import eu.kanade.presentation.util.animateItemFastScroll
 import eu.kanade.presentation.util.relativeTimeSpanString
-import eu.kanade.tachiyomi.data.download.AnimeDownloadProvider
-import eu.kanade.tachiyomi.data.download.model.AnimeDownload
+import eu.kanade.tachiyomi.data.download.DownloadProvider
+import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.ui.updates.UpdatesItem
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.domain.source.service.SourceManager
@@ -160,7 +160,7 @@ private fun UpdatesUiItem(
     onClickCover: (() -> Unit)?,
     onDownloadEpisode: ((EpisodeDownloadAction) -> Unit)?,
     // Download Indicator
-    downloadStateProvider: () -> AnimeDownload.State,
+    downloadStateProvider: () -> Download.State,
     downloadProgressProvider: () -> Int,
     // AM (FILE_SIZE) -->
     updatesItem: UpdatesItem,
@@ -251,13 +251,13 @@ private fun UpdatesUiItem(
         }
 // AM (FILE_SIZE) -->
         var fileSizeAsync: Long? by remember { mutableStateOf(updatesItem.fileSize) }
-        if (downloadStateProvider() == AnimeDownload.State.DOWNLOADED &&
+        if (downloadStateProvider() == Download.State.DOWNLOADED &&
             storagePreferences.showEpisodeFileSize().get() &&
             fileSizeAsync == null
         ) {
             LaunchedEffect(update, Unit) {
                 fileSizeAsync = withIOContext {
-                    animeDownloadProvider.getEpisodeFileSize(
+                    downloadProvider.getEpisodeFileSize(
                         update.episodeName,
                         null,
                         update.scanlator,
@@ -307,6 +307,6 @@ private fun formatProgress(milliseconds: Long): String {
 
 // AM (FILE_SIZE) -->
 private val storagePreferences: StoragePreferences by injectLazy()
-private val animeDownloadProvider: AnimeDownloadProvider by injectLazy()
+private val downloadProvider: DownloadProvider by injectLazy()
 private val sourceManager: SourceManager by injectLazy()
 // <-- AM (FILE_SIZE)

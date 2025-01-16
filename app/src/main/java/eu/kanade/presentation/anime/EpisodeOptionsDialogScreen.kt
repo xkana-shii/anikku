@@ -63,7 +63,7 @@ import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.common.images.WebImage
 import eu.kanade.presentation.components.TabbedDialogPaddings
 import eu.kanade.tachiyomi.animesource.model.Video
-import eu.kanade.tachiyomi.data.download.AnimeDownloadManager
+import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.player.loader.EpisodeLoader
 import eu.kanade.tachiyomi.ui.player.settings.PlayerPreferences
@@ -219,7 +219,7 @@ private fun VideoList(
     anime: Anime,
     videoList: List<Video>,
 ) {
-    val downloadManager = Injekt.get<AnimeDownloadManager>()
+    val downloadManager = Injekt.get<DownloadManager>()
     val clipboardManager = LocalClipboardManager.current
     val context = LocalContext.current
     val scope = rememberCoroutineScope()

@@ -1,8 +1,8 @@
 package eu.kanade.tachiyomi.data.track.myanimelist
 
-import eu.kanade.tachiyomi.data.database.models.AnimeTrack
+import eu.kanade.tachiyomi.data.database.models.Track
 
-fun AnimeTrack.toMyAnimeListStatus() = when (status) {
+fun Track.toMyAnimeListStatus() = when (status) {
     MyAnimeList.WATCHING -> "watching"
     MyAnimeList.READING -> "watching"
     MyAnimeList.COMPLETED -> "completed"

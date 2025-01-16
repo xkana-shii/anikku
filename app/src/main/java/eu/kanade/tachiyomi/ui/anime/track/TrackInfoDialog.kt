@@ -53,7 +53,7 @@ import eu.kanade.tachiyomi.data.track.DeletableAnimeTracker
 import eu.kanade.tachiyomi.data.track.EnhancedAnimeTracker
 import eu.kanade.tachiyomi.data.track.Tracker
 import eu.kanade.tachiyomi.data.track.TrackerManager
-import eu.kanade.tachiyomi.data.track.model.AnimeTrackSearch
+import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import eu.kanade.tachiyomi.util.lang.convertEpochMillisZone
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import eu.kanade.tachiyomi.util.system.openInBrowser
@@ -741,18 +741,18 @@ data class TrackServiceSearchScreen(
             }
         }
 
-        fun registerTracking(item: AnimeTrackSearch) {
+        fun registerTracking(item: TrackSearch) {
             screenModelScope.launchNonCancellable { tracker.animeService.register(item, animeId) }
         }
 
-        fun updateSelection(selected: AnimeTrackSearch) {
+        fun updateSelection(selected: TrackSearch) {
             mutableState.update { it.copy(selected = selected) }
         }
 
         @Immutable
         data class State(
-            val queryResult: Result<List<AnimeTrackSearch>>? = null,
-            val selected: AnimeTrackSearch? = null,
+            val queryResult: Result<List<TrackSearch>>? = null,
+            val selected: TrackSearch? = null,
         )
     }
 }

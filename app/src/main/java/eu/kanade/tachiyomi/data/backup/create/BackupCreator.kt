@@ -6,18 +6,18 @@ import com.hippo.unifile.UniFile
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.data.backup.BackupFileValidator
 import eu.kanade.tachiyomi.data.backup.create.creators.AnimeBackupCreator
-import eu.kanade.tachiyomi.data.backup.create.creators.AnimeCategoriesBackupCreator
-import eu.kanade.tachiyomi.data.backup.create.creators.AnimeExtensionRepoBackupCreator
-import eu.kanade.tachiyomi.data.backup.create.creators.AnimeSourcesBackupCreator
+import eu.kanade.tachiyomi.data.backup.create.creators.CategoriesBackupCreator
+import eu.kanade.tachiyomi.data.backup.create.creators.ExtensionRepoBackupCreator
 import eu.kanade.tachiyomi.data.backup.create.creators.ExtensionsBackupCreator
 import eu.kanade.tachiyomi.data.backup.create.creators.PreferenceBackupCreator
+import eu.kanade.tachiyomi.data.backup.create.creators.SourcesBackupCreator
 import eu.kanade.tachiyomi.data.backup.models.Backup
 import eu.kanade.tachiyomi.data.backup.models.BackupAnime
-import eu.kanade.tachiyomi.data.backup.models.BackupAnimeSource
 import eu.kanade.tachiyomi.data.backup.models.BackupCategory
 import eu.kanade.tachiyomi.data.backup.models.BackupExtension
 import eu.kanade.tachiyomi.data.backup.models.BackupExtensionRepos
 import eu.kanade.tachiyomi.data.backup.models.BackupPreference
+import eu.kanade.tachiyomi.data.backup.models.BackupSource
 import eu.kanade.tachiyomi.data.backup.models.BackupSourcePreferences
 import kotlinx.serialization.protobuf.ProtoBuf
 import logcat.LogPriority
@@ -48,11 +48,11 @@ class BackupCreator(
     private val backupPreferences: BackupPreferences = Injekt.get(),
     private val animeRepository: AnimeRepository = Injekt.get(),
 
-    private val animeCategoriesBackupCreator: AnimeCategoriesBackupCreator = AnimeCategoriesBackupCreator(),
+    private val categoriesBackupCreator: CategoriesBackupCreator = CategoriesBackupCreator(),
     private val animeBackupCreator: AnimeBackupCreator = AnimeBackupCreator(),
     private val preferenceBackupCreator: PreferenceBackupCreator = PreferenceBackupCreator(),
-    private val animeExtensionRepoBackupCreator: AnimeExtensionRepoBackupCreator = AnimeExtensionRepoBackupCreator(),
-    private val animeSourcesBackupCreator: AnimeSourcesBackupCreator = AnimeSourcesBackupCreator(),
+    private val extensionRepoBackupCreator: ExtensionRepoBackupCreator = ExtensionRepoBackupCreator(),
+    private val sourcesBackupCreator: SourcesBackupCreator = SourcesBackupCreator(),
     private val extensionsBackupCreator: ExtensionsBackupCreator = ExtensionsBackupCreator(context),
 ) {
 
@@ -88,7 +88,7 @@ class BackupCreator(
             val backup = Backup(
                 backupAnime = backupAnime,
                 backupAnimeCategories = backupAnimeCategories(options),
-                backupAnimeSources = backupAnimeSources(backupAnime),
+                backupSources = backupAnimeSources(backupAnime),
                 backupPreferences = backupAppPreferences(options),
                 backupAnimeExtensionRepo = backupAnimeExtensionRepos(options),
                 backupSourcePreferences = backupSourcePreferences(options),
@@ -128,7 +128,7 @@ class BackupCreator(
     suspend fun backupAnimeCategories(options: BackupOptions): List<BackupCategory> {
         if (!options.categories) return emptyList()
 
-        return animeCategoriesBackupCreator()
+        return categoriesBackupCreator()
     }
 
     suspend fun backupAnimes(animes: List<Anime>, options: BackupOptions): List<BackupAnime> {
@@ -137,8 +137,8 @@ class BackupCreator(
         return animeBackupCreator(animes, options)
     }
 
-    fun backupAnimeSources(animes: List<BackupAnime>): List<BackupAnimeSource> {
-        return animeSourcesBackupCreator(animes)
+    fun backupAnimeSources(animes: List<BackupAnime>): List<BackupSource> {
+        return sourcesBackupCreator(animes)
     }
 
     fun backupAppPreferences(options: BackupOptions): List<BackupPreference> {
@@ -150,7 +150,7 @@ class BackupCreator(
     private suspend fun backupAnimeExtensionRepos(options: BackupOptions): List<BackupExtensionRepos> {
         if (!options.extensionRepoSettings) return emptyList()
 
-        return animeExtensionRepoBackupCreator()
+        return extensionRepoBackupCreator()
     }
 
     fun backupSourcePreferences(options: BackupOptions): List<BackupSourcePreferences> {
