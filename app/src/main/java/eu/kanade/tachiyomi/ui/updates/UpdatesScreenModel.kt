@@ -41,20 +41,20 @@ import tachiyomi.domain.episode.interactor.GetEpisode
 import tachiyomi.domain.episode.interactor.UpdateEpisode
 import tachiyomi.domain.episode.model.EpisodeUpdate
 import tachiyomi.domain.library.service.LibraryPreferences
-import tachiyomi.domain.source.service.AnimeSourceManager
-import tachiyomi.domain.updates.interactor.GetAnimeUpdates
-import tachiyomi.domain.updates.model.AnimeUpdatesWithRelations
+import tachiyomi.domain.source.service.SourceManager
+import tachiyomi.domain.updates.interactor.GetUpdates
+import tachiyomi.domain.updates.model.UpdatesWithRelations
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.time.ZonedDateTime
 
 class UpdatesScreenModel(
-    private val sourceManager: AnimeSourceManager = Injekt.get(),
+    private val sourceManager: SourceManager = Injekt.get(),
     private val downloadManager: AnimeDownloadManager = Injekt.get(),
     private val downloadCache: AnimeDownloadCache = Injekt.get(),
     private val updateEpisode: UpdateEpisode = Injekt.get(),
     private val setSeenStatus: SetSeenStatus = Injekt.get(),
-    private val getUpdates: GetAnimeUpdates = Injekt.get(),
+    private val getUpdates: GetUpdates = Injekt.get(),
     private val getAnime: GetAnime = Injekt.get(),
     private val getEpisode: GetEpisode = Injekt.get(),
     private val libraryPreferences: LibraryPreferences = Injekt.get(),
@@ -104,7 +104,7 @@ class UpdatesScreenModel(
         }
     }
 
-    private fun List<AnimeUpdatesWithRelations>.toUpdateItems(): PersistentList<UpdatesItem> {
+    private fun List<UpdatesWithRelations>.toUpdateItems(): PersistentList<UpdatesItem> {
         return this
             .map { update ->
                 val activeDownload = downloadManager.getQueuedDownloadOrNull(update.episodeId)
@@ -274,7 +274,7 @@ class UpdatesScreenModel(
         setDialog(Dialog.DeleteConfirmation(updatesItem))
     }
 
-    private fun showQualitiesDialog(update: AnimeUpdatesWithRelations) {
+    private fun showQualitiesDialog(update: UpdatesWithRelations) {
         setDialog(
             Dialog.ShowQualities(
                 update.episodeName,
@@ -424,7 +424,7 @@ class UpdatesScreenModel(
 
 @Immutable
 data class UpdatesItem(
-    val update: AnimeUpdatesWithRelations,
+    val update: UpdatesWithRelations,
     val downloadStateProvider: () -> AnimeDownload.State,
     val downloadProgressProvider: () -> Int,
     val selected: Boolean = false,

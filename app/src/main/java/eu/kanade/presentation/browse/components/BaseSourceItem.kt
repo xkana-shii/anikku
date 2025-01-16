@@ -10,20 +10,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import eu.kanade.tachiyomi.util.system.LocaleHelper
-import tachiyomi.domain.source.model.AnimeSource
+import tachiyomi.domain.source.model.Source
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.util.secondaryItemAlpha
 
 @Composable
 fun BaseSourceItem(
-    source: AnimeSource,
+    source: Source,
     modifier: Modifier = Modifier,
     showLanguageInContent: Boolean = true,
     onClickItem: () -> Unit = {},
     onLongClickItem: () -> Unit = {},
-    icon: @Composable RowScope.(AnimeSource) -> Unit = defaultIcon,
-    action: @Composable RowScope.(AnimeSource) -> Unit = {},
-    content: @Composable RowScope.(AnimeSource, String?) -> Unit = defaultContent,
+    icon: @Composable RowScope.(Source) -> Unit = defaultIcon,
+    action: @Composable RowScope.(Source) -> Unit = {},
+    content: @Composable RowScope.(Source, String?) -> Unit = defaultContent,
 ) {
     val sourceLangString = LocaleHelper.getSourceDisplayName(source.lang, LocalContext.current).takeIf {
         showLanguageInContent
@@ -38,11 +38,11 @@ fun BaseSourceItem(
     )
 }
 
-private val defaultIcon: @Composable RowScope.(AnimeSource) -> Unit = { source ->
+private val defaultIcon: @Composable RowScope.(Source) -> Unit = { source ->
     SourceIcon(source = source)
 }
 
-private val defaultContent: @Composable RowScope.(AnimeSource, String?) -> Unit = { source, sourceLangString ->
+private val defaultContent: @Composable RowScope.(Source, String?) -> Unit = { source, sourceLangString ->
     Column(
         modifier = Modifier
             .padding(horizontal = MaterialTheme.padding.medium)

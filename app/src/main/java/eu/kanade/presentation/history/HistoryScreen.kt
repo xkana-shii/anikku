@@ -21,7 +21,7 @@ import eu.kanade.presentation.theme.TachiyomiPreviewTheme
 import eu.kanade.presentation.util.animateItemFastScroll
 import eu.kanade.tachiyomi.ui.history.HistoryScreenModel
 import kotlinx.collections.immutable.persistentListOf
-import tachiyomi.domain.history.model.AnimeHistoryWithRelations
+import tachiyomi.domain.history.model.HistoryWithRelations
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.FastScrollLazyColumn
 import tachiyomi.presentation.core.components.ListGroupHeader
@@ -105,9 +105,9 @@ fun HistoryScreen(
 private fun HistoryScreenContent(
     history: List<AnimeHistoryUiModel>,
     contentPadding: PaddingValues,
-    onClickCover: (AnimeHistoryWithRelations) -> Unit,
-    onClickResume: (AnimeHistoryWithRelations) -> Unit,
-    onClickDelete: (AnimeHistoryWithRelations) -> Unit,
+    onClickCover: (HistoryWithRelations) -> Unit,
+    onClickResume: (HistoryWithRelations) -> Unit,
+    onClickDelete: (HistoryWithRelations) -> Unit,
 ) {
     FastScrollLazyColumn(
         contentPadding = contentPadding,
@@ -146,7 +146,7 @@ private fun HistoryScreenContent(
 
 sealed interface AnimeHistoryUiModel {
     data class Header(val date: LocalDate) : AnimeHistoryUiModel
-    data class Item(val item: AnimeHistoryWithRelations) : AnimeHistoryUiModel
+    data class Item(val item: HistoryWithRelations) : AnimeHistoryUiModel
 }
 
 @PreviewLightDark

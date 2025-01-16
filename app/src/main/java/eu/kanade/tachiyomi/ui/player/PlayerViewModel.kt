@@ -98,10 +98,10 @@ import tachiyomi.domain.episode.interactor.UpdateEpisode
 import tachiyomi.domain.episode.model.EpisodeUpdate
 import tachiyomi.domain.episode.service.getEpisodeSort
 import tachiyomi.domain.history.interactor.GetNextEpisodes
-import tachiyomi.domain.history.interactor.UpsertAnimeHistory
-import tachiyomi.domain.history.model.AnimeHistoryUpdate
-import tachiyomi.domain.source.service.AnimeSourceManager
-import tachiyomi.domain.track.interactor.GetAnimeTracks
+import tachiyomi.domain.history.interactor.UpsertHistory
+import tachiyomi.domain.history.model.HistoryUpdate
+import tachiyomi.domain.source.service.SourceManager
+import tachiyomi.domain.track.interactor.GetTracks
 import tachiyomi.i18n.MR
 import tachiyomi.source.local.isLocal
 import uy.kohesive.injekt.Injekt
@@ -121,7 +121,7 @@ class PlayerViewModelProviderFactory(
 class PlayerViewModel @JvmOverloads constructor(
     private val activity: PlayerActivity,
     private val savedState: SavedStateHandle,
-    private val sourceManager: AnimeSourceManager = Injekt.get(),
+    private val sourceManager: SourceManager = Injekt.get(),
     private val downloadManager: AnimeDownloadManager = Injekt.get(),
     private val imageSaver: ImageSaver = Injekt.get(),
     private val downloadPreferences: DownloadPreferences = Injekt.get(),
@@ -130,8 +130,8 @@ class PlayerViewModel @JvmOverloads constructor(
     private val getAnime: GetAnime = Injekt.get(),
     private val getNextEpisodes: GetNextEpisodes = Injekt.get(),
     private val getEpisodesByAnimeId: GetEpisodesByAnimeId = Injekt.get(),
-    private val getTracks: GetAnimeTracks = Injekt.get(),
-    private val upsertHistory: UpsertAnimeHistory = Injekt.get(),
+    private val getTracks: GetTracks = Injekt.get(),
+    private val upsertHistory: UpsertHistory = Injekt.get(),
     private val updateEpisode: UpdateEpisode = Injekt.get(),
     private val setAnimeViewerFlags: SetAnimeViewerFlags = Injekt.get(),
     internal val playerPreferences: PlayerPreferences = Injekt.get(),
@@ -1118,7 +1118,7 @@ class PlayerViewModel @JvmOverloads constructor(
             val episodeId = episode.id!!
             val seenAt = Date()
             upsertHistory.await(
-                AnimeHistoryUpdate(episodeId, seenAt),
+                HistoryUpdate(episodeId, seenAt),
             )
         }
     }

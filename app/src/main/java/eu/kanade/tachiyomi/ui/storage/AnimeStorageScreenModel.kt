@@ -5,20 +5,20 @@ import eu.kanade.tachiyomi.data.download.AnimeDownloadCache
 import eu.kanade.tachiyomi.data.download.AnimeDownloadManager
 import tachiyomi.core.common.util.lang.launchNonCancellable
 import tachiyomi.domain.anime.interactor.GetLibraryAnime
-import tachiyomi.domain.category.interactor.GetAnimeCategories
-import tachiyomi.domain.category.interactor.GetVisibleAnimeCategories
-import tachiyomi.domain.library.LibraryAnime
-import tachiyomi.domain.source.service.AnimeSourceManager
+import tachiyomi.domain.category.interactor.GetCategories
+import tachiyomi.domain.category.interactor.GetVisibleCategories
+import tachiyomi.domain.library.model.LibraryAnime
+import tachiyomi.domain.source.service.SourceManager
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 class AnimeStorageScreenModel(
     downloadCache: AnimeDownloadCache = Injekt.get(),
     private val getLibraries: GetLibraryAnime = Injekt.get(),
-    getCategories: GetAnimeCategories = Injekt.get(),
-    getVisibleCategories: GetVisibleAnimeCategories = Injekt.get(),
+    getCategories: GetCategories = Injekt.get(),
+    getVisibleCategories: GetVisibleCategories = Injekt.get(),
     private val downloadManager: AnimeDownloadManager = Injekt.get(),
-    private val sourceManager: AnimeSourceManager = Injekt.get(),
+    private val sourceManager: SourceManager = Injekt.get(),
 ) : CommonStorageScreenModel<LibraryAnime>(
     downloadCacheChanges = downloadCache.changes,
     downloadCacheIsInitializing = downloadCache.isInitializing,

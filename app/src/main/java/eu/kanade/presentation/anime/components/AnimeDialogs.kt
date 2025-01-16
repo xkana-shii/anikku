@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.dp
 import eu.kanade.tachiyomi.util.system.isDevFlavor
 import eu.kanade.tachiyomi.util.system.isPreviewBuildType
 import kotlinx.collections.immutable.toImmutableList
-import tachiyomi.domain.anime.interactor.AnimeFetchInterval
+import tachiyomi.domain.anime.interactor.FetchInterval
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.WheelTextPicker
 import tachiyomi.presentation.core.components.material.padding
@@ -129,7 +129,7 @@ fun SetIntervalDialog(
                         contentAlignment = Alignment.Center,
                     ) {
                         val size = DpSize(width = maxWidth / 2, height = 128.dp)
-                        val maxInterval = AnimeFetchInterval.MAX_INTERVAL
+                        val maxInterval = FetchInterval.MAX_INTERVAL
                         val items = (0..maxInterval)
                             .map {
                                 if (it == 0) {

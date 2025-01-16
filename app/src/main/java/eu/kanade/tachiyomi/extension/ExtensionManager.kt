@@ -26,7 +26,7 @@ import kotlinx.coroutines.flow.stateIn
 import logcat.LogPriority
 import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.core.common.util.system.logcat
-import tachiyomi.domain.source.model.StubAnimeSource
+import tachiyomi.domain.source.model.StubSource
 import tachiyomi.i18n.MR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -95,7 +95,7 @@ class ExtensionManager(
         }
     }
 
-    private var availableAnimeExtensionsSourcesData: Map<Long, StubAnimeSource> = emptyMap()
+    private var availableAnimeExtensionsSourcesData: Map<Long, StubSource> = emptyMap()
 
     private fun setupAvailableAnimeExtensionsSourcesDataMap(
         animeextensions: List<Extension.Available>,

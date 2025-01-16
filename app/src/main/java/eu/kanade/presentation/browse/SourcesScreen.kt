@@ -24,8 +24,8 @@ import eu.kanade.presentation.browse.components.BaseSourceItem
 import eu.kanade.tachiyomi.ui.browse.source.SourcesScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel.Listing
 import eu.kanade.tachiyomi.util.system.LocaleHelper
-import tachiyomi.domain.source.model.AnimeSource
 import tachiyomi.domain.source.model.Pin
+import tachiyomi.domain.source.model.Source
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.ScrollbarLazyColumn
 import tachiyomi.presentation.core.components.material.SECONDARY_ALPHA
@@ -42,9 +42,9 @@ import tachiyomi.source.local.LocalSource
 fun SourcesScreen(
     state: SourcesScreenModel.State,
     contentPadding: PaddingValues,
-    onClickItem: (AnimeSource, Listing) -> Unit,
-    onClickPin: (AnimeSource) -> Unit,
-    onLongClickItem: (AnimeSource) -> Unit,
+    onClickItem: (Source, Listing) -> Unit,
+    onClickPin: (Source) -> Unit,
+    onLongClickItem: (Source) -> Unit,
 ) {
     when {
         state.isLoading -> LoadingScreen(Modifier.padding(contentPadding))
@@ -111,10 +111,10 @@ private fun SourceHeader(
 
 @Composable
 private fun SourceItem(
-    source: AnimeSource,
-    onClickItem: (AnimeSource, Listing) -> Unit,
-    onLongClickItem: (AnimeSource) -> Unit,
-    onClickPin: (AnimeSource) -> Unit,
+    source: Source,
+    onClickItem: (Source, Listing) -> Unit,
+    onLongClickItem: (Source) -> Unit,
+    onClickPin: (Source) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     BaseSourceItem(
@@ -166,7 +166,7 @@ private fun SourcePinButton(
 
 @Composable
 fun SourceOptionsDialog(
-    source: AnimeSource,
+    source: Source,
     onClickPin: () -> Unit,
     onClickDisable: () -> Unit,
     onDismiss: () -> Unit,
@@ -202,6 +202,6 @@ fun SourceOptionsDialog(
 }
 
 sealed interface SourceUiModel {
-    data class Item(val source: AnimeSource) : SourceUiModel
+    data class Item(val source: Source) : SourceUiModel
     data class Header(val language: String) : SourceUiModel
 }

@@ -24,7 +24,7 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.serialization.json.Json
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.withIOContext
-import tachiyomi.domain.category.interactor.GetAnimeCategories
+import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.model.Category.Companion.UNCATEGORIZED_ID
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -205,7 +205,7 @@ class DiscordRPCService : Service() {
         ) {
             if (rpc == null || playerData.thumbnailUrl == null || playerData.animeId == null) return
 
-            val animeCategoryIds = Injekt.get<GetAnimeCategories>()
+            val animeCategoryIds = Injekt.get<GetCategories>()
                 .await(playerData.animeId)
                 .map { it.id.toString() }
                 .run { ifEmpty { plus(UNCATEGORIZED_ID.toString()) } }
@@ -283,7 +283,7 @@ class DiscordRPCService : Service() {
         ) {
             if (rpc == null || readerData.thumbnailUrl == null || readerData.mangaId == null) return
 
-            val animeCategoryIds = Injekt.get<GetAnimeCategories>()
+            val animeCategoryIds = Injekt.get<GetCategories>()
                 .await(readerData.mangaId)
                 .map { it.id.toString() }
                 .run { ifEmpty { plus(UNCATEGORIZED_ID.toString()) } }

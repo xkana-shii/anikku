@@ -2,12 +2,12 @@ package eu.kanade.presentation.history.components
 
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import tachiyomi.domain.anime.model.AnimeCover
-import tachiyomi.domain.history.model.AnimeHistoryWithRelations
+import tachiyomi.domain.history.model.HistoryWithRelations
 import java.util.Date
 
-internal class HistoryWithRelationsProvider : PreviewParameterProvider<AnimeHistoryWithRelations> {
+internal class HistoryWithRelationsProvider : PreviewParameterProvider<HistoryWithRelations> {
 
-    private val simple = AnimeHistoryWithRelations(
+    private val simple = HistoryWithRelations(
         id = 1L,
         episodeId = 2L,
         animeId = 3L,
@@ -23,7 +23,7 @@ internal class HistoryWithRelationsProvider : PreviewParameterProvider<AnimeHist
         ),
     )
 
-    private val historyWithoutReadAt = AnimeHistoryWithRelations(
+    private val historyWithoutReadAt = HistoryWithRelations(
         id = 1L,
         episodeId = 2L,
         animeId = 3L,
@@ -39,7 +39,7 @@ internal class HistoryWithRelationsProvider : PreviewParameterProvider<AnimeHist
         ),
     )
 
-    private val historyWithNegativeChapterNumber = AnimeHistoryWithRelations(
+    private val historyWithNegativeChapterNumber = HistoryWithRelations(
         id = 1L,
         episodeId = 2L,
         animeId = 3L,
@@ -55,6 +55,6 @@ internal class HistoryWithRelationsProvider : PreviewParameterProvider<AnimeHist
         ),
     )
 
-    override val values: Sequence<AnimeHistoryWithRelations>
+    override val values: Sequence<HistoryWithRelations>
         get() = sequenceOf(simple, historyWithoutReadAt, historyWithNegativeChapterNumber)
 }

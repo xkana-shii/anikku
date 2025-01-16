@@ -82,7 +82,7 @@ import tachiyomi.domain.anime.model.Anime
 import tachiyomi.domain.episode.model.Episode
 import tachiyomi.domain.episode.service.missingEpisodesCount
 import tachiyomi.domain.library.service.LibraryPreferences
-import tachiyomi.domain.source.model.StubAnimeSource
+import tachiyomi.domain.source.model.StubSource
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.TwoPanelBox
 import tachiyomi.presentation.core.components.VerticalFastScroller
@@ -461,7 +461,7 @@ private fun AnimeScreenSmallImpl(
                             appBarPadding = topPadding,
                             anime = state.anime,
                             sourceName = remember { state.source.getNameForAnimeInfo() },
-                            isStubSource = remember { state.source is StubAnimeSource },
+                            isStubSource = remember { state.source is StubSource },
                             onCoverClick = onCoverClicked,
                             doSearch = onSearch,
                         )
@@ -753,7 +753,7 @@ fun AnimeScreenLargeImpl(
                             appBarPadding = contentPadding.calculateTopPadding(),
                             anime = state.anime,
                             sourceName = remember { state.source.getNameForAnimeInfo() },
-                            isStubSource = remember { state.source is StubAnimeSource },
+                            isStubSource = remember { state.source is StubSource },
                             onCoverClick = onCoverClicked,
                             doSearch = onSearch,
                         )

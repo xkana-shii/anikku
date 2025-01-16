@@ -55,26 +55,26 @@ import tachiyomi.core.common.util.lang.compareToWithCollator
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.launchNonCancellable
 import tachiyomi.core.common.util.lang.withIOContext
-import tachiyomi.domain.anime.applyFilter
 import tachiyomi.domain.anime.interactor.GetLibraryAnime
 import tachiyomi.domain.anime.model.Anime
 import tachiyomi.domain.anime.model.AnimeUpdate
-import tachiyomi.domain.category.interactor.GetVisibleAnimeCategories
+import tachiyomi.domain.anime.model.applyFilter
+import tachiyomi.domain.category.interactor.GetVisibleCategories
 import tachiyomi.domain.category.interactor.SetAnimeCategories
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.episode.interactor.GetEpisodesByAnimeId
 import tachiyomi.domain.episode.model.Episode
 import tachiyomi.domain.history.interactor.GetNextEpisodes
-import tachiyomi.domain.library.LibraryAnime
-import tachiyomi.domain.library.model.AnimeLibraryGroup
-import tachiyomi.domain.library.model.AnimeLibrarySort
+import tachiyomi.domain.library.model.LibraryAnime
 import tachiyomi.domain.library.model.LibraryDisplayMode
+import tachiyomi.domain.library.model.LibraryGroup
+import tachiyomi.domain.library.model.LibrarySort
 import tachiyomi.domain.library.model.sort
 import tachiyomi.domain.library.service.LibraryPreferences
-import tachiyomi.domain.source.service.AnimeSourceManager
-import tachiyomi.domain.track.interactor.GetAnimeTracks
+import tachiyomi.domain.source.service.SourceManager
+import tachiyomi.domain.track.interactor.GetTracks
 import tachiyomi.domain.track.interactor.GetTracksPerAnime
-import tachiyomi.domain.track.model.AnimeTrack
+import tachiyomi.domain.track.model.Track
 import tachiyomi.source.local.LocalSource
 import tachiyomi.source.local.isLocal
 import uy.kohesive.injekt.Injekt
@@ -89,7 +89,7 @@ typealias AnimeLibraryMap = Map<Category, List<LibraryItem>>
 @Suppress("LargeClass")
 class LibraryScreenModel(
     private val getLibraryAnime: GetLibraryAnime = Injekt.get(),
-    private val getCategories: GetVisibleAnimeCategories = Injekt.get(),
+    private val getCategories: GetVisibleCategories = Injekt.get(),
     private val getTracksPerAnime: GetTracksPerAnime = Injekt.get(),
     private val getNextEpisodes: GetNextEpisodes = Injekt.get(),
     private val getEpisodesByAnimeId: GetEpisodesByAnimeId = Injekt.get(),
@@ -99,12 +99,12 @@ class LibraryScreenModel(
     private val preferences: BasePreferences = Injekt.get(),
     private val libraryPreferences: LibraryPreferences = Injekt.get(),
     private val coverCache: AnimeCoverCache = Injekt.get(),
-    private val sourceManager: AnimeSourceManager = Injekt.get(),
+    private val sourceManager: SourceManager = Injekt.get(),
     private val downloadManager: AnimeDownloadManager = Injekt.get(),
     private val downloadCache: AnimeDownloadCache = Injekt.get(),
     private val trackerManager: TrackerManager = Injekt.get(),
     // SY -->
-    private val getTracks: GetAnimeTracks = Injekt.get(),
+    private val getTracks: GetTracks = Injekt.get(),
     // SY <--
 ) : StateScreenModel<LibraryScreenModel.State>(State()) {
 
@@ -136,7 +136,7 @@ class LibraryScreenModel(
                     .applyGrouping(groupType)
                     // SY <--
                     .applyFilters(tracks, trackingFilter)
-                    .applySort(tracks, sort.takeIf { groupType != AnimeLibraryGroup.BY_DEFAULT }, trackingFilter.keys)
+                    .applySort(tracks, sort.takeIf { groupType != LibraryGroup.BY_DEFAULT }, trackingFilter.keys)
                     .mapValues { (_, value) ->
                         if (searchQuery != null) {
                             value.filter { it.matches(searchQuery) }
@@ -206,7 +206,7 @@ class LibraryScreenModel(
     }
 
     private suspend fun AnimeLibraryMap.applyFilters(
-        trackMap: Map<Long, List<AnimeTrack>>,
+        trackMap: Map<Long, List<Track>>,
         trackingFilter: Map<Long, TriState>,
     ): AnimeLibraryMap {
         val prefs = getAnimelibItemPreferencesFlow().first()
@@ -284,8 +284,8 @@ class LibraryScreenModel(
     }
 
     private fun AnimeLibraryMap.applySort(
-        trackMap: Map<Long, List<AnimeTrack>>,
-        groupSort: AnimeLibrarySort? = null,
+        trackMap: Map<Long, List<Track>>,
+        groupSort: LibrarySort? = null,
         loggedInTrackerIds: Set<Long>,
     ): AnimeLibraryMap {
         val sortAlphabetically: (LibraryItem, LibraryItem) -> Int = { i1, i2 ->
@@ -306,45 +306,45 @@ class LibraryScreenModel(
             }
         }
 
-        fun AnimeLibrarySort.comparator(): Comparator<LibraryItem> = Comparator { i1, i2 ->
+        fun LibrarySort.comparator(): Comparator<LibraryItem> = Comparator { i1, i2 ->
             // SY -->
             val sort = groupSort ?: keys.find { it.id == i1.libraryAnime.category }!!.sort
             // SY <--
             when (this.type) {
-                AnimeLibrarySort.Type.Alphabetical -> {
+                LibrarySort.Type.Alphabetical -> {
                     sortAlphabetically(i1, i2)
                 }
-                AnimeLibrarySort.Type.LastSeen -> {
+                LibrarySort.Type.LastSeen -> {
                     i1.libraryAnime.lastSeen.compareTo(i2.libraryAnime.lastSeen)
                 }
-                AnimeLibrarySort.Type.LastUpdate -> {
+                LibrarySort.Type.LastUpdate -> {
                     i1.libraryAnime.anime.lastUpdate.compareTo(i2.libraryAnime.anime.lastUpdate)
                 }
-                AnimeLibrarySort.Type.UnseenCount -> when {
+                LibrarySort.Type.UnseenCount -> when {
                     // Ensure unseen content comes first
                     i1.libraryAnime.unseenCount == i2.libraryAnime.unseenCount -> 0
                     i1.libraryAnime.unseenCount == 0L -> if (this.isAscending) 1 else -1
                     i2.libraryAnime.unseenCount == 0L -> if (this.isAscending) -1 else 1
                     else -> i1.libraryAnime.unseenCount.compareTo(i2.libraryAnime.unseenCount)
                 }
-                AnimeLibrarySort.Type.TotalEpisodes -> {
+                LibrarySort.Type.TotalEpisodes -> {
                     i1.libraryAnime.totalEpisodes.compareTo(i2.libraryAnime.totalEpisodes)
                 }
-                AnimeLibrarySort.Type.LatestEpisode -> {
+                LibrarySort.Type.LatestEpisode -> {
                     i1.libraryAnime.latestUpload.compareTo(i2.libraryAnime.latestUpload)
                 }
-                AnimeLibrarySort.Type.EpisodeFetchDate -> {
+                LibrarySort.Type.EpisodeFetchDate -> {
                     i1.libraryAnime.episodeFetchedAt.compareTo(i2.libraryAnime.episodeFetchedAt)
                 }
-                AnimeLibrarySort.Type.DateAdded -> {
+                LibrarySort.Type.DateAdded -> {
                     i1.libraryAnime.anime.dateAdded.compareTo(i2.libraryAnime.anime.dateAdded)
                 }
-                AnimeLibrarySort.Type.TrackerMean -> {
+                LibrarySort.Type.TrackerMean -> {
                     val item1Score = trackerScores[i1.libraryAnime.id] ?: defaultTrackerScoreSortValue
                     val item2Score = trackerScores[i2.libraryAnime.id] ?: defaultTrackerScoreSortValue
                     item1Score.compareTo(item2Score)
                 }
-                AnimeLibrarySort.Type.AiringTime -> when {
+                LibrarySort.Type.AiringTime -> when {
                     i1.libraryAnime.anime.nextEpisodeAiringAt == 0L -> if (this.isAscending) 1 else -1
                     i2.libraryAnime.anime.nextEpisodeAiringAt == 0L -> if (this.isAscending) -1 else 1
                     i1.libraryAnime.unseenCount == i2.libraryAnime.unseenCount ->
@@ -353,14 +353,14 @@ class LibraryScreenModel(
                         )
                     else -> i1.libraryAnime.unseenCount.compareTo(i2.libraryAnime.unseenCount)
                 }
-                AnimeLibrarySort.Type.Random -> {
+                LibrarySort.Type.Random -> {
                     error("Why Are We Still Here? Just To Suffer?")
                 }
             }
         }
 
         return mapValues { (key, value) ->
-            if (key.sort.type == AnimeLibrarySort.Type.Random) {
+            if (key.sort.type == LibrarySort.Type.Random) {
                 return@mapValues value.shuffled(Random(libraryPreferences.randomAnimeSortSeed().get()))
             }
 
@@ -449,8 +449,8 @@ class LibraryScreenModel(
     // SY -->
     private fun AnimeLibraryMap.applyGrouping(groupType: Int): AnimeLibraryMap {
         val items = when (groupType) {
-            AnimeLibraryGroup.BY_DEFAULT -> this
-            AnimeLibraryGroup.UNGROUPED -> {
+            LibraryGroup.BY_DEFAULT -> this
+            LibraryGroup.UNGROUPED -> {
                 mapOf(
                     Category(
                         0,
@@ -825,7 +825,7 @@ class LibraryScreenModel(
     ): AnimeLibraryMap {
         val context = preferences.context
         return when (groupType) {
-            AnimeLibraryGroup.BY_TRACK_STATUS -> {
+            LibraryGroup.BY_TRACK_STATUS -> {
                 val tracks = runBlocking { getTracks.await() }.groupBy { it.animeId }
                 libraryAnime.groupBy { item ->
                     val status = tracks[item.libraryAnime.anime.id]?.firstNotNullOfOrNull { track ->
@@ -848,7 +848,7 @@ class LibraryScreenModel(
                     )
                 }
             }
-            AnimeLibraryGroup.BY_SOURCE -> {
+            LibraryGroup.BY_SOURCE -> {
                 val sources: List<Long>
                 libraryAnime.groupBy { item ->
                     item.libraryAnime.anime.source
@@ -876,7 +876,7 @@ class LibraryScreenModel(
                     )
                 }
             }
-            AnimeLibraryGroup.BY_TAG -> {
+            LibraryGroup.BY_TAG -> {
                 val tags: List<String> = libraryAnime.flatMap { item ->
                     item.libraryAnime.anime.genre?.distinct() ?: emptyList()
                 }
@@ -957,7 +957,7 @@ class LibraryScreenModel(
         val showAnimeContinueButton: Boolean = false,
         val dialog: Dialog? = null,
         // SY -->
-        val groupType: Int = AnimeLibraryGroup.BY_DEFAULT,
+        val groupType: Int = LibraryGroup.BY_DEFAULT,
         // SY <--
     ) {
         private val libraryCount by lazy {
