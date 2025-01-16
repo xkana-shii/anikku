@@ -32,7 +32,7 @@ import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.data.torrentServer.TorrentServerUtils
 import eu.kanade.tachiyomi.data.torrentServer.service.TorrentServerService
 import eu.kanade.tachiyomi.data.track.BaseTracker
-import eu.kanade.tachiyomi.data.track.EnhancedAnimeTracker
+import eu.kanade.tachiyomi.data.track.EnhancedTracker
 import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.network.HttpException
 import eu.kanade.tachiyomi.source.isSourceForTorrents
@@ -1120,7 +1120,7 @@ class AnimeScreenModel(
             ) { animeTracks, loggedInTrackers ->
                 // Show only if the service supports this manga's source
                 val supportedTrackers = loggedInTrackers.filter {
-                    (it as? EnhancedAnimeTracker)?.accept(source!!) ?: true
+                    (it as? EnhancedTracker)?.accept(source!!) ?: true
                 }
                 val supportedTrackerIds = supportedTrackers.map { it.id }.toHashSet()
                 val supportedTrackerTracks = animeTracks.filter { it.trackerId in supportedTrackerIds }

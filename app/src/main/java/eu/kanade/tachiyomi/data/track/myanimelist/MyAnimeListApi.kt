@@ -5,8 +5,8 @@ import androidx.core.net.toUri
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import eu.kanade.tachiyomi.data.track.myanimelist.dto.MALAnime
-import eu.kanade.tachiyomi.data.track.myanimelist.dto.MALListAnimeItem
-import eu.kanade.tachiyomi.data.track.myanimelist.dto.MALListAnimeItemStatus
+import eu.kanade.tachiyomi.data.track.myanimelist.dto.MALListItem
+import eu.kanade.tachiyomi.data.track.myanimelist.dto.MALListItemStatus
 import eu.kanade.tachiyomi.data.track.myanimelist.dto.MALOAuth
 import eu.kanade.tachiyomi.data.track.myanimelist.dto.MALSearchResult
 import eu.kanade.tachiyomi.data.track.myanimelist.dto.MALUser
@@ -143,7 +143,7 @@ class MyAnimeListApi(
             with(json) {
                 authClient.newCall(request)
                     .awaitSuccess()
-                    .parseAs<MALListAnimeItemStatus>()
+                    .parseAs<MALListItemStatus>()
                     .let { parseAnimeItem(it, track) }
             }
         }
@@ -166,7 +166,7 @@ class MyAnimeListApi(
             with(json) {
                 authClient.newCall(GET(uri.toString()))
                     .awaitSuccess()
-                    .parseAs<MALListAnimeItem>()
+                    .parseAs<MALListItem>()
                     .let { item ->
                         track.total_episodes = item.numEpisodes
                         item.myListStatus?.let { parseAnimeItem(it, track) }
@@ -214,7 +214,7 @@ class MyAnimeListApi(
         }
     }
 
-    private fun parseAnimeItem(listStatus: MALListAnimeItemStatus, track: Track): Track {
+    private fun parseAnimeItem(listStatus: MALListItemStatus, track: Track): Track {
         return track.apply {
             val isRewatching = listStatus.isRewatching
             status = if (isRewatching) MyAnimeList.REWATCHING else getStatus(listStatus.status)

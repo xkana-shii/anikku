@@ -2,7 +2,7 @@ package eu.kanade.tachiyomi.data.track.kitsu
 
 import androidx.core.net.toUri
 import eu.kanade.tachiyomi.data.database.models.Track
-import eu.kanade.tachiyomi.data.track.kitsu.dto.KitsuAddEntryResult
+import eu.kanade.tachiyomi.data.track.kitsu.dto.KitsuAddAnimeResult
 import eu.kanade.tachiyomi.data.track.kitsu.dto.KitsuAlgoliaSearchResult
 import eu.kanade.tachiyomi.data.track.kitsu.dto.KitsuCurrentUserResult
 import eu.kanade.tachiyomi.data.track.kitsu.dto.KitsuListSearchResult
@@ -73,7 +73,7 @@ class KitsuApi(private val client: OkHttpClient, interceptor: KitsuInterceptor) 
                     ),
                 )
                     .awaitSuccess()
-                    .parseAs<KitsuAddEntryResult>()
+                    .parseAs<KitsuAddAnimeResult>()
                     .let {
                         track.remote_id = it.data.id
                         track

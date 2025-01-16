@@ -13,11 +13,11 @@ data class SMUserListEntry(
     val score: Int,
     val status: String,
 ) {
-    fun toAnimeTrack(trackId: Long, anime: SMEntry): Track {
+    fun toAnimeTrack(trackId: Long, anime: SMAnime): Track {
         return Track.create(trackId).apply {
             title = anime.name
             remote_id = this@SMUserListEntry.id
-            total_episodes = anime.chapters!!
+            total_episodes = anime.episodes!!
             library_id = this@SMUserListEntry.id
             last_episode_seen = this@SMUserListEntry.episodes
             score = this@SMUserListEntry.score.toDouble()

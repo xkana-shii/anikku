@@ -4,8 +4,8 @@ import android.net.Uri
 import androidx.core.net.toUri
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
-import eu.kanade.tachiyomi.data.track.shikimori.dto.SMAddEntryResponse
-import eu.kanade.tachiyomi.data.track.shikimori.dto.SMEntry
+import eu.kanade.tachiyomi.data.track.shikimori.dto.SMAddAnimeResponse
+import eu.kanade.tachiyomi.data.track.shikimori.dto.SMAnime
 import eu.kanade.tachiyomi.data.track.shikimori.dto.SMOAuth
 import eu.kanade.tachiyomi.data.track.shikimori.dto.SMUser
 import eu.kanade.tachiyomi.data.track.shikimori.dto.SMUserListEntry
@@ -55,7 +55,7 @@ class ShikimoriApi(
                         body = payload.toString().toRequestBody(jsonMime),
                     ),
                 ).awaitSuccess()
-                    .parseAs<SMAddEntryResponse>()
+                    .parseAs<SMAddAnimeResponse>()
                     .let {
                         track.library_id = it.id
                     }
@@ -87,7 +87,7 @@ class ShikimoriApi(
             with(json) {
                 authClient.newCall(GET(url.toString()))
                     .awaitSuccess()
-                    .parseAs<List<SMEntry>>()
+                    .parseAs<List<SMAnime>>()
                     .map { it.toAnimeTrack(trackId) }
             }
         }
@@ -101,7 +101,7 @@ class ShikimoriApi(
             val anime = with(json) {
                 authClient.newCall(GET(urlAnimes.toString()))
                     .awaitSuccess()
-                    .parseAs<SMEntry>()
+                    .parseAs<SMAnime>()
             }
 
             val url = "$API_URL/v2/user_rates".toUri().buildUpon()
