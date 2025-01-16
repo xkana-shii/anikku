@@ -1,13 +1,13 @@
 package tachiyomi.data.track
 
 import kotlinx.coroutines.flow.Flow
-import tachiyomi.data.AnimeDatabaseHandler
+import tachiyomi.data.DatabaseHandler
 import tachiyomi.data.track.TrackMapper.mapTrack
 import tachiyomi.domain.track.model.Track
 import tachiyomi.domain.track.repository.TrackRepository
 
 class TrackRepositoryImpl(
-    private val handler: AnimeDatabaseHandler,
+    private val handler: DatabaseHandler,
 ) : TrackRepository {
 
     override suspend fun getTrackByAnimeId(id: Long): Track? {
