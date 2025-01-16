@@ -1,4 +1,4 @@
-CREATE VIEW animehistoryView AS
+CREATE VIEW historyView AS
 SELECT
     animehistory._id AS id,
     animes._id AS animeId,
@@ -25,7 +25,7 @@ JOIN (
 ) AS max_last_seen
 ON episodes.anime_id = max_last_seen.anime_id;
 
-animehistory:
+history:
 SELECT
 id,
 animeId,
@@ -37,13 +37,13 @@ favorite,
 cover_last_modified,
 episodeNumber,
 seenAt
-FROM animehistoryView
-WHERE animehistoryView.seenAt > 0
-AND maxSeenAtEpisodeId = animehistoryView.episodeId
-AND lower(animehistoryView.title) LIKE ('%' || :query || '%')
+FROM historyView
+WHERE historyView.seenAt > 0
+AND maxSeenAtEpisodeId = historyView.episodeId
+AND lower(historyView.title) LIKE ('%' || :query || '%')
 ORDER BY seenAt DESC;
 
-getLatestAnimeHistory:
+getLatestHistory:
 SELECT
 id,
 animeId,
@@ -55,7 +55,7 @@ favorite,
 cover_last_modified,
 episodeNumber,
 seenAt
-FROM animehistoryView
-WHERE animehistoryView.seenAt > 0
+FROM historyView
+WHERE historyView.seenAt > 0
 ORDER BY seenAt DESC
 LIMIT 1;
