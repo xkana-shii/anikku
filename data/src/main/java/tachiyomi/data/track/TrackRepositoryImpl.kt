@@ -2,7 +2,7 @@ package tachiyomi.data.track
 
 import kotlinx.coroutines.flow.Flow
 import tachiyomi.data.AnimeDatabaseHandler
-import tachiyomi.data.track.AnimeTrackMapper.mapTrack
+import tachiyomi.data.track.TrackMapper.mapTrack
 import tachiyomi.domain.track.model.Track
 import tachiyomi.domain.track.repository.TrackRepository
 
@@ -11,7 +11,7 @@ class TrackRepositoryImpl(
 ) : TrackRepository {
 
     override suspend fun getTrackByAnimeId(id: Long): Track? {
-        return handler.awaitOneOrNull { anime_syncQueries.getTrackByAnimeId(id, AnimeTrackMapper::mapTrack) }
+        return handler.awaitOneOrNull { anime_syncQueries.getTrackByAnimeId(id, TrackMapper::mapTrack) }
     }
 
     // SY -->
@@ -30,19 +30,19 @@ class TrackRepositoryImpl(
 
     override suspend fun getTracksByAnimeId(animeId: Long): List<Track> {
         return handler.awaitList {
-            anime_syncQueries.getTracksByAnimeId(animeId, AnimeTrackMapper::mapTrack)
+            anime_syncQueries.getTracksByAnimeId(animeId, TrackMapper::mapTrack)
         }
     }
 
     override fun getAnimeTracksAsFlow(): Flow<List<Track>> {
         return handler.subscribeToList {
-            anime_syncQueries.getAnimeTracks(AnimeTrackMapper::mapTrack)
+            anime_syncQueries.getAnimeTracks(TrackMapper::mapTrack)
         }
     }
 
     override fun getTracksByAnimeIdAsFlow(animeId: Long): Flow<List<Track>> {
         return handler.subscribeToList {
-            anime_syncQueries.getTracksByAnimeId(animeId, AnimeTrackMapper::mapTrack)
+            anime_syncQueries.getTracksByAnimeId(animeId, TrackMapper::mapTrack)
         }
     }
 
