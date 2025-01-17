@@ -5,10 +5,10 @@ import tachiyomi.domain.track.model.Track
 
 interface TrackRepository {
 
-    suspend fun getTrackByAnimeId(id: Long): Track?
+    suspend fun getTrackById(id: Long): Track?
 
     // SY -->
-    suspend fun getAnimeTracks(): List<Track>
+    suspend fun getTracks(): List<Track>
 
     suspend fun getTracksByAnimeIds(animeIds: List<Long>): List<Track>
     // SY <--

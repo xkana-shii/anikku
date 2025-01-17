@@ -12,7 +12,7 @@ class GetTracks(
 
     suspend fun awaitOne(id: Long): Track? {
         return try {
-            animetrackRepository.getTrackByAnimeId(id)
+            animetrackRepository.getTrackById(id)
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, e)
             null
@@ -22,7 +22,7 @@ class GetTracks(
     // SY -->
     suspend fun await(): List<Track> {
         return try {
-            animetrackRepository.getAnimeTracks()
+            animetrackRepository.getTracks()
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, e)
             emptyList()

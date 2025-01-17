@@ -9,13 +9,12 @@ import tachiyomi.domain.anime.repository.CustomAnimeRepository
 import java.io.File
 
 class CustomAnimeRepositoryImpl(context: Context) : CustomAnimeRepository {
-    private val editJson = File(context.getExternalFilesDir(null), "AnimeEdits.json")
+    private val editJson = File(context.getExternalFilesDir(null), "edits.json")
 
     private val customAnimeMap = fetchCustomData()
 
     override fun get(animeId: Long) = customAnimeMap[animeId]
 
-    @Suppress("SwallowedException", "ReturnCount", "TooGenericExceptionCaught")
     private fun fetchCustomData(): MutableMap<Long, CustomAnimeInfo> {
         if (!editJson.exists() || !editJson.isFile) return mutableMapOf()
 
@@ -37,7 +36,6 @@ class CustomAnimeRepositoryImpl(context: Context) : CustomAnimeRepository {
             .toMutableMap()
     }
 
-    @Suppress("ComplexCondition")
     override fun set(animeInfo: CustomAnimeInfo) {
         if (
             animeInfo.title == null &&
@@ -89,7 +87,7 @@ class CustomAnimeRepositoryImpl(context: Context) : CustomAnimeRepository {
         )
     }
 
-    fun CustomAnimeInfo.toJson(): AnimeJson {
+    private fun CustomAnimeInfo.toJson(): AnimeJson {
         return AnimeJson(
             id,
             title,
