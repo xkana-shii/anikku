@@ -6,7 +6,7 @@ import tachiyomi.domain.history.model.HistoryWithRelations
 import java.util.Date
 
 object HistoryMapper {
-    fun mapAnimeHistory(
+    fun mapHistory(
         id: Long,
         episodeId: Long,
         seenAt: Date?,

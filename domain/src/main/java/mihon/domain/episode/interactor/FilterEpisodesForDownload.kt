@@ -1,4 +1,4 @@
-package mihon.domain.items.episode.interactor
+package mihon.domain.episode.interactor
 
 import tachiyomi.domain.anime.model.Anime
 import tachiyomi.domain.category.interactor.GetCategories

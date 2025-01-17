@@ -29,7 +29,7 @@ class HistoryRepositoryImpl(
         return handler.awaitList {
             historyQueries.getHistoryByAnimeId(
                 animeId,
-                HistoryMapper::mapAnimeHistory,
+                HistoryMapper::mapHistory,
             )
         }
     }

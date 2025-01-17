@@ -43,7 +43,7 @@ class MissingEpisodesTest {
     }
 
     @Test
-    fun `calculateEpisodeGap returns 0 if either are not valid chapter numbers`() {
+    fun `calculateEpisodeGap returns 0 if either are not valid episode numbers`() {
         calculateEpisodeGap(episode(-1.0), episode(10.0)) shouldBe 0
         calculateEpisodeGap(episode(99.0), episode(-1.0)) shouldBe 0
 

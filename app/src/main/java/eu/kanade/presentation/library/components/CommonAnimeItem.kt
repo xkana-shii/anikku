@@ -75,7 +75,7 @@ fun AnimeCompactGridItem(
     onLongClick: () -> Unit,
     isSelected: Boolean = false,
     title: String? = null,
-    onClickContinueViewing: (() -> Unit)? = null,
+    onClickContinueWatching: (() -> Unit)? = null,
     coverAlpha: Float = 1f,
     coverBadgeStart: @Composable (RowScope.() -> Unit)? = null,
     coverBadgeEnd: @Composable (RowScope.() -> Unit)? = null,
@@ -100,13 +100,13 @@ fun AnimeCompactGridItem(
                 if (title != null) {
                     CoverTextOverlay(
                         title = title,
-                        onClickContinueViewing = onClickContinueViewing,
+                        onClickContinueWatching = onClickContinueWatching,
                     )
-                } else if (onClickContinueViewing != null) {
+                } else if (onClickContinueWatching != null) {
                     ContinueWatchingButton(
                         size = ContinueWatchingButtonSizeLarge,
                         iconSize = ContinueWatchingButtonIconSizeLarge,
-                        onClick = onClickContinueViewing,
+                        onClick = onClickContinueWatching,
                         modifier = Modifier
                             .padding(ContinueWatchingButtonGridPadding)
                             .align(Alignment.BottomEnd),
@@ -123,7 +123,7 @@ fun AnimeCompactGridItem(
 @Composable
 private fun BoxScope.CoverTextOverlay(
     title: String,
-    onClickContinueViewing: (() -> Unit)? = null,
+    onClickContinueWatching: (() -> Unit)? = null,
 ) {
     Box(
         modifier = Modifier
@@ -156,11 +156,11 @@ private fun BoxScope.CoverTextOverlay(
             ),
             minLines = 1,
         )
-        if (onClickContinueViewing != null) {
+        if (onClickContinueWatching != null) {
             ContinueWatchingButton(
                 size = ContinueWatchingButtonSizeSmall,
                 iconSize = ContinueWatchingButtonIconSizeSmall,
-                onClick = onClickContinueViewing,
+                onClick = onClickContinueWatching,
                 modifier = Modifier.padding(
                     end = ContinueWatchingButtonGridPadding,
                     bottom = ContinueWatchingButtonGridPadding,
@@ -184,7 +184,7 @@ fun AnimeComfortableGridItem(
     coverAlpha: Float = 1f,
     coverBadgeStart: (@Composable RowScope.() -> Unit)? = null,
     coverBadgeEnd: (@Composable RowScope.() -> Unit)? = null,
-    onClickContinueViewing: (() -> Unit)? = null,
+    onClickContinueWatching: (() -> Unit)? = null,
 ) {
     GridItemSelectable(
         isSelected = isSelected,
@@ -204,11 +204,11 @@ fun AnimeComfortableGridItem(
                 badgesStart = coverBadgeStart,
                 badgesEnd = coverBadgeEnd,
                 content = {
-                    if (onClickContinueViewing != null) {
+                    if (onClickContinueWatching != null) {
                         ContinueWatchingButton(
                             size = ContinueWatchingButtonSizeLarge,
                             iconSize = ContinueWatchingButtonIconSizeLarge,
-                            onClick = onClickContinueViewing,
+                            onClick = onClickContinueWatching,
                             modifier = Modifier
                                 .padding(ContinueWatchingButtonGridPadding)
                                 .align(Alignment.BottomEnd),
@@ -337,7 +337,7 @@ fun AnimeListItem(
     onLongClick: () -> Unit,
     onClick: () -> Unit,
     badge: @Composable (RowScope.() -> Unit),
-    onClickContinueViewing: (() -> Unit)? = null,
+    onClickContinueWatching: (() -> Unit)? = null,
 ) {
     Row(
         modifier = Modifier
@@ -366,11 +366,11 @@ fun AnimeListItem(
             style = MaterialTheme.typography.bodyMedium,
         )
         BadgeGroup(content = badge)
-        if (onClickContinueViewing != null) {
+        if (onClickContinueWatching != null) {
             ContinueWatchingButton(
                 size = ContinueWatchingButtonSizeSmall,
                 iconSize = ContinueWatchingButtonIconSizeSmall,
-                onClick = onClickContinueViewing,
+                onClick = onClickContinueWatching,
                 modifier = Modifier.padding(start = ContinueWatchingButtonListSpacing),
             )
         }
