@@ -72,7 +72,7 @@ import eu.kanade.domain.connection.service.ConnectionPreferences
 import eu.kanade.presentation.theme.TachiyomiTheme
 import eu.kanade.tachiyomi.animesource.model.SerializableVideo.Companion.serialize
 import eu.kanade.tachiyomi.animesource.model.Video
-import eu.kanade.tachiyomi.animesource.online.AnimeHttpSource
+import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.data.connection.discord.DiscordRPCService
 import eu.kanade.tachiyomi.data.connection.discord.PlayerData
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
@@ -1101,7 +1101,7 @@ class PlayerActivity : BaseActivity() {
 
     private fun setHttpOptions(video: Video) {
         if (viewModel.isEpisodeOnline() != true) return
-        val source = viewModel.currentSource.value as? AnimeHttpSource ?: return
+        val source = viewModel.currentSource.value as? HttpSource ?: return
 
         val headers = (video.headers ?: source.headers)
             .toMultimap()
