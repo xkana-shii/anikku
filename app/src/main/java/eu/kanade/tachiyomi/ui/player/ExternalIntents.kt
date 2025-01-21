@@ -525,7 +525,7 @@ class ExternalIntents {
             .sortedWith { e1, e2 -> sortFunction(e1, e2) }
 
         val currentEpisodePosition = episodes.indexOf(episode)
-        val removeAfterSeenSlots = downloadPreferences.removeAfterReadSlots().get()
+        val removeAfterSeenSlots = downloadPreferences.removeAfterSeenSlots().get()
         val episodeToDelete = episodes.getOrNull(currentEpisodePosition - removeAfterSeenSlots)
 
         // Check if deleting option is enabled and episode exists
@@ -566,7 +566,7 @@ class ExternalIntents {
                                     tracker.animeService.update(updatedTrack.toDbTrack(), true)
                                     insertTrack.await(updatedTrack)
                                 } else {
-                                    delayedTrackingStore.addAnime(track.animeId, lastEpisodeSeen = episodeNumber)
+                                    delayedTrackingStore.add(track.animeId, lastEpisodeSeen = episodeNumber)
                                     DelayedTrackingUpdateJob.setupTask(context)
                                 }
                             }

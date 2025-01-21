@@ -1071,7 +1071,7 @@ class PlayerViewModel @JvmOverloads constructor(
     private fun deleteEpisodeIfNeeded(chosenEpisode: Episode) {
         // Determine which episode should be deleted and enqueue
         val currentEpisodePosition = currentPlaylist.value.indexOf(chosenEpisode)
-        val removeAfterSeenSlots = downloadPreferences.removeAfterReadSlots().get()
+        val removeAfterSeenSlots = downloadPreferences.removeAfterSeenSlots().get()
         val episodeToDelete = currentPlaylist.value.getOrNull(
             currentEpisodePosition - removeAfterSeenSlots,
         )

@@ -117,7 +117,9 @@ class SyncEpisodesWithSource(
                         downloadManager.isEpisodeDownloaded(
                             dbEpisode.name,
                             dbEpisode.scanlator,
-                            anime.title,
+                            // SY -->
+                            anime.ogTitle,
+                            // SY <--
                             anime.source,
                         )
 
@@ -131,9 +133,7 @@ class SyncEpisodesWithSource(
                         sourceOrder = episode.sourceOrder,
                     )
                     if (episode.dateUpload != 0L) {
-                        toChangeEpisode = toChangeEpisode.copy(
-                            dateUpload = sourceEpisode.dateUpload,
-                        )
+                        toChangeEpisode = toChangeEpisode.copy(dateUpload = episode.dateUpload)
                     }
                     updatedEpisodes.add(toChangeEpisode)
                 }
@@ -196,7 +196,7 @@ class SyncEpisodesWithSource(
         }
 
         if (updatedToAdd.isNotEmpty()) {
-            updatedToAdd = episodeRepository.addAllEpisodes(updatedToAdd)
+            updatedToAdd = episodeRepository.addAll(updatedToAdd)
         }
 
         if (updatedEpisodes.isNotEmpty()) {

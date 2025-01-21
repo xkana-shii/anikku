@@ -23,7 +23,7 @@ import java.time.ZoneOffset
 
 class AddTracks(
     private val insertTrack: InsertTrack,
-    private val syncChapterProgressWithTrack: SyncEpisodeProgressWithTrack,
+    private val syncEpisodeProgressWithTrack: SyncEpisodeProgressWithTrack,
     private val getEpisodesByAnimeId: GetEpisodesByAnimeId,
     private val trackerManager: TrackerManager,
 ) {
@@ -31,38 +31,38 @@ class AddTracks(
     // TODO: update all trackers based on common data
     suspend fun bind(tracker: AnimeTracker, item: Track, animeId: Long) = withNonCancellableContext {
         withIOContext {
-            val allChapters = getEpisodesByAnimeId.await(animeId)
-            val hasSeenEpisodes = allChapters.any { it.seen }
+            val allEpisodes = getEpisodesByAnimeId.await(animeId)
+            val hasSeenEpisodes = allEpisodes.any { it.seen }
             tracker.bind(item, hasSeenEpisodes)
 
             var track = item.toDomainTrack(idRequired = false) ?: return@withIOContext
 
             insertTrack.await(track)
 
-            // TODO: merge into [SyncChapterProgressWithTrack]?
-            // Update chapter progress if newer chapters marked read locally
+            // TODO: merge into [SyncEpisodeProgressWithTrack]?
+            // Update episode progress if newer episodes marked seen locally
             if (hasSeenEpisodes) {
-                val latestLocalReadChapterNumber = allChapters
+                val latestLocalSeenEpisodeNumber = allEpisodes
                     .sortedBy { it.episodeNumber }
                     .takeWhile { it.seen }
                     .lastOrNull()
                     ?.episodeNumber ?: -1.0
 
-                if (latestLocalReadChapterNumber > track.lastEpisodeSeen) {
+                if (latestLocalSeenEpisodeNumber > track.lastEpisodeSeen) {
                     track = track.copy(
-                        lastEpisodeSeen = latestLocalReadChapterNumber,
+                        lastEpisodeSeen = latestLocalSeenEpisodeNumber,
                     )
-                    tracker.setRemoteLastEpisodeSeen(track.toDbTrack(), latestLocalReadChapterNumber.toInt())
+                    tracker.setRemoteLastEpisodeSeen(track.toDbTrack(), latestLocalSeenEpisodeNumber.toInt())
                 }
 
                 if (track.startDate <= 0) {
-                    val firstReadChapterDate = Injekt.get<GetHistory>().await(animeId)
+                    val firstSeenEpisodeDate = Injekt.get<GetHistory>().await(animeId)
                         .sortedBy { it.seenAt }
                         .firstOrNull()
                         ?.seenAt
 
-                    firstReadChapterDate?.let {
-                        val startDate = firstReadChapterDate.time.convertEpochMillisZone(
+                    firstSeenEpisodeDate?.let {
+                        val startDate = firstSeenEpisodeDate.time.convertEpochMillisZone(
                             ZoneOffset.systemDefault(),
                             ZoneOffset.UTC,
                         )
@@ -74,7 +74,7 @@ class AddTracks(
                 }
             }
 
-            syncChapterProgressWithTrack.await(animeId, track, tracker)
+            syncEpisodeProgressWithTrack.await(animeId, track, tracker)
         }
     }
 
@@ -90,7 +90,7 @@ class AddTracks(
                             (service as Tracker).animeService.bind(track)
                             insertTrack.await(track.toDomainTrack(idRequired = false)!!)
 
-                            syncChapterProgressWithTrack.await(
+                            syncEpisodeProgressWithTrack.await(
                                 anime.id,
                                 track.toDomainTrack(idRequired = false)!!,
                                 service.animeService,

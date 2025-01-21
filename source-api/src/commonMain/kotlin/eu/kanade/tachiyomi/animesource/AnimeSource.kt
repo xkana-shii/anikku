@@ -49,7 +49,7 @@ interface AnimeSource {
     }
 
     /**
-     * Get the list of videos a episode has. Pages should be returned
+     * Get the list of videos a episode has. Videos should be returned
      * in the expected order; the index is ignored.
      *
      * @since extensions-lib 1.5

@@ -98,11 +98,6 @@ object SettingsDownloadScreen : SearchableSettings {
                 },
                 onClick = { showDownloadLimitDialog = true },
             ),
-            Preference.PreferenceItem.SwitchPreference(
-                pref = downloadPreferences.splitTallImages(),
-                title = stringResource(MR.strings.split_tall_images),
-                subtitle = stringResource(MR.strings.split_tall_images_summary),
-            ),
             Preference.PreferenceItem.ListPreference(
                 pref = downloadPreferences.numberOfDownloads(),
                 title = stringResource(MR.strings.pref_download_slots),
@@ -134,11 +129,11 @@ object SettingsDownloadScreen : SearchableSettings {
             title = stringResource(MR.strings.pref_category_delete_chapters),
             preferenceItems = persistentListOf(
                 Preference.PreferenceItem.SwitchPreference(
-                    pref = downloadPreferences.removeAfterMarkedAsRead(),
+                    pref = downloadPreferences.removeAfterMarkedAsSeen(),
                     title = stringResource(MR.strings.pref_remove_after_marked_as_read),
                 ),
                 Preference.PreferenceItem.ListPreference(
-                    pref = downloadPreferences.removeAfterReadSlots(),
+                    pref = downloadPreferences.removeAfterSeenSlots(),
                     title = stringResource(MR.strings.pref_remove_after_read),
                     entries = persistentMapOf(
                         -1 to stringResource(MR.strings.disabled),
@@ -150,7 +145,7 @@ object SettingsDownloadScreen : SearchableSettings {
                     ),
                 ),
                 Preference.PreferenceItem.SwitchPreference(
-                    pref = downloadPreferences.removeBookmarkedChapters(),
+                    pref = downloadPreferences.removeBookmarkedEpisodes(),
                     title = stringResource(MR.strings.pref_remove_bookmarked_chapters),
                 ),
                 getExcludedAnimeCategoriesPreference(
@@ -162,26 +157,12 @@ object SettingsDownloadScreen : SearchableSettings {
     }
 
     @Composable
-    private fun getExcludedCategoriesPreference(
-        downloadPreferences: DownloadPreferences,
-        categories: () -> List<Category>,
-    ): Preference.PreferenceItem.MultiSelectListPreference {
-        return Preference.PreferenceItem.MultiSelectListPreference(
-            pref = downloadPreferences.removeExcludeCategories(),
-            title = stringResource(MR.strings.pref_remove_exclude_categories_manga),
-            entries = categories()
-                .associate { it.id.toString() to it.visualName }
-                .toImmutableMap(),
-        )
-    }
-
-    @Composable
     private fun getExcludedAnimeCategoriesPreference(
         downloadPreferences: DownloadPreferences,
         categories: () -> List<Category>,
     ): Preference.PreferenceItem.MultiSelectListPreference {
         return Preference.PreferenceItem.MultiSelectListPreference(
-            pref = downloadPreferences.removeExcludeCategories(),
+            pref = downloadPreferences.removeExcludeAnimeCategories(),
             title = stringResource(MR.strings.pref_remove_exclude_categories_anime),
             entries = categories()
                 .associate { it.id.toString() to it.visualName }
@@ -267,19 +248,6 @@ object SettingsDownloadScreen : SearchableSettings {
                                 stringResource(MR.strings.disabled)
                             } else {
                                 pluralStringResource(MR.plurals.next_unseen_episodes, count = it, it)
-                            }
-                        }
-                        .toImmutableMap(),
-                ),
-                Preference.PreferenceItem.ListPreference(
-                    pref = downloadPreferences.autoDownloadWhileReading(),
-                    title = stringResource(MR.strings.auto_download_while_reading),
-                    entries = listOf(0, 2, 3, 5, 10)
-                        .associateWith {
-                            if (it == 0) {
-                                stringResource(MR.strings.disabled)
-                            } else {
-                                pluralStringResource(MR.plurals.next_unread_chapters, count = it, it)
                             }
                         }
                         .toImmutableMap(),
