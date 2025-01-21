@@ -56,7 +56,7 @@ fun BrowseSourceCompactGrid(
 }
 
 @Composable
-private fun BrowseSourceCompactGridItem(
+internal fun BrowseSourceCompactGridItem(
     anime: Anime,
     onClick: () -> Unit = {},
     onLongClick: () -> Unit = onClick,

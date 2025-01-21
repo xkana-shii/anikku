@@ -64,7 +64,7 @@ internal object ExtensionLoader {
             PACKAGE_FLAGS,
         )
             ?.takeIf { isPackageAnExtension(it) } ?: return false
-        val currentExtension = getAnimeExtensionPackageInfoFromPkgName(
+        val currentExtension = getExtensionPackageInfoFromPkgName(
             context,
             extension.packageName,
         )
@@ -179,7 +179,7 @@ internal object ExtensionLoader {
      * contains the required feature flag before trying to load it.
      */
     suspend fun loadExtensionFromPkgName(context: Context, pkgName: String): LoadResult {
-        val extensionPackage = getAnimeExtensionInfoFromPkgName(context, pkgName)
+        val extensionPackage = getExtensionInfoFromPkgName(context, pkgName)
         if (extensionPackage == null) {
             logcat(LogPriority.ERROR) { "Extension package is not found ($pkgName)" }
             return LoadResult.Error
@@ -187,11 +187,11 @@ internal object ExtensionLoader {
         return loadExtension(context, extensionPackage)
     }
 
-    fun getAnimeExtensionPackageInfoFromPkgName(context: Context, pkgName: String): PackageInfo? {
-        return getAnimeExtensionInfoFromPkgName(context, pkgName)?.packageInfo
+    fun getExtensionPackageInfoFromPkgName(context: Context, pkgName: String): PackageInfo? {
+        return getExtensionInfoFromPkgName(context, pkgName)?.packageInfo
     }
 
-    private fun getAnimeExtensionInfoFromPkgName(context: Context, pkgName: String): ExtensionInfo? {
+    private fun getExtensionInfoFromPkgName(context: Context, pkgName: String): ExtensionInfo? {
         val privateExtensionFile = File(
             getPrivateExtensionDir(context),
             "$pkgName.$PRIVATE_EXTENSION_EXTENSION",

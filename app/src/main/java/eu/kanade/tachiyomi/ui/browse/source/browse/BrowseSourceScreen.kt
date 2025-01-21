@@ -219,7 +219,7 @@ data class BrowseSourceScreen(
                 contentPadding = paddingValues,
                 onWebViewClick = onWebViewClick,
                 onHelpClick = { uriHandler.openUri(Constants.URL_HELP) },
-                onLocalAnimeSourceHelpClick = onHelpClick,
+                onLocalSourceHelpClick = onHelpClick,
                 onAnimeClick = { navigator.push((AnimeScreen(it.id, true))) },
                 onAnimeLongClick = { anime ->
                     scope.launchIO {
@@ -284,7 +284,7 @@ data class BrowseSourceScreen(
                     onConfirm = {
                         screenModel.changeAnimeFavorite(dialog.anime)
                     },
-                    entryToRemove = dialog.anime.title,
+                    animeToRemove = dialog.anime.title,
                 )
             }
             is BrowseSourceScreenModel.Dialog.ChangeAnimeCategory -> {

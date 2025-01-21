@@ -49,7 +49,7 @@ fun BrowseSourceList(
 }
 
 @Composable
-private fun BrowseSourceListItem(
+internal fun BrowseSourceListItem(
     anime: Anime,
     onClick: () -> Unit = {},
     onLongClick: () -> Unit = onClick,
