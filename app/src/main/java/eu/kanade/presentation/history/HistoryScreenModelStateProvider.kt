@@ -72,27 +72,29 @@ class HistoryScreenModelStateProvider : PreviewParameterProvider<HistoryScreenMo
     private object HistoryUiModelExamples {
         val headerToday = header()
         val headerTomorrow =
-            AnimeHistoryUiModel.Header(LocalDate.now().plusDays(1))
+            HistoryUiModel.Header(LocalDate.now().plusDays(1))
 
         fun header(instantBuilder: (Instant) -> Instant = { it }) =
-            AnimeHistoryUiModel.Header(LocalDate.from(instantBuilder(Instant.now())))
+            HistoryUiModel.Header(LocalDate.from(instantBuilder(Instant.now())))
 
         fun items() = sequence {
             var count = 1
             while (true) {
-                yield(randItem { it.copy(ogTitle = "Example Title $count") })
+                yield(randItem { it.copy(/* SY --> */ogTitle = /* SY <-- */ "Example Title $count") })
                 count += 1
             }
         }
 
         fun randItem(historyBuilder: (HistoryWithRelations) -> HistoryWithRelations = { it }) =
-            AnimeHistoryUiModel.Item(
+            HistoryUiModel.Item(
                 historyBuilder(
                     HistoryWithRelations(
                         id = Random.nextLong(),
                         episodeId = Random.nextLong(),
                         animeId = Random.nextLong(),
+                        // SY -->
                         ogTitle = "Test Title",
+                        // SY <--
                         episodeNumber = Random.nextDouble(),
                         seenAt = Date.from(Instant.now()),
                         coverData = AnimeCover(

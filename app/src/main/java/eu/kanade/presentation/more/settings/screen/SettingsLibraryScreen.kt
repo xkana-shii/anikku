@@ -32,10 +32,10 @@ import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.DEVICE_CHARGING
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.DEVICE_NETWORK_NOT_METERED
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.DEVICE_ONLY_ON_WIFI
-import tachiyomi.domain.library.service.LibraryPreferences.Companion.ENTRY_HAS_UNVIEWED
-import tachiyomi.domain.library.service.LibraryPreferences.Companion.ENTRY_NON_COMPLETED
-import tachiyomi.domain.library.service.LibraryPreferences.Companion.ENTRY_NON_VIEWED
-import tachiyomi.domain.library.service.LibraryPreferences.Companion.ENTRY_OUTSIDE_RELEASE_PERIOD
+import tachiyomi.domain.library.service.LibraryPreferences.Companion.ANIME_HAS_UNSEEN
+import tachiyomi.domain.library.service.LibraryPreferences.Companion.ANIME_NON_COMPLETED
+import tachiyomi.domain.library.service.LibraryPreferences.Companion.ANIME_NON_SEEN
+import tachiyomi.domain.library.service.LibraryPreferences.Companion.ANIME_OUTSIDE_RELEASE_PERIOD
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.i18n.pluralStringResource
 import tachiyomi.presentation.core.i18n.stringResource
@@ -225,13 +225,13 @@ object SettingsLibraryScreen : SearchableSettings {
                     subtitle = stringResource(MR.strings.pref_library_update_refresh_metadata_summary),
                 ),
                 Preference.PreferenceItem.MultiSelectListPreference(
-                    pref = libraryPreferences.autoUpdateItemRestrictions(),
+                    pref = libraryPreferences.autoUpdateAnimeRestrictions(),
                     title = stringResource(MR.strings.pref_library_update_smart_update),
                     entries = persistentMapOf(
-                        ENTRY_HAS_UNVIEWED to stringResource(MR.strings.pref_update_only_completely_read),
-                        ENTRY_NON_VIEWED to stringResource(MR.strings.pref_update_only_started),
-                        ENTRY_NON_COMPLETED to stringResource(MR.strings.pref_update_only_non_completed),
-                        ENTRY_OUTSIDE_RELEASE_PERIOD to stringResource(MR.strings.pref_update_only_in_release_period),
+                        ANIME_HAS_UNSEEN to stringResource(MR.strings.pref_update_only_completely_read),
+                        ANIME_NON_SEEN to stringResource(MR.strings.pref_update_only_started),
+                        ANIME_NON_COMPLETED to stringResource(MR.strings.pref_update_only_non_completed),
+                        ANIME_OUTSIDE_RELEASE_PERIOD to stringResource(MR.strings.pref_update_only_in_release_period),
                     ),
                 ),
                 Preference.PreferenceItem.SwitchPreference(

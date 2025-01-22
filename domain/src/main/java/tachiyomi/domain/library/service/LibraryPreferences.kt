@@ -21,7 +21,7 @@ class LibraryPreferences(
         LibraryDisplayMode.Serializer::deserialize,
     )
 
-    fun animeSortingMode() = preferenceStore.getObject(
+    fun sortingMode() = preferenceStore.getObject(
         "animelib_sorting_mode",
         LibrarySort.default,
         LibrarySort.Serializer::serialize,
@@ -38,19 +38,19 @@ class LibraryPreferences(
         ),
     )
 
-    fun autoUpdateItemRestrictions() = preferenceStore.getStringSet(
+    fun autoUpdateAnimeRestrictions() = preferenceStore.getStringSet(
         "library_update_manga_restriction",
         setOf(
-            ENTRY_HAS_UNVIEWED,
-            ENTRY_NON_COMPLETED,
-            ENTRY_NON_VIEWED,
-            ENTRY_OUTSIDE_RELEASE_PERIOD,
+            ANIME_HAS_UNSEEN,
+            ANIME_NON_COMPLETED,
+            ANIME_NON_SEEN,
+            ANIME_OUTSIDE_RELEASE_PERIOD,
         ),
     )
 
     fun autoUpdateMetadata() = preferenceStore.getBoolean("auto_update_metadata", false)
 
-    fun showContinueViewingButton() =
+    fun showContinueWatchingButton() =
         preferenceStore.getBoolean("display_continue_reading_button", false)
 
     // Common Category
@@ -88,22 +88,22 @@ class LibraryPreferences(
 
     // Mixture Columns
 
-    fun animePortraitColumns() = preferenceStore.getInt("pref_animelib_columns_portrait_key", 0)
+    fun portraitColumns() = preferenceStore.getInt("pref_animelib_columns_portrait_key", 0)
 
-    fun animeLandscapeColumns() = preferenceStore.getInt("pref_animelib_columns_landscape_key", 0)
+    fun landscapeColumns() = preferenceStore.getInt("pref_animelib_columns_landscape_key", 0)
 
     // Mixture Filter
 
-    fun filterDownloadedAnime() =
+    fun filterDownloaded() =
         preferenceStore.getEnum("pref_filter_animelib_downloaded_v2", TriState.DISABLED)
 
     fun filterUnseen() =
         preferenceStore.getEnum("pref_filter_animelib_unread_v2", TriState.DISABLED)
 
-    fun filterStartedAnime() =
+    fun filterStarted() =
         preferenceStore.getEnum("pref_filter_animelib_started_v2", TriState.DISABLED)
 
-    fun filterBookmarkedAnime() =
+    fun filterBookmarked() =
         preferenceStore.getEnum("pref_filter_animelib_bookmarked_v2", TriState.DISABLED)
 
     // AM (FILLERMARK) -->
@@ -111,10 +111,10 @@ class LibraryPreferences(
         preferenceStore.getEnum("pref_filter_animelib_fillermarked_v2", TriState.DISABLED)
     // <-- AM (FILLERMARK)
 
-    fun filterCompletedAnime() =
+    fun filterCompleted() =
         preferenceStore.getEnum("pref_filter_animelib_completed_v2", TriState.DISABLED)
 
-    fun filterTrackedAnime(id: Int) =
+    fun filterTracking(id: Int) =
         preferenceStore.getEnum("pref_filter_animelib_tracked_${id}_v2", TriState.DISABLED)
 
     // Mixture Update Count
@@ -221,9 +221,9 @@ class LibraryPreferences(
         const val DEVICE_NETWORK_NOT_METERED = "network_not_metered"
         const val DEVICE_CHARGING = "ac"
 
-        const val ENTRY_NON_COMPLETED = "anime_ongoing"
-        const val ENTRY_HAS_UNVIEWED = "anime_fully_seen"
-        const val ENTRY_NON_VIEWED = "anime_started"
-        const val ENTRY_OUTSIDE_RELEASE_PERIOD = "anime_outside_release_period"
+        const val ANIME_NON_COMPLETED = "anime_ongoing"
+        const val ANIME_HAS_UNSEEN = "anime_fully_seen"
+        const val ANIME_NON_SEEN = "anime_started"
+        const val ANIME_OUTSIDE_RELEASE_PERIOD = "anime_outside_release_period"
     }
 }

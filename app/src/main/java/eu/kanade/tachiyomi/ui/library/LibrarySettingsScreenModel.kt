@@ -49,7 +49,7 @@ class LibrarySettingsScreenModel(
     }
 
     fun toggleTracker(id: Int) {
-        toggleFilter { libraryPreferences.filterTrackedAnime(id) }
+        toggleFilter { libraryPreferences.filterTracking(id) }
     }
 
     fun setDisplayMode(mode: LibraryDisplayMode) {

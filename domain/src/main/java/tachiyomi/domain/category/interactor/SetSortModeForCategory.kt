@@ -21,7 +21,7 @@ class SetSortModeForCategory(
     ) {
         // SY -->
         if (preferences.groupAnimeLibraryBy().get() != LibraryGroup.BY_DEFAULT) {
-            preferences.animeSortingMode().set(LibrarySort(type, direction))
+            preferences.sortingMode().set(LibrarySort(type, direction))
             return
         }
         // SY <--
@@ -38,7 +38,7 @@ class SetSortModeForCategory(
                 ),
             )
         } else {
-            preferences.animeSortingMode().set(LibrarySort(type, direction))
+            preferences.sortingMode().set(LibrarySort(type, direction))
             categoryRepository.updateAllAnimeCategoryFlags(flags)
         }
     }

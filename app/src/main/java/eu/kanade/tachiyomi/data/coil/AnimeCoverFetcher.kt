@@ -1,6 +1,7 @@
 package eu.kanade.tachiyomi.data.coil
 
 import android.net.Uri
+import androidx.core.net.toUri
 import coil3.Extras
 import coil3.ImageLoader
 import coil3.decode.DataSource
@@ -60,6 +61,9 @@ class AnimeCoverFetcher(
     private val diskCacheKey: String
         get() = diskCacheKeyLazy.value
 
+    /**
+     * Called each time a cover is displayed
+     */
     override suspend fun fetch(): FetchResult {
         // Use custom cover if exists
         val useCustomCover = options.extras.getOrDefault(USE_CUSTOM_COVER_KEY)
@@ -73,21 +77,11 @@ class AnimeCoverFetcher(
         // diskCacheKey is thumbnail_url
         if (url == null) error("No cover specified")
         return when (getResourceType(url)) {
-            Type.URL -> httpLoader()
             Type.File -> fileLoader(File(url.substringAfter("file://")))
-            Type.URI -> uniFileLoader(url)
+            Type.URI -> fileUriLoader(url)
+            Type.URL -> httpLoader()
             null -> error("Invalid image")
         }
-    }
-
-    private fun uniFileLoader(urlString: String): FetchResult {
-        val uniFile = UniFile.fromUri(options.context, Uri.parse(urlString))!!
-        val tempFile = uniFile.openInputStream().source().buffer()
-        return SourceFetchResult(
-            source = ImageSource(source = tempFile, fileSystem = FileSystem.SYSTEM),
-            mimeType = "image/*",
-            dataSource = DataSource.DISK,
-        )
     }
 
     private fun fileLoader(file: File): FetchResult {
@@ -97,6 +91,18 @@ class AnimeCoverFetcher(
                 fileSystem = FileSystem.SYSTEM,
                 diskCacheKey = diskCacheKey,
             ),
+            mimeType = "image/*",
+            dataSource = DataSource.DISK,
+        )
+    }
+
+    private fun fileUriLoader(uri: String): FetchResult {
+        val source = UniFile.fromUri(options.context, uri.toUri())!!
+            .openInputStream()
+            .source()
+            .buffer()
+        return SourceFetchResult(
+            source = ImageSource(source = source, fileSystem = FileSystem.SYSTEM),
             mimeType = "image/*",
             dataSource = DataSource.DISK,
         )

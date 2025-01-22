@@ -92,11 +92,11 @@ data class Download(
         suspend fun fromEpisodeId(
             episodeId: Long,
             getEpisode: GetEpisode = Injekt.get(),
-            getAnimeById: GetAnime = Injekt.get(),
+            getAnime: GetAnime = Injekt.get(),
             sourceManager: SourceManager = Injekt.get(),
         ): Download? {
             val episode = getEpisode.await(episodeId) ?: return null
-            val anime = getAnimeById.await(episode.animeId) ?: return null
+            val anime = getAnime.await(episode.animeId) ?: return null
             val source = sourceManager.get(anime.source) as? HttpSource ?: return null
 
             return Download(source, anime, episode)

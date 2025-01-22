@@ -297,13 +297,12 @@ data object LibraryTab : Tab {
             }
             is LibraryScreenModel.Dialog.DeleteAnime -> {
                 DeleteLibraryAnimeDialog(
-                    containsLocalEntry = dialog.anime.any(Anime::isLocal),
+                    containsLocalAnime = dialog.anime.any(Anime::isLocal),
                     onDismissRequest = onDismissRequest,
                     onConfirm = { deleteAnime, deleteEpisode ->
                         screenModel.removeAnimes(dialog.anime, deleteAnime, deleteEpisode)
                         screenModel.clearSelection()
                     },
-                    isManga = false,
                 )
             }
             null -> {}

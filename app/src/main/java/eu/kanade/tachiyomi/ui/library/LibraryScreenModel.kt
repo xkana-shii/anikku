@@ -126,7 +126,7 @@ class LibraryScreenModel(
                 // SY -->
                 combine(
                     state.map { it.groupType }.distinctUntilChanged(),
-                    libraryPreferences.animeSortingMode().changes(),
+                    libraryPreferences.sortingMode().changes(),
                     ::Pair,
                 ),
                 // SY <--
@@ -158,7 +158,7 @@ class LibraryScreenModel(
         combine(
             libraryPreferences.categoryTabs().changes(),
             libraryPreferences.categoryNumberOfItems().changes(),
-            libraryPreferences.showContinueViewingButton().changes(),
+            libraryPreferences.showContinueWatchingButton().changes(),
         ) { a, b, c -> arrayOf(a, b, c) }
             .onEach { (showCategoryTabs, showAnimeCount, showAnimeContinueButton) ->
                 mutableState.update { state ->
@@ -392,24 +392,24 @@ class LibraryScreenModel(
             libraryPreferences.downloadBadge().changes(),
             libraryPreferences.localBadge().changes(),
             libraryPreferences.languageBadge().changes(),
-            libraryPreferences.autoUpdateItemRestrictions().changes(),
+            libraryPreferences.autoUpdateAnimeRestrictions().changes(),
 
             preferences.downloadedOnly().changes(),
-            libraryPreferences.filterDownloadedAnime().changes(),
+            libraryPreferences.filterDownloaded().changes(),
             libraryPreferences.filterUnseen().changes(),
-            libraryPreferences.filterStartedAnime().changes(),
-            libraryPreferences.filterBookmarkedAnime().changes(),
+            libraryPreferences.filterStarted().changes(),
+            libraryPreferences.filterBookmarked().changes(),
             // AM (FILLERMARK) -->
             libraryPreferences.filterFillermarkedAnime().changes(),
             // <-- AM (FILLERMARK)
-            libraryPreferences.filterCompletedAnime().changes(),
+            libraryPreferences.filterCompleted().changes(),
             libraryPreferences.filterIntervalCustom().changes(),
             transform = {
                 ItemPreferences(
                     downloadBadge = it[0] as Boolean,
                     localBadge = it[1] as Boolean,
                     languageBadge = it[2] as Boolean,
-                    skipOutsideReleasePeriod = LibraryPreferences.ENTRY_OUTSIDE_RELEASE_PERIOD in (it[3] as Set<*>),
+                    skipOutsideReleasePeriod = LibraryPreferences.ANIME_OUTSIDE_RELEASE_PERIOD in (it[3] as Set<*>),
                     globalFilterDownloaded = it[4] as Boolean,
                     filterDownloaded = it[5] as TriState,
                     filterUnseen = it[6] as TriState,
@@ -505,7 +505,7 @@ class LibraryScreenModel(
             if (loggedInTrackers.isEmpty()) return@flatMapLatest flowOf(emptyMap())
 
             val prefFlows = loggedInTrackers.map { tracker ->
-                libraryPreferences.filterTrackedAnime(tracker.id.toInt()).changes()
+                libraryPreferences.filterTracking(tracker.id.toInt()).changes()
             }
             combine(prefFlows) {
                 loggedInTrackers
@@ -682,9 +682,9 @@ class LibraryScreenModel(
     fun getColumnsPreferenceForCurrentOrientation(isLandscape: Boolean): PreferenceMutableState<Int> {
         return (
             if (isLandscape) {
-                libraryPreferences.animeLandscapeColumns()
+                libraryPreferences.landscapeColumns()
             } else {
-                libraryPreferences.animePortraitColumns()
+                libraryPreferences.portraitColumns()
             }
             ).asState(
             screenModelScope,

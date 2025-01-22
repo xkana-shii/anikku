@@ -40,7 +40,6 @@ fun TabbedScreen(
     scrollable: Boolean = false,
     searchQuery: String? = null,
     onChangeSearchQuery: (String?) -> Unit = {},
-
 ) {
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }

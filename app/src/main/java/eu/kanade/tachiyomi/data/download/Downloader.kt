@@ -228,7 +228,7 @@ class Downloader(
                     activeDownloadsErroredFlow.first()
                 }
 
-                if (areAllAnimeDownloadsFinished()) stop()
+                if (areAllDownloadsFinished()) stop()
             }.distinctUntilChanged()
 
             // Use supervisorScope to cancel child jobs when the downloader job is cancelled
@@ -1261,7 +1261,7 @@ class Downloader(
                                 // Remove downloaded episode from queue
                                 removeFromQueue(download)
                             }
-                            if (areAllAnimeDownloadsFinished()) {
+                            if (areAllDownloadsFinished()) {
                                 stop()
                             }
                         }
@@ -1317,7 +1317,7 @@ class Downloader(
     /**
      * Returns true if all the queued downloads are in DOWNLOADED or ERROR state.
      */
-    private fun areAllAnimeDownloadsFinished(): Boolean {
+    private fun areAllDownloadsFinished(): Boolean {
         return queueState.value.none { it.status.value <= Download.State.DOWNLOADING.value }
     }
 

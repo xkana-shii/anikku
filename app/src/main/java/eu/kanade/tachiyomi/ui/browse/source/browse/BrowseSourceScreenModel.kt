@@ -127,9 +127,9 @@ class BrowseSourceScreenModel(
     fun getColumnsPreference(orientation: Int): GridCells {
         val isLandscape = orientation == Configuration.ORIENTATION_LANDSCAPE
         val columns = if (isLandscape) {
-            libraryPreferences.animeLandscapeColumns()
+            libraryPreferences.landscapeColumns()
         } else {
-            libraryPreferences.animePortraitColumns()
+            libraryPreferences.portraitColumns()
         }.get()
         return if (columns == 0) GridCells.Adaptive(128.dp) else GridCells.Fixed(columns)
     }
