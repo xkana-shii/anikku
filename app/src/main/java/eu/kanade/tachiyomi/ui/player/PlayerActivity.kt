@@ -70,7 +70,7 @@ import com.google.android.gms.common.images.WebImage
 import com.hippo.unifile.UniFile
 import eu.kanade.domain.connection.service.ConnectionPreferences
 import eu.kanade.presentation.theme.TachiyomiTheme
-import eu.kanade.tachiyomi.animesource.model.SerializableVideo.Companion.serialize
+import eu.kanade.tachiyomi.source.model.serialize
 import eu.kanade.tachiyomi.animesource.model.Video
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.data.connection.discord.DiscordRPCService

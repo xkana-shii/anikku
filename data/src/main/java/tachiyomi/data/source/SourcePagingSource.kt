@@ -3,8 +3,8 @@ package tachiyomi.data.source
 import androidx.paging.PagingState
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.model.FilterList
-import eu.kanade.tachiyomi.animesource.model.AnimesPage
-import eu.kanade.tachiyomi.animesource.model.SAnime
+import eu.kanade.tachiyomi.source.model.AnimesPage
+import eu.kanade.tachiyomi.source.model.SAnime
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.domain.episode.model.NoEpisodesException
 import tachiyomi.domain.source.repository.AnimeSourcePagingSourceType

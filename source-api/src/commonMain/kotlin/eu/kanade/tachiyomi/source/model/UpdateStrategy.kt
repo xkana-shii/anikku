@@ -1,5 +1,3 @@
 package eu.kanade.tachiyomi.source.model
 
-import eu.kanade.tachiyomi.animesource.model.AnimeUpdateStrategy
-
-typealias UpdateStrategy = AnimeUpdateStrategy
+typealias UpdateStrategy = eu.kanade.tachiyomi.animesource.model.AnimeUpdateStrategy

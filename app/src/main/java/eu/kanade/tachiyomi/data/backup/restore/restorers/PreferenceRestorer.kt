@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.data.backup.restore.restorers
 
 import android.content.Context
-import eu.kanade.tachiyomi.animesource.sourcePreferences
+import eu.kanade.tachiyomi.source.sourcePreferences
 import eu.kanade.tachiyomi.data.backup.create.BackupCreateJob
 import eu.kanade.tachiyomi.data.backup.models.BackupPreference
 import eu.kanade.tachiyomi.data.backup.models.BackupSourcePreferences

@@ -43,7 +43,7 @@ import eu.kanade.domain.track.interactor.TrackEpisode
 import eu.kanade.domain.track.service.TrackPreferences
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.tachiyomi.source.Source
-import eu.kanade.tachiyomi.animesource.model.SerializableVideo.Companion.toVideoList
+import eu.kanade.tachiyomi.source.model.toVideoList
 import eu.kanade.tachiyomi.animesource.model.Video
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.data.database.models.Episode

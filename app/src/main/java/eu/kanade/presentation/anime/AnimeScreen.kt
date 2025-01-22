@@ -67,7 +67,7 @@ import eu.kanade.presentation.components.relativeDateTimeText
 import eu.kanade.presentation.util.formatEpisodeNumber
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.ConfigurableSource
-import eu.kanade.tachiyomi.animesource.model.SAnime
+import eu.kanade.tachiyomi.source.model.SAnime
 import eu.kanade.tachiyomi.data.download.DownloadProvider
 import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.source.getNameForAnimeInfo

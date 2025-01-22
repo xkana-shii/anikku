@@ -2,7 +2,7 @@ package eu.kanade.tachiyomi.data.track.jellyfin
 
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.source.ConfigurableSource
-import eu.kanade.tachiyomi.animesource.sourcePreferences
+import eu.kanade.tachiyomi.source.sourcePreferences
 import okhttp3.Interceptor
 import okhttp3.Response
 import tachiyomi.domain.source.service.SourceManager

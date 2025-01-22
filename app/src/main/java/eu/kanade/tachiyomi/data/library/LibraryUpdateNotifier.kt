@@ -16,7 +16,7 @@ import coil3.request.transformations
 import coil3.transform.CircleCropTransformation
 import eu.kanade.presentation.util.formatEpisodeNumber
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.animesource.UnmeteredSource
+import eu.kanade.tachiyomi.source.UnmeteredSource
 import eu.kanade.tachiyomi.core.security.SecurityPreferences
 import eu.kanade.tachiyomi.data.download.Downloader
 import eu.kanade.tachiyomi.data.notification.NotificationHandler
