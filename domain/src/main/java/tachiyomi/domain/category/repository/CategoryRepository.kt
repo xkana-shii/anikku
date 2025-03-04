@@ -6,13 +6,13 @@ import tachiyomi.domain.category.model.CategoryUpdate
 
 interface CategoryRepository {
 
-    suspend fun getAnimeCategory(id: Long): Category?
+    suspend fun get(id: Long): Category?
 
-    suspend fun getAllAnimeCategories(): List<Category>
+    suspend fun getAll(): List<Category>
 
     suspend fun getAllVisibleAnimeCategories(): List<Category>
 
-    fun getAllAnimeCategoriesAsFlow(): Flow<List<Category>>
+    fun getAllAsFlow(): Flow<List<Category>>
 
     fun getAllVisibleAnimeCategoriesAsFlow(): Flow<List<Category>>
 
@@ -24,13 +24,13 @@ interface CategoryRepository {
 
     fun getVisibleCategoriesByAnimeIdAsFlow(animeId: Long): Flow<List<Category>>
 
-    suspend fun insertAnimeCategory(category: Category)
+    suspend fun insert(category: Category)
 
-    suspend fun updatePartialAnimeCategory(update: CategoryUpdate)
+    suspend fun updatePartial(update: CategoryUpdate)
 
-    suspend fun updatePartialAnimeCategories(updates: List<CategoryUpdate>)
+    suspend fun updatePartial(updates: List<CategoryUpdate>)
 
-    suspend fun updateAllAnimeCategoryFlags(flags: Long?)
+    suspend fun updateAllFlags(flags: Long?)
 
-    suspend fun deleteAnimeCategory(categoryId: Long)
+    suspend fun delete(categoryId: Long)
 }

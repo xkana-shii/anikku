@@ -15,25 +15,25 @@ interface AnimeRepository {
 
     fun getAnimeByUrlAndSourceIdAsFlow(url: String, sourceId: Long): Flow<Anime?>
 
-    suspend fun getAnimeFavorites(): List<Anime>
+    suspend fun getFavorites(): List<Anime>
 
-    suspend fun getWatchedAnimeNotInLibrary(): List<Anime>
+    suspend fun getSeenAnimeNotInLibrary(): List<Anime>
 
     suspend fun getLibraryAnime(): List<LibraryAnime>
 
     fun getLibraryAnimeAsFlow(): Flow<List<LibraryAnime>>
 
-    fun getAnimeFavoritesBySourceId(sourceId: Long): Flow<List<Anime>>
+    fun getFavoritesBySourceId(sourceId: Long): Flow<List<Anime>>
 
     suspend fun getDuplicateLibraryAnime(id: Long, title: String): List<Anime>
 
     suspend fun getUpcomingAnime(statuses: Set<Long>): Flow<List<Anime>>
 
-    suspend fun resetAnimeViewerFlags(): Boolean
+    suspend fun resetViewerFlags(): Boolean
 
     suspend fun setAnimeCategories(animeId: Long, categoryIds: List<Long>)
 
-    suspend fun insertAnime(anime: Anime): Long?
+    suspend fun insert(anime: Anime): Long?
 
     suspend fun update(update: AnimeUpdate): Boolean
 

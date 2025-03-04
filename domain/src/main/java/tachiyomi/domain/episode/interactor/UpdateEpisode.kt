@@ -11,7 +11,7 @@ class UpdateEpisode(
 
     suspend fun await(episodeUpdate: EpisodeUpdate) {
         try {
-            episodeRepository.updateEpisode(episodeUpdate)
+            episodeRepository.update(episodeUpdate)
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, e)
         }

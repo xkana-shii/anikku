@@ -30,6 +30,6 @@ class NetworkToLocalAnime(
     }
 
     private suspend fun insertAnime(anime: Anime): Long? {
-        return animeRepository.insertAnime(anime)
+        return animeRepository.insert(anime)
     }
 }

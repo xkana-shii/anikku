@@ -44,7 +44,7 @@ class EpisodeRepositoryImpl(
         }
     }
 
-    override suspend fun updateEpisode(episodeUpdate: EpisodeUpdate) {
+    override suspend fun update(episodeUpdate: EpisodeUpdate) {
         partialUpdate(episodeUpdate)
     }
 
@@ -88,33 +88,33 @@ class EpisodeRepositoryImpl(
     }
 
     override suspend fun getEpisodeByAnimeId(animeId: Long): List<Episode> {
-        return handler.awaitList { episodesQueries.getEpisodesByAnimeId(animeId, ::mapEpisode) }
+        return handler.awaitList { episodesQueries.getEpisodesByAnimeId(animeId, EpisodeMapper::mapEpisode) }
     }
 
     override suspend fun getBookmarkedEpisodesByAnimeId(animeId: Long): List<Episode> {
         return handler.awaitList {
             episodesQueries.getBookmarkedEpisodesByAnimeId(
                 animeId,
-                ::mapEpisode,
+                EpisodeMapper::mapEpisode,
             )
         }
     }
 
     // AM (FILLERMARK) -->
     override suspend fun getFillermarkedEpisodesByAnimeId(animeId: Long): List<Episode> {
-        return handler.awaitList { episodesQueries.getFillermarkedEpisodesByAnimeId(animeId, ::mapEpisode) }
+        return handler.awaitList { episodesQueries.getFillermarkedEpisodesByAnimeId(animeId, EpisodeMapper::mapEpisode) }
     }
     // <-- AM (FILLERMARK)
 
     override suspend fun getEpisodeById(id: Long): Episode? {
-        return handler.awaitOneOrNull { episodesQueries.getEpisodeById(id, ::mapEpisode) }
+        return handler.awaitOneOrNull { episodesQueries.getEpisodeById(id, EpisodeMapper::mapEpisode) }
     }
 
     override suspend fun getEpisodeByAnimeIdAsFlow(animeId: Long): Flow<List<Episode>> {
         return handler.subscribeToList {
             episodesQueries.getEpisodesByAnimeId(
                 animeId,
-                ::mapEpisode,
+                EpisodeMapper::mapEpisode,
             )
         }
     }
@@ -124,50 +124,34 @@ class EpisodeRepositoryImpl(
             episodesQueries.getEpisodeByUrlAndAnimeId(
                 url,
                 animeId,
-                ::mapEpisode,
+                EpisodeMapper::mapEpisode,
             )
         }
     }
 
-    private fun mapEpisode(
-        id: Long,
+    // SY -->
+    override suspend fun getEpisodeByUrl(url: String): List<Episode> {
+        return handler.awaitList { episodesQueries.getEpisodeByUrl(url, EpisodeMapper::mapEpisode) }
+    }
+
+    override suspend fun getMergedEpisodeByAnimeId(animeId: Long): List<Episode> {
+        return handler.awaitList {
+            episodesQueries.getMergedEpisodesByAnimeId(
+                animeId,
+                EpisodeMapper::mapEpisode,
+            )
+        }
+    }
+
+    override suspend fun getMergedEpisodeByAnimeIdAsFlow(
         animeId: Long,
-        url: String,
-        name: String,
-        scanlator: String?,
-        seen: Boolean,
-        bookmark: Boolean,
-        // AM (FILLERMARK) -->
-        fillermark: Boolean,
-        // <-- AM (FILLERMARK)
-        lastSecondSeen: Long,
-        totalSeconds: Long,
-        episodeNumber: Double,
-        sourceOrder: Long,
-        dateFetch: Long,
-        dateUpload: Long,
-        lastModifiedAt: Long,
-        version: Long,
-        @Suppress("UNUSED_PARAMETER")
-        isSyncing: Long,
-    ): Episode = Episode(
-        id = id,
-        animeId = animeId,
-        seen = seen,
-        bookmark = bookmark,
-        // AM (FILLERMARK) -->
-        fillermark = fillermark,
-        // <-- AM (FILLERMARK)
-        lastSecondSeen = lastSecondSeen,
-        totalSeconds = totalSeconds,
-        dateFetch = dateFetch,
-        sourceOrder = sourceOrder,
-        url = url,
-        name = name,
-        dateUpload = dateUpload,
-        episodeNumber = episodeNumber,
-        scanlator = scanlator,
-        lastModifiedAt = lastModifiedAt,
-        version = version,
-    )
+    ): Flow<List<Episode>> {
+        return handler.subscribeToList {
+            episodesQueries.getMergedEpisodesByAnimeId(
+                animeId,
+                EpisodeMapper::mapEpisode,
+            )
+        }
+    }
+    // SY <--
 }

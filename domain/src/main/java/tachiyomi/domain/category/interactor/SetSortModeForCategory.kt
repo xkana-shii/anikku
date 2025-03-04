@@ -25,13 +25,13 @@ class SetSortModeForCategory(
             return
         }
         // SY <--
-        val category = categoryId?.let { categoryRepository.getAnimeCategory(it) }
+        val category = categoryId?.let { categoryRepository.get(it) }
         val flags = (category?.flags ?: 0) + type + direction
         if (type == LibrarySort.Type.Random) {
             preferences.randomAnimeSortSeed().set(Random.nextInt())
         }
         if (category != null && preferences.categorizedDisplaySettings().get()) {
-            categoryRepository.updatePartialAnimeCategory(
+            categoryRepository.updatePartial(
                 CategoryUpdate(
                     id = category.id,
                     flags = flags,
@@ -39,7 +39,7 @@ class SetSortModeForCategory(
             )
         } else {
             preferences.sortingMode().set(LibrarySort(type, direction))
-            categoryRepository.updateAllAnimeCategoryFlags(flags)
+            categoryRepository.updateAllFlags(flags)
         }
     }
 

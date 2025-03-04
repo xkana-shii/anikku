@@ -41,6 +41,7 @@ class CustomAnimeRepositoryImpl(context: Context) : CustomAnimeRepository {
             animeInfo.title == null &&
             animeInfo.author == null &&
             animeInfo.artist == null &&
+            animeInfo.thumbnailUrl == null &&
             animeInfo.description == null &&
             animeInfo.genre == null &&
             animeInfo.status == null
@@ -71,6 +72,7 @@ class CustomAnimeRepositoryImpl(context: Context) : CustomAnimeRepository {
         val title: String? = null,
         val author: String? = null,
         val artist: String? = null,
+        val thumbnailUrl: String? = null,
         val description: String? = null,
         val genre: List<String>? = null,
         val status: Long? = null,
@@ -81,6 +83,7 @@ class CustomAnimeRepositoryImpl(context: Context) : CustomAnimeRepository {
             title = this@AnimeJson.title?.takeUnless { it.isBlank() },
             author = this@AnimeJson.author,
             artist = this@AnimeJson.artist,
+            thumbnailUrl = this@AnimeJson.thumbnailUrl,
             description = this@AnimeJson.description,
             genre = this@AnimeJson.genre,
             status = this@AnimeJson.status?.takeUnless { it == 0L },
@@ -93,6 +96,7 @@ class CustomAnimeRepositoryImpl(context: Context) : CustomAnimeRepository {
             title,
             author,
             artist,
+            thumbnailUrl,
             description,
             genre,
             status,

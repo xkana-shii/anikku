@@ -8,7 +8,7 @@ interface EpisodeRepository {
 
     suspend fun addAll(episodes: List<Episode>): List<Episode>
 
-    suspend fun updateEpisode(episodeUpdate: EpisodeUpdate)
+    suspend fun update(episodeUpdate: EpisodeUpdate)
 
     suspend fun updateAll(episodeUpdates: List<EpisodeUpdate>)
 
@@ -27,4 +27,14 @@ interface EpisodeRepository {
     suspend fun getEpisodeByAnimeIdAsFlow(animeId: Long): Flow<List<Episode>>
 
     suspend fun getEpisodeByUrlAndAnimeId(url: String, animeId: Long): Episode?
+
+    // SY -->
+    suspend fun getEpisodeByUrl(url: String): List<Episode>
+
+    suspend fun getMergedEpisodeByAnimeId(animeId: Long): List<Episode>
+
+    suspend fun getMergedEpisodeByAnimeIdAsFlow(
+        animeId: Long,
+    ): Flow<List<Episode>>
+    // SY <--
 }

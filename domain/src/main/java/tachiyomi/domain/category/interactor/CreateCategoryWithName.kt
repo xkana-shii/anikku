@@ -19,7 +19,7 @@ class CreateCategoryWithName(
         }
 
     suspend fun await(name: String): Result = withNonCancellableContext {
-        val categories = categoryRepository.getAllAnimeCategories()
+        val categories = categoryRepository.getAll()
         val nextOrder = categories.maxOfOrNull { it.order }?.plus(1) ?: 0
         val newCategory = Category(
             id = 0,
@@ -30,7 +30,7 @@ class CreateCategoryWithName(
         )
 
         try {
-            categoryRepository.insertAnimeCategory(newCategory)
+            categoryRepository.insert(newCategory)
             Result.Success
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, e)

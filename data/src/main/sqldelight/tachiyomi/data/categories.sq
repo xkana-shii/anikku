@@ -69,8 +69,8 @@ ON C._id = AC.category_id
 WHERE AC.anime_id = :animeId AND C.hidden = 0;
 
 insert:
-INSERT INTO categories(name, sort, flags)
-VALUES (:name, :order, :flags);
+INSERT INTO categories(name, sort, flags, hidden)
+VALUES (:name, :order, :flags, :hidden);
 
 delete:
 DELETE FROM categories

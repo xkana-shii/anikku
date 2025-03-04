@@ -6,6 +6,6 @@ class ResetViewerFlags(
     private val animeRepository: AnimeRepository,
 ) {
     suspend fun await(): Boolean {
-        return animeRepository.resetAnimeViewerFlags()
+        return animeRepository.resetViewerFlags()
     }
 }

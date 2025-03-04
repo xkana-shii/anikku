@@ -47,11 +47,11 @@ object AnimeMapper {
         ogTitle = title,
         ogArtist = artist,
         ogAuthor = author,
+        ogThumbnailUrl = thumbnailUrl,
         ogDescription = description,
         ogGenre = genre,
         ogStatus = status,
         // SY <--
-        thumbnailUrl = thumbnailUrl,
         updateStrategy = updateStrategy,
         initialized = initialized,
         lastModifiedAt = lastModifiedAt,

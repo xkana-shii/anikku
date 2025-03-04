@@ -22,7 +22,7 @@ object StringListColumnAdapter : ColumnAdapter<List<String>, String> {
     )
 }
 
-object AnimeUpdateStrategyColumnAdapter : ColumnAdapter<UpdateStrategy, Long> {
+object UpdateStrategyColumnAdapter : ColumnAdapter<UpdateStrategy, Long> {
     override fun decode(databaseValue: Long): UpdateStrategy =
         UpdateStrategy.entries.getOrElse(databaseValue.toInt()) { UpdateStrategy.ALWAYS_UPDATE }
 
