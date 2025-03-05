@@ -57,11 +57,11 @@ data class BackupAnime(
             ogTitle = this@BackupAnime.title,
             ogArtist = this@BackupAnime.artist,
             ogAuthor = this@BackupAnime.author,
+            ogThumbnailUrl = this@BackupAnime.thumbnailUrl,
             ogDescription = this@BackupAnime.description,
             ogGenre = this@BackupAnime.genre,
             ogStatus = this@BackupAnime.status.toLong(),
             // SY <--
-            thumbnailUrl = this@BackupAnime.thumbnailUrl,
             favorite = this@BackupAnime.favorite,
             source = this@BackupAnime.source,
             dateAdded = this@BackupAnime.dateAdded,

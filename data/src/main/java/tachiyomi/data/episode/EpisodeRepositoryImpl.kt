@@ -2,6 +2,7 @@ package tachiyomi.data.episode
 
 import kotlinx.coroutines.flow.Flow
 import logcat.LogPriority
+import tachiyomi.core.common.util.lang.toLong
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.domain.episode.model.Episode
@@ -87,8 +88,22 @@ class EpisodeRepositoryImpl(
         }
     }
 
-    override suspend fun getEpisodeByAnimeId(animeId: Long): List<Episode> {
-        return handler.awaitList { episodesQueries.getEpisodesByAnimeId(animeId, EpisodeMapper::mapEpisode) }
+    override suspend fun getEpisodeByAnimeId(animeId: Long, applyScanlatorFilter: Boolean): List<Episode> {
+        return handler.awaitList {
+            episodesQueries.getEpisodesByAnimeId(animeId, applyScanlatorFilter.toLong(), EpisodeMapper::mapEpisode)
+        }
+    }
+
+    override suspend fun getScanlatorsByAnimeId(animeId: Long): List<String> {
+        return handler.awaitList {
+            episodesQueries.getScanlatorsByAnimeId(animeId) { it.orEmpty() }
+        }
+    }
+
+    override fun getScanlatorsByAnimeIdAsFlow(animeId: Long): Flow<List<String>> {
+        return handler.subscribeToList {
+            episodesQueries.getScanlatorsByAnimeId(animeId) { it.orEmpty() }
+        }
     }
 
     override suspend fun getBookmarkedEpisodesByAnimeId(animeId: Long): List<Episode> {
@@ -110,12 +125,9 @@ class EpisodeRepositoryImpl(
         return handler.awaitOneOrNull { episodesQueries.getEpisodeById(id, EpisodeMapper::mapEpisode) }
     }
 
-    override suspend fun getEpisodeByAnimeIdAsFlow(animeId: Long): Flow<List<Episode>> {
+    override suspend fun getEpisodeByAnimeIdAsFlow(animeId: Long, applyScanlatorFilter: Boolean): Flow<List<Episode>> {
         return handler.subscribeToList {
-            episodesQueries.getEpisodesByAnimeId(
-                animeId,
-                EpisodeMapper::mapEpisode,
-            )
+            episodesQueries.getEpisodesByAnimeId(animeId, applyScanlatorFilter.toLong(), EpisodeMapper::mapEpisode)
         }
     }
 
@@ -134,10 +146,11 @@ class EpisodeRepositoryImpl(
         return handler.awaitList { episodesQueries.getEpisodeByUrl(url, EpisodeMapper::mapEpisode) }
     }
 
-    override suspend fun getMergedEpisodeByAnimeId(animeId: Long): List<Episode> {
+    override suspend fun getMergedEpisodeByAnimeId(animeId: Long, applyScanlatorFilter: Boolean): List<Episode> {
         return handler.awaitList {
             episodesQueries.getMergedEpisodesByAnimeId(
                 animeId,
+                applyScanlatorFilter.toLong(),
                 EpisodeMapper::mapEpisode,
             )
         }
@@ -145,12 +158,26 @@ class EpisodeRepositoryImpl(
 
     override suspend fun getMergedEpisodeByAnimeIdAsFlow(
         animeId: Long,
+        applyScanlatorFilter: Boolean,
     ): Flow<List<Episode>> {
         return handler.subscribeToList {
             episodesQueries.getMergedEpisodesByAnimeId(
                 animeId,
+                applyScanlatorFilter.toLong(),
                 EpisodeMapper::mapEpisode,
             )
+        }
+    }
+
+    override suspend fun getScanlatorsByMergeId(animeId: Long): List<String> {
+        return handler.awaitList {
+            episodesQueries.getScanlatorsByMergeId(animeId) { it.orEmpty() }
+        }
+    }
+
+    override fun getScanlatorsByMergeIdAsFlow(animeId: Long): Flow<List<String>> {
+        return handler.subscribeToList {
+            episodesQueries.getScanlatorsByMergeId(animeId) { it.orEmpty() }
         }
     }
     // SY <--

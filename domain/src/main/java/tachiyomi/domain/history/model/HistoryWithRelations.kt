@@ -14,6 +14,7 @@ data class HistoryWithRelations(
     // SY <--
     val episodeNumber: Double,
     val seenAt: Date?,
+    val watchDuration: Long,
     val coverData: AnimeCover,
 ) {
     // SY -->

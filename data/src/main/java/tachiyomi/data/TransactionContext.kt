@@ -72,7 +72,6 @@ internal suspend fun <T> AndroidDatabaseHandler.withAnimeTransaction(block: susp
  * if a blocking DAO method is invoked within the transaction coroutine. Never assign meaning to
  * this value, for now all we care is if its present or not.
  */
-
 private suspend fun AndroidDatabaseHandler.createTransactionContext(): CoroutineContext {
     val controlJob = Job()
     // make sure to tie the control job to this context to avoid blocking the transaction if

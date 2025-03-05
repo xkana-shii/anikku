@@ -14,7 +14,11 @@ interface EpisodeRepository {
 
     suspend fun removeEpisodesWithIds(episodeIds: List<Long>)
 
-    suspend fun getEpisodeByAnimeId(animeId: Long): List<Episode>
+    suspend fun getEpisodeByAnimeId(animeId: Long, applyScanlatorFilter: Boolean = false): List<Episode>
+
+    suspend fun getScanlatorsByAnimeId(animeId: Long): List<String>
+
+    fun getScanlatorsByAnimeIdAsFlow(animeId: Long): Flow<List<String>>
 
     suspend fun getBookmarkedEpisodesByAnimeId(animeId: Long): List<Episode>
 
@@ -24,17 +28,22 @@ interface EpisodeRepository {
 
     suspend fun getEpisodeById(id: Long): Episode?
 
-    suspend fun getEpisodeByAnimeIdAsFlow(animeId: Long): Flow<List<Episode>>
+    suspend fun getEpisodeByAnimeIdAsFlow(animeId: Long, applyScanlatorFilter: Boolean = false): Flow<List<Episode>>
 
     suspend fun getEpisodeByUrlAndAnimeId(url: String, animeId: Long): Episode?
 
     // SY -->
     suspend fun getEpisodeByUrl(url: String): List<Episode>
 
-    suspend fun getMergedEpisodeByAnimeId(animeId: Long): List<Episode>
+    suspend fun getMergedEpisodeByAnimeId(animeId: Long, applyScanlatorFilter: Boolean = false): List<Episode>
 
     suspend fun getMergedEpisodeByAnimeIdAsFlow(
         animeId: Long,
+        applyScanlatorFilter: Boolean = false,
     ): Flow<List<Episode>>
+
+    suspend fun getScanlatorsByMergeId(animeId: Long): List<String>
+
+    fun getScanlatorsByMergeIdAsFlow(animeId: Long): Flow<List<String>>
     // SY <--
 }

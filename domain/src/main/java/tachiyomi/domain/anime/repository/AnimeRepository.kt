@@ -38,4 +38,14 @@ interface AnimeRepository {
     suspend fun update(update: AnimeUpdate): Boolean
 
     suspend fun updateAll(animeUpdates: List<AnimeUpdate>): Boolean
+
+    // SY -->
+    suspend fun getAnimeBySourceId(sourceId: Long): List<Anime>
+
+    suspend fun getAll(): List<Anime>
+
+    suspend fun deleteAnime(animeId: Long)
+
+    suspend fun getSeenAnimeNotInLibraryView(): List<LibraryAnime>
+    // SY <--
 }

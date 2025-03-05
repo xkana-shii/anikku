@@ -13,13 +13,19 @@ interface HistoryRepository {
 
     suspend fun getTotalWatchDuration(): Long
 
-    suspend fun resetHistory(historyId: Long)
-
     suspend fun getHistoryByAnimeId(animeId: Long): List<History>
+
+    suspend fun resetHistory(historyId: Long)
 
     suspend fun resetHistoryByAnimeId(animeId: Long)
 
     suspend fun deleteAllHistory(): Boolean
 
     suspend fun upsertHistory(historyUpdate: HistoryUpdate)
+
+    // SY -->
+    suspend fun upsertHistory(historyUpdates: List<HistoryUpdate>)
+
+    suspend fun getByAnimeId(animeId: Long): List<History>
+    // SY <--
 }

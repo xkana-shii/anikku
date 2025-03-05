@@ -49,6 +49,7 @@ fun EditAnimeDialog(
         title: String?,
         author: String?,
         artist: String?,
+        thumbnailUrl: String?,
         description: String?,
         tags: List<String>?,
         status: Long?,
@@ -68,6 +69,7 @@ fun EditAnimeDialog(
                         binding.title.text.toString(),
                         binding.animeAuthor.text.toString(),
                         binding.animeArtist.text.toString(),
+                        binding.thumbnailUrl.text.toString(),
                         binding.animeDescription.text.toString(),
                         binding.animeGenresTags.getTextStrings(),
                         binding.status.selectedItemPosition.let {

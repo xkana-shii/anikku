@@ -24,6 +24,10 @@ object AnimeMapper {
         episodeFlags: Long,
         coverLastModified: Long,
         dateAdded: Long,
+        // SY -->
+        @Suppress("UNUSED_PARAMETER")
+        filteredScanlators: String?,
+        // SY <--
         updateStrategy: UpdateStrategy,
         calculateInterval: Long,
         lastModifiedAt: Long,
@@ -78,6 +82,10 @@ object AnimeMapper {
         episodeFlags: Long,
         coverLastModified: Long,
         dateAdded: Long,
+        // SY -->
+        @Suppress("UNUSED_PARAMETER")
+        filteredScanlators: String?,
+        // SY <--
         updateStrategy: UpdateStrategy,
         calculateInterval: Long,
         lastModifiedAt: Long,
@@ -114,6 +122,9 @@ object AnimeMapper {
             episodeFlags,
             coverLastModified,
             dateAdded,
+            // SY -->
+            null,
+            // SY <--
             updateStrategy,
             calculateInterval,
             lastModifiedAt,

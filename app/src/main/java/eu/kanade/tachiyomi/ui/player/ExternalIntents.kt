@@ -459,7 +459,7 @@ class ExternalIntents {
     private suspend fun saveEpisodeHistory(currentEpisode: Episode) {
         if (basePreferences.incognitoMode().get()) return
         upsertHistory.await(
-            HistoryUpdate(currentEpisode.id, Date()),
+            HistoryUpdate(currentEpisode.id, Date(), 0),
         )
     }
 

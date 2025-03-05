@@ -60,7 +60,7 @@ internal fun BrowseSourceListItem(
             animeId = anime.id,
             sourceId = anime.source,
             isAnimeFavorite = anime.favorite,
-            url = anime.thumbnailUrl,
+            ogUrl = anime.thumbnailUrl,
             lastModified = anime.coverLastModified,
         ),
         coverAlpha = if (anime.favorite) CommonAnimeItemDefaults.BrowseFavoriteCoverAlpha else 1f,

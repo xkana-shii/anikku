@@ -16,11 +16,12 @@ internal class HistoryWithRelationsProvider : PreviewParameterProvider<HistoryWi
         // SY <--
         episodeNumber = 10.2,
         seenAt = Date(1697247357L),
+        watchDuration = 123L,
         coverData = AnimeCover(
             animeId = 3L,
             sourceId = 4L,
             isAnimeFavorite = false,
-            url = "https://example.com/cover.png",
+            ogUrl = "https://example.com/cover.png",
             lastModified = 5L,
         ),
     )
@@ -34,11 +35,12 @@ internal class HistoryWithRelationsProvider : PreviewParameterProvider<HistoryWi
         // SY <--
         episodeNumber = 10.2,
         seenAt = null,
+        watchDuration = 123L,
         coverData = AnimeCover(
             animeId = 3L,
             sourceId = 4L,
             isAnimeFavorite = false,
-            url = "https://example.com/cover.png",
+            ogUrl = "https://example.com/cover.png",
             lastModified = 5L,
         ),
     )
@@ -52,11 +54,12 @@ internal class HistoryWithRelationsProvider : PreviewParameterProvider<HistoryWi
         // SY <--
         episodeNumber = -2.0,
         seenAt = Date(1697247357L),
+        watchDuration = 123L,
         coverData = AnimeCover(
             animeId = 3L,
             sourceId = 4L,
             isAnimeFavorite = false,
-            url = "https://example.com/cover.png",
+            ogUrl = "https://example.com/cover.png",
             lastModified = 5L,
         ),
     )

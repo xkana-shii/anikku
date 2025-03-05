@@ -296,11 +296,11 @@ class AnimeScreenModel(
     }
 
     // SY -->
-    @Suppress("LongParameterList")
     fun updateAnimeInfo(
         title: String?,
         author: String?,
         artist: String?,
+        thumbnailUrl: String?,
         description: String?,
         tags: List<String>?,
         status: Long?,
@@ -349,6 +349,7 @@ class AnimeScreenModel(
                     title?.trimOrNull(),
                     author?.trimOrNull(),
                     artist?.trimOrNull(),
+                    thumbnailUrl?.trimOrNull(),
                     description?.trimOrNull(),
                     genre,
                     status.takeUnless { it == state.anime.ogStatus },

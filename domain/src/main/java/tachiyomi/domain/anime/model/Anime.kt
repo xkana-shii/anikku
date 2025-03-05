@@ -27,11 +27,11 @@ data class Anime(
     val ogTitle: String,
     val ogArtist: String?,
     val ogAuthor: String?,
+    val ogThumbnailUrl: String?,
     val ogDescription: String?,
     val ogGenre: List<String>?,
     val ogStatus: Long,
     // SY <--
-    val thumbnailUrl: String?,
     val updateStrategy: UpdateStrategy,
     val initialized: Boolean,
     val lastModifiedAt: Long,
@@ -55,6 +55,9 @@ data class Anime(
     val artist: String?
         get() = customAnimeInfo?.artist ?: ogArtist
 
+    val thumbnailUrl: String?
+        get() = customAnimeInfo?.thumbnailUrl ?: ogThumbnailUrl
+
     val description: String?
         get() = customAnimeInfo?.description ?: ogDescription
 
@@ -67,7 +70,10 @@ data class Anime(
 
     val expectedNextUpdate: Instant?
         get() = nextUpdate
+            /* KMK -->
+            Always predict release date even for Completed entries
             .takeIf { status != SAnime.COMPLETED.toLong() }
+             KMK <-- */
             ?.let { Instant.ofEpochMilli(it) }
 
     val sorting: Long
@@ -157,10 +163,10 @@ data class Anime(
         const val EPISODE_FILLERMARKED_MASK = 0x00000180L
 
         const val EPISODE_SORTING_SOURCE = 0x00000000L
-        const val EPISODE_SORTING_NUMBER = 0x00000200L
-        const val EPISODE_SORTING_UPLOAD_DATE = 0x00000400L
-        const val EPISODE_SORTING_ALPHABET = 0x00000600L
-        const val EPISODE_SORTING_MASK = 0x00000600L
+        const val EPISODE_SORTING_NUMBER = 0x00000100L
+        const val EPISODE_SORTING_UPLOAD_DATE = 0x00000200L
+        const val EPISODE_SORTING_ALPHABET = 0x00000300L
+        const val EPISODE_SORTING_MASK = 0x00000300L
         // <-- AM (FILLERMARK)
 
         const val EPISODE_DISPLAY_NAME = 0x00000000L
@@ -189,11 +195,11 @@ data class Anime(
             // SY -->
             ogArtist = null,
             ogAuthor = null,
+            ogThumbnailUrl = null,
             ogDescription = null,
             ogGenre = null,
             ogStatus = 0L,
             // SY <--
-            thumbnailUrl = null,
             updateStrategy = UpdateStrategy.ALWAYS_UPDATE,
             initialized = false,
             lastModifiedAt = 0L,

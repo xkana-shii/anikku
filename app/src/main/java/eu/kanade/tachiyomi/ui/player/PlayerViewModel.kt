@@ -1124,7 +1124,7 @@ class PlayerViewModel @JvmOverloads constructor(
             val episodeId = episode.id!!
             val seenAt = Date()
             upsertHistory.await(
-                HistoryUpdate(episodeId, seenAt),
+                HistoryUpdate(episodeId, seenAt, 0),
             )
         }
     }
