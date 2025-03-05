@@ -70,7 +70,7 @@ class AndroidSourceManager(
         }
 
         scope.launch {
-            sourceRepository.subscribeAllAnime()
+            sourceRepository.subscribeAll()
                 .collectLatest { sources ->
                     val mutableMap = stubSourcesMap.toMutableMap()
                     sources.forEach {
@@ -101,9 +101,9 @@ class AndroidSourceManager(
 
     private fun registerStubSource(source: StubSource) {
         scope.launch {
-            val dbSource = sourceRepository.getStubAnimeSource(source.id)
+            val dbSource = sourceRepository.getStubSource(source.id)
             if (dbSource == source) return@launch
-            sourceRepository.upsertStubAnimeSource(source.id, source.lang, source.name)
+            sourceRepository.upsertStubSource(source.id, source.lang, source.name)
             if (dbSource != null) {
                 downloadManager.renameSource(dbSource, source)
             }
@@ -111,7 +111,7 @@ class AndroidSourceManager(
     }
 
     private suspend fun createStubSource(id: Long): StubSource {
-        sourceRepository.getStubAnimeSource(id)?.let {
+        sourceRepository.getStubSource(id)?.let {
             return it
         }
         extensionManager.getSourceData(id)?.let {

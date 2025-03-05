@@ -15,13 +15,13 @@ interface TrackRepository {
 
     suspend fun getTracksByAnimeId(animeId: Long): List<Track>
 
-    fun getAnimeTracksAsFlow(): Flow<List<Track>>
+    fun getTracksAsFlow(): Flow<List<Track>>
 
     fun getTracksByAnimeIdAsFlow(animeId: Long): Flow<List<Track>>
 
     suspend fun delete(animeId: Long, trackerId: Long)
 
-    suspend fun insertAnime(track: Track)
+    suspend fun insert(track: Track)
 
-    suspend fun insertAllAnime(tracks: List<Track>)
+    suspend fun insertAll(tracks: List<Track>)
 }
