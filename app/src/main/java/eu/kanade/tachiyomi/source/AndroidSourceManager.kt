@@ -4,6 +4,9 @@ import android.content.Context
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.extension.ExtensionManager
+import exh.source.BlacklistedSources
+import exh.source.DelegatedHttpSource
+import exh.source.EnhancedHttpSource
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -98,6 +101,26 @@ class AndroidSourceManager(
         val onlineSourceIds = getOnlineSources().map { it.id }
         return stubSourcesMap.values.filterNot { it.id in onlineSourceIds }
     }
+
+    // SY -->
+    override fun getVisibleOnlineSources() = sourcesMapFlow.value.values
+        .filterIsInstance<HttpSource>()
+        .filter {
+            it.id !in BlacklistedSources.HIDDEN_SOURCES
+        }
+
+    override fun getVisibleCatalogueSources() = sourcesMapFlow.value.values
+        .filterIsInstance<CatalogueSource>()
+        .filter {
+            it.id !in BlacklistedSources.HIDDEN_SOURCES
+        }
+
+    fun getDelegatedCatalogueSources() = sourcesMapFlow.value.values
+        .filterIsInstance<EnhancedHttpSource>()
+        .mapNotNull { enhancedHttpSource ->
+            enhancedHttpSource.enhancedSource as? DelegatedHttpSource
+        }
+    // SY <--
 
     private fun registerStubSource(source: StubSource) {
         scope.launch {

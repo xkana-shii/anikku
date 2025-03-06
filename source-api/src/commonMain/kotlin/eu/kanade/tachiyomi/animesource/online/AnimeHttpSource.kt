@@ -12,12 +12,16 @@ import eu.kanade.tachiyomi.network.ProgressListener
 import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.network.awaitSuccess
 import eu.kanade.tachiyomi.network.newCachelessCallWithProgress
+import exh.pref.DelegateSourcePreferences
+import exh.source.DelegatedHttpSource
 import okhttp3.Headers
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import rx.Observable
 import tachiyomi.core.common.util.lang.awaitSingle
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 import java.net.URI
 import java.net.URISyntaxException
@@ -59,7 +63,7 @@ abstract class AnimeHttpSource : AnimeCatalogueSource {
     /**
      * Headers used for requests.
      */
-    val headers: Headers by lazy { headersBuilder().build() }
+    open val headers: Headers by lazy { headersBuilder().build() }
 
     /**
      * Default network client for doing requests.
@@ -525,4 +529,17 @@ abstract class AnimeHttpSource : AnimeCatalogueSource {
      * Returns the list of filters for the source.
      */
     override fun getFilterList() = AnimeFilterList()
+
+    // EXH -->
+    private var delegate: DelegatedHttpSource? = null
+        get() = if (Injekt.get<DelegateSourcePreferences>().delegateSources().get()) {
+            field
+        } else {
+            null
+        }
+
+    fun bindDelegate(delegate: DelegatedHttpSource) {
+        this.delegate = delegate
+    }
+    // EXH <--
 }

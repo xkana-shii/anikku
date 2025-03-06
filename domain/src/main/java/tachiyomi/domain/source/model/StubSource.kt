@@ -3,9 +3,8 @@ package tachiyomi.domain.source.model
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.SAnime
 import eu.kanade.tachiyomi.source.model.SEpisode
-import eu.kanade.tachiyomi.animesource.model.Video
+import eu.kanade.tachiyomi.source.model.Video
 
-@Suppress("OverridingDeprecatedMember")
 class StubSource(
     override val id: Long,
     override val lang: String,
@@ -15,13 +14,21 @@ class StubSource(
     private val isInvalid: Boolean = name.isBlank() || lang.isBlank()
 
     override suspend fun getAnimeDetails(anime: SAnime): SAnime =
-        throw AnimeSourceNotInstalledException()
+        throw SourceNotInstalledException()
 
     override suspend fun getEpisodeList(anime: SAnime): List<SEpisode> =
-        throw AnimeSourceNotInstalledException()
+        throw SourceNotInstalledException()
 
     override suspend fun getVideoList(episode: SEpisode): List<Video> =
-        throw AnimeSourceNotInstalledException()
+        throw SourceNotInstalledException()
+
+    // KMK -->
+    override suspend fun getRelatedAnimeList(
+        anime: SAnime,
+        exceptionHandler: (Throwable) -> Unit,
+        pushResults: suspend (relatedAnime: Pair<String, List<SAnime>>, completed: Boolean) -> Unit,
+    ) = throw SourceNotInstalledException()
+    // KMK <--
 
     override fun toString(): String =
         if (!isInvalid) "$name (${lang.uppercase()})" else id.toString()
@@ -32,4 +39,5 @@ class StubSource(
         }
     }
 }
-class AnimeSourceNotInstalledException : Exception()
+
+class SourceNotInstalledException : Exception()

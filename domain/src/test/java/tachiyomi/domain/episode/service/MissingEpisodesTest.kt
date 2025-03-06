@@ -15,18 +15,18 @@ class MissingEpisodesTest {
     }
 
     @Test
-    fun `missingEpisodesCount returns 0 when all unknown item numbers`() {
+    fun `missingEpisodesCount returns 0 when all unknown episode numbers`() {
         listOf(-1.0, -1.0, -1.0).missingEpisodesCount() shouldBe 0
     }
 
     @Test
-    fun `missingEpisodesCount handles repeated base item numbers`() {
+    fun `missingEpisodesCount handles repeated base episode numbers`() {
         listOf(1.0, 1.0, 1.1, 1.5, 1.6, 1.99).missingEpisodesCount() shouldBe 0
     }
 
     @Test
-    fun `missingEpisodesCount returns number of missing items`() {
-        listOf(-1.0, 1.0, 2.0, 2.2, 4.0, 6.0, 10.0, 10.0).missingEpisodesCount() shouldBe 5
+    fun `missingEpisodesCount returns number of missing episodes`() {
+        listOf(-1.0, 1.0, 2.0, 2.2, 4.0, 6.0, 10.0, 11.0).missingEpisodesCount() shouldBe 5
     }
 
     @Test

@@ -66,7 +66,7 @@ import tachiyomi.domain.library.service.LibraryPreferences.Companion.ANIME_HAS_U
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.ANIME_NON_COMPLETED
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.ANIME_NON_SEEN
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.ANIME_OUTSIDE_RELEASE_PERIOD
-import tachiyomi.domain.source.model.AnimeSourceNotInstalledException
+import tachiyomi.domain.source.model.SourceNotInstalledException
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.domain.track.interactor.GetTracks
 import tachiyomi.i18n.MR
@@ -369,7 +369,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                                                 MR.strings.no_episodes_error,
                                             )
                                             // failedUpdates will already have the source, don't need to copy it into the message
-                                            is AnimeSourceNotInstalledException -> context.stringResource(
+                                            is SourceNotInstalledException -> context.stringResource(
                                                 MR.strings.loader_not_implemented_error,
                                             )
                                             else -> e.message
