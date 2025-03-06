@@ -246,7 +246,7 @@ class SimklApi(private val client: OkHttpClient, interceptor: SimklInterceptor) 
         private const val LOGIN_URL = "$BASE_URL/oauth/authorize"
         const val POSTERS_URL = "https://simkl.in/posters/"
 
-        private const val REDIRECT_URL = "animetail://simkl-auth"
+        private const val REDIRECT_URL = "anikku://simkl-auth"
 
         fun authUrl(): Uri =
             LOGIN_URL.toUri().buildUpon()

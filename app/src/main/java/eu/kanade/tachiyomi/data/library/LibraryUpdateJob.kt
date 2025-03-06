@@ -466,7 +466,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
     private fun writeErrorFile(errors: List<Pair<Anime, String?>>): File {
         try {
             if (errors.isNotEmpty()) {
-                val file = context.createFileInCacheDir("animetail_update_errors.txt")
+                val file = context.createFileInCacheDir("anikku_update_errors.txt")
                 file.bufferedWriter().use { out ->
                     out.write(
                         context.stringResource(MR.strings.library_errors_help, ERROR_LOG_HELP_URL) + "\n\n",

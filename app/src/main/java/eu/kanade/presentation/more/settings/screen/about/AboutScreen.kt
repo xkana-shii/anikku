@@ -177,17 +177,17 @@ object AboutScreen : Screen() {
                         LinkIcon(
                             label = stringResource(MR.strings.website),
                             icon = Icons.Outlined.Public,
-                            url = "https://akiled.org",
+                            url = "https://anikku-app.github.io",
                         )
                         LinkIcon(
                             label = "Discord",
                             icon = CustomIcons.Discord,
-                            url = "https://discord.gg/wPRFW6ccDE",
+                            url = "https://discord.gg/85jB7V5AJR",
                         )
                         LinkIcon(
                             label = "GitHub",
                             icon = CustomIcons.Github,
-                            url = "https://github.com/Dark25/animetail2",
+                            url = "https://github.com/anikku-app/anikku",
                         )
                     }
                 }

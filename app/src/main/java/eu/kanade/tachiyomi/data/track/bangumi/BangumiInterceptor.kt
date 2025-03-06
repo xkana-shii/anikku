@@ -35,7 +35,7 @@ class BangumiInterceptor(private val bangumi: Bangumi) : Interceptor {
         return originalRequest.newBuilder()
             .header(
                 "User-Agent",
-                "Dark25/Animetail/v${BuildConfig.VERSION_NAME} (Android) (https://github.com/aniyomiorg/aniyomi)",
+                "anikku-app/anikku/v${BuildConfig.VERSION_NAME} (Android) (https://github.com/anikku-app/anikku)",
             )
             .apply {
                 if (originalRequest.method == "GET") {

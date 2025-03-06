@@ -25,7 +25,7 @@ private val RICH_PRESENCE_BUTTONS = listOf("Discord Server")
 // Constant for metadata list
 private val RICH_PRESENCE_METADATA = Activity.Metadata(
     listOf(
-        "https://discord.gg/vN8nbPHzeC",
+        "https://discord.gg/85jB7V5AJR",
     ),
 )
 

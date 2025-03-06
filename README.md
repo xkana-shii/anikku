@@ -1,16 +1,16 @@
 <div align="center">
 
-<a href="https://aniyomi.org">
-    <img src="./.github/assets/icon.png" alt="animetail logo" title="animetail logo" width="80"/>
+<a href="https://anikku-app.github.io">
+    <img src="./.github/assets/icon.png" alt="anikku logo" title="anikku logo" width="80"/>
 </a>
 
-# Animetail [App](#)
+# Anikku [App](#)
 
-### Full-featured player and reader, based on ~~Tachiyomi~~ Mihon.
+### Full-featured player, based on Animetail.
 Discover and watch anime, cartoons, series, and more – easier than ever on your Android device.
 
-[![Discord server](https://img.shields.io/discord/841701076242530374.svg?label=&labelColor=6A7EC2&color=7389D8&logo=discord&logoColor=FFFFFF)](https://discord.gg/F32UjdJZrR)
-[![GitHub downloads](https://img.shields.io/github/downloads/Dark25/aniyomi/total?label=downloads&labelColor=27303D&color=0D1117&logo=github&logoColor=FFFFFF&style=flat)](https://github.com/aniyomiorg/aniyomi/releases)
+[![Discord server](https://img.shields.io/discord/841701076242530374.svg?label=&labelColor=6A7EC2&color=7389D8&logo=discord&logoColor=FFFFFF)](https://discord.gg/85jB7V5AJR)
+[![GitHub downloads](https://img.shields.io/github/downloads/Dark25/aniyomi/total?label=downloads&labelColor=27303D&color=0D1117&logo=github&logoColor=FFFFFF&style=flat)](https://github.com/anikku-app/anikku/releases)
 
 [![CI](https://img.shields.io/github/actions/workflow/status/Dark25/aniyomi/build_push.yml?labelColor=27303D)](https://github.com/aniyomiorg/aniyomi/actions/workflows/build_push.yml)
 [![License: Apache-2.0](https://img.shields.io/github/license/Dark25/aniyomi?labelColor=27303D&color=818cf8)](/LICENSE)
@@ -18,8 +18,8 @@ Discover and watch anime, cartoons, series, and more – easier than ever on you
 
 ## Download
 
-[![Animetail Stable](https://img.shields.io/github/release/Dark25/aniyomi.svg?maxAge=3600&label=Stable&labelColor=06599d&color=043b69)](https://github.com/Dark25/Animetail2/releases)
-[![Animetail Preview](https://img.shields.io/github/v/release/Dark25/animetail-preview.svg?maxAge=3600&label=Beta&labelColor=2c2c47&color=1c1c39)](https://github.com/dark25/animetail-preview/releases)
+[![Anikku Stable](https://img.shields.io/github/release/anikku-app/anikku.svg?maxAge=3600&label=Stable&labelColor=06599d&color=043b69)](https://github.com/anikku-app/anikku/releases)
+[![Anikku Preview](https://img.shields.io/github/v/release/anikku-app/anikku-preview.svg?maxAge=3600&label=Beta&labelColor=2c2c47&color=1c1c39)](https://github.com/anikku-app/anikku-preview/releases)
 
 *Requires Android 8.0 or higher.*
 
@@ -28,7 +28,7 @@ Discover and watch anime, cartoons, series, and more – easier than ever on you
 <div align="left">
 
 Features include:
-* Animetail:
+* Anikku:
     * Support for Cast functionality
     * Support themes monet
     * Android tv compatibility (only banner)
@@ -69,7 +69,7 @@ Features include:
 
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
-Before reporting a new issue, take a look at the [FAQ](https://aniyomi.org/docs/faq/general), the [changelog](https://aniyomi.org/changelogs/) and the already opened [issues](https://github.com/aniyomiorg/aniyomi/issues); if you got any questions, join our [Discord server](https://discord.gg/F32UjdJZrR).
+Before reporting a new issue, take a look at the [FAQ](https://anikku-app.github.io/docs/faq/general), the [changelog](https://anikku-app.github.io/changelogs/) and the already opened [issues](https://github.com/aniyomiorg/aniyomi/issues); if you got any questions, join our [Discord server](https://discord.gg/85jB7V5AJR).
 
 ### Repositories
 
@@ -80,8 +80,8 @@ Before reporting a new issue, take a look at the [FAQ](https://aniyomi.org/docs/
 
 Thank you to all the people who have contributed!
 
-<a href="https://github.com/aniyomiorg/aniyomi/graphs/contributors">
-    <img src="https://contrib.rocks/image?repo=aniyomiorg/aniyomi" alt="Aniyomi app contributors" title="Aniyomi app contributors" width="800"/>
+<a href="https://github.com/anikku-app/anikku/graphs/contributors">
+    <img src="https://contrib.rocks/image?repo=aniyomiorg/aniyomi" alt="Anikku app contributors" title="Anikku app contributors" width="800"/>
 </a>
 
 ### Disclaimer

@@ -29,7 +29,7 @@ android {
 
     defaultConfig {
 
-        applicationId = "com.dark.animetailv2"
+        applicationId = "app.anikku"
 
         versionCode = 1
         versionName = "0.1.0"
