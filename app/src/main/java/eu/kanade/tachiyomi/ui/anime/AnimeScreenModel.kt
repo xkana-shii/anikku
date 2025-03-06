@@ -86,7 +86,7 @@ import tachiyomi.domain.episode.interactor.SetAnimeDefaultEpisodeFlags
 import tachiyomi.domain.episode.interactor.UpdateEpisode
 import tachiyomi.domain.episode.model.Episode
 import tachiyomi.domain.episode.model.EpisodeUpdate
-import tachiyomi.domain.episode.model.NoEpisodesException
+import tachiyomi.data.source.NoResultsException
 import tachiyomi.domain.episode.service.calculateEpisodeGap
 import tachiyomi.domain.episode.service.getEpisodeSort
 import tachiyomi.domain.library.service.LibraryPreferences
@@ -657,7 +657,7 @@ class AnimeScreenModel(
                 }
             }
         } catch (e: Throwable) {
-            val message = if (e is NoEpisodesException) {
+            val message = if (e is NoResultsException) {
                 context.stringResource(MR.strings.no_episodes_error)
             } else {
                 logcat(LogPriority.ERROR, e)

@@ -3,10 +3,10 @@ package eu.kanade.tachiyomi.ui.storage
 import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
+import kotlinx.coroutines.flow.map
 import tachiyomi.core.common.util.lang.launchNonCancellable
 import tachiyomi.domain.anime.interactor.GetLibraryAnime
 import tachiyomi.domain.category.interactor.GetCategories
-import tachiyomi.domain.category.interactor.GetVisibleCategories
 import tachiyomi.domain.library.model.LibraryAnime
 import tachiyomi.domain.source.service.SourceManager
 import uy.kohesive.injekt.Injekt
@@ -16,7 +16,6 @@ class AnimeStorageScreenModel(
     downloadCache: DownloadCache = Injekt.get(),
     private val getLibraries: GetLibraryAnime = Injekt.get(),
     getCategories: GetCategories = Injekt.get(),
-    getVisibleCategories: GetVisibleCategories = Injekt.get(),
     private val downloadManager: DownloadManager = Injekt.get(),
     private val sourceManager: SourceManager = Injekt.get(),
 ) : CommonStorageScreenModel<LibraryAnime>(
@@ -24,11 +23,10 @@ class AnimeStorageScreenModel(
     downloadCacheIsInitializing = downloadCache.isInitializing,
     libraries = getLibraries.subscribe(),
     categories = { hideHiddenCategories ->
-        if (hideHiddenCategories) {
-            getVisibleCategories.subscribe()
-        } else {
-            getCategories.subscribe()
-        }
+        getCategories.subscribe()
+            .map { categories ->
+                categories.filterNot { hideHiddenCategories && it.hidden }
+            }
     },
     getDownloadSize = { downloadManager.getDownloadSize(anime) },
     getDownloadCount = { downloadManager.getDownloadCount(anime) },

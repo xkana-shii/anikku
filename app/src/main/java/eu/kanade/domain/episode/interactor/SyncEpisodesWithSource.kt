@@ -15,7 +15,7 @@ import tachiyomi.domain.episode.interactor.GetEpisodesByAnimeId
 import tachiyomi.domain.episode.interactor.ShouldUpdateDbEpisode
 import tachiyomi.domain.episode.interactor.UpdateEpisode
 import tachiyomi.domain.episode.model.Episode
-import tachiyomi.domain.episode.model.NoEpisodesException
+import tachiyomi.data.source.NoResultsException
 import tachiyomi.domain.episode.model.toEpisodeUpdate
 import tachiyomi.domain.episode.repository.EpisodeRepository
 import tachiyomi.domain.episode.service.EpisodeRecognition
@@ -50,7 +50,7 @@ class SyncEpisodesWithSource(
         fetchWindow: Pair<Long, Long> = Pair(0, 0),
     ): List<Episode> {
         if (rawSourceEpisodes.isEmpty() && !source.isLocal()) {
-            throw NoEpisodesException()
+            throw NoResultsException()
         }
 
         val now = ZonedDateTime.now()

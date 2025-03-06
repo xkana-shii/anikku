@@ -146,7 +146,7 @@ actual class LocalSource(
 
     // TODO: Should be replaced when Anime Extensions get to 1.15
 
-    @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getPopularAnime"))
+    @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getPopular"))
     override fun fetchPopularAnime(page: Int) = fetchSearchAnime(page, "", PopularFilters)
 
     @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getLatestUpdates"))

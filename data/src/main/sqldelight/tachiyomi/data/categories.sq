@@ -70,26 +70,3 @@ flags = coalesce(?, flags);
 
 selectLastInsertedRowId:
 SELECT last_insert_rowid();
-
-getVisibleCategories:
-SELECT
-_id AS id,
-name,
-sort AS `order`,
-flags,
-hidden
-FROM categories
-WHERE hidden = 0
-ORDER BY sort;
-
-getVisibleCategoriesByAnimeId:
-SELECT
-C._id AS id,
-C.name,
-C.sort AS `order`,
-C.flags,
-C.hidden
-FROM categories C
-JOIN animes_categories AC
-ON C._id = AC.category_id
-WHERE AC.anime_id = :animeId AND C.hidden = 0;

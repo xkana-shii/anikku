@@ -10,6 +10,10 @@ data class Release(
     val info: String,
     val releaseLink: String,
     private val assets: List<String>,
+    // KMK -->
+    val preRelease: Boolean = false,
+    val draft: Boolean = false,
+    // KMK <--
 ) {
 
     /**
@@ -25,7 +29,7 @@ data class Release(
             else -> ""
         }
 
-        return assets.find { it.contains("animetail$apkVariant-") } ?: assets[0]
+        return assets.find { it.contains("Anikku$apkVariant-") } ?: assets[0]
     }
 
     /**

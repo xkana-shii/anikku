@@ -6,14 +6,10 @@ import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.AnimesPage
 import eu.kanade.tachiyomi.source.model.SAnime
 import tachiyomi.core.common.util.lang.withIOContext
-import tachiyomi.domain.episode.model.NoEpisodesException
-import tachiyomi.domain.source.repository.AnimeSourcePagingSourceType
+import tachiyomi.domain.source.repository.SourcePagingSourceType
 
-class SourceSearchPagingSource(
-    source: CatalogueSource,
-    val query: String,
-    val filters: FilterList,
-) : SourcePagingSource(source) {
+class SourceSearchPagingSource(source: CatalogueSource, val query: String, val filters: FilterList) :
+    SourcePagingSource(source) {
     override suspend fun requestNextPage(currentPage: Int): AnimesPage {
         return source.getSearchAnime(currentPage, query, filters)
     }
@@ -32,8 +28,8 @@ class SourceLatestPagingSource(source: CatalogueSource) : SourcePagingSource(sou
 }
 
 abstract class SourcePagingSource(
-    protected val source: CatalogueSource,
-) : AnimeSourcePagingSourceType() {
+    protected open val source: CatalogueSource,
+) : SourcePagingSourceType() {
 
     abstract suspend fun requestNextPage(currentPage: Int): AnimesPage
 
@@ -44,7 +40,7 @@ abstract class SourcePagingSource(
             withIOContext {
                 requestNextPage(page.toInt())
                     .takeIf { it.animes.isNotEmpty() }
-                    ?: throw NoEpisodesException()
+                    ?: throw NoResultsException()
             }
         } catch (e: Exception) {
             return LoadResult.Error(e)
@@ -64,3 +60,5 @@ abstract class SourcePagingSource(
         }
     }
 }
+
+class NoResultsException : Exception()

@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.map
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.domain.source.model.SourceWithCount
 import tachiyomi.domain.source.model.StubSource
-import tachiyomi.domain.source.repository.AnimeSourcePagingSourceType
+import tachiyomi.domain.source.repository.SourcePagingSourceType
 import tachiyomi.domain.source.repository.SourceRepository
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.domain.source.model.Source as DomainSource
@@ -72,21 +72,21 @@ class SourceRepositoryImpl(
         }
     }
 
-    override fun searchAnime(
+    override fun search(
         sourceId: Long,
         query: String,
         filterList: FilterList,
-    ): AnimeSourcePagingSourceType {
+    ): SourcePagingSourceType {
         val source = sourceManager.get(sourceId) as CatalogueSource
         return SourceSearchPagingSource(source, query, filterList)
     }
 
-    override fun getPopularAnime(sourceId: Long): AnimeSourcePagingSourceType {
+    override fun getPopular(sourceId: Long): SourcePagingSourceType {
         val source = sourceManager.get(sourceId) as CatalogueSource
         return SourcePopularPagingSource(source)
     }
 
-    override fun getLatestAnime(sourceId: Long): AnimeSourcePagingSourceType {
+    override fun getLatest(sourceId: Long): SourcePagingSourceType {
         val source = sourceManager.get(sourceId) as CatalogueSource
         return SourceLatestPagingSource(source)
     }

@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.data.updater
 
 import android.content.Context
 import eu.kanade.tachiyomi.BuildConfig
+import eu.kanade.tachiyomi.util.system.isInstalledFromFDroid
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import tachiyomi.domain.release.interactor.GetApplicationRelease
@@ -15,9 +16,10 @@ class AppUpdateChecker(private val context: Context) {
             getApplicationRelease.await(
                 GetApplicationRelease.Arguments(
                     isPreview = BuildConfig.PREVIEW,
+                    isThirdParty = context.isInstalledFromFDroid(),
                     commitCount = BuildConfig.COMMIT_COUNT.toInt(),
                     versionName = BuildConfig.VERSION_NAME,
-                    repoUrl = GITHUB_REPO,
+                    repository = GITHUB_REPO,
                     forceCheck = forceCheck,
                 ),
             ).also { result ->

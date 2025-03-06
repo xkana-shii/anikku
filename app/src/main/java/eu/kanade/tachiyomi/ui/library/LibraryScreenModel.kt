@@ -59,7 +59,7 @@ import tachiyomi.domain.anime.interactor.GetLibraryAnime
 import tachiyomi.domain.anime.model.Anime
 import tachiyomi.domain.anime.model.AnimeUpdate
 import tachiyomi.domain.anime.model.applyFilter
-import tachiyomi.domain.category.interactor.GetVisibleCategories
+import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.interactor.SetAnimeCategories
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.episode.interactor.GetEpisodesByAnimeId
@@ -89,7 +89,7 @@ typealias AnimeLibraryMap = Map<Category, List<LibraryItem>>
 @Suppress("LargeClass")
 class LibraryScreenModel(
     private val getLibraryAnime: GetLibraryAnime = Injekt.get(),
-    private val getCategories: GetVisibleCategories = Injekt.get(),
+    private val getCategories: GetCategories = Injekt.get(),
     private val getTracksPerAnime: GetTracksPerAnime = Injekt.get(),
     private val getNextEpisodes: GetNextEpisodes = Injekt.get(),
     private val getEpisodesByAnimeId: GetEpisodesByAnimeId = Injekt.get(),
@@ -433,21 +433,21 @@ class LibraryScreenModel(
             getLibraryAnime.subscribe(),
             getAnimelibItemPreferencesFlow(),
             downloadCache.changes,
-        ) { animelibAnimeList, prefs, _ ->
-            animelibAnimeList
-                .map { animelibAnime ->
+        ) { libraryMangaList, prefs, _ ->
+            libraryMangaList
+                .map { libraryManga ->
                     // Display mode based on user preference: take it from global library setting or category
                     LibraryItem(
-                        animelibAnime,
+                        libraryManga,
                         downloadCount = if (prefs.downloadBadge) {
-                            downloadManager.getDownloadCount(animelibAnime.anime).toLong()
+                            downloadManager.getDownloadCount(libraryManga.anime).toLong()
                         } else {
                             0
                         },
-                        unseenCount = animelibAnime.unseenCount,
-                        isLocal = if (prefs.localBadge) animelibAnime.anime.isLocal() else false,
+                        unseenCount = libraryManga.unseenCount,
+                        isLocal = if (prefs.localBadge) libraryManga.anime.isLocal() else false,
                         sourceLanguage = if (prefs.languageBadge) {
-                            sourceManager.getOrStub(animelibAnime.anime.source).lang
+                            sourceManager.getOrStub(libraryManga.anime.source).lang
                         } else {
                             ""
                         },

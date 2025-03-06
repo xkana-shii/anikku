@@ -19,16 +19,8 @@ class CategoryRepositoryImpl(
         return handler.awaitList { categoriesQueries.getCategories(CategoryMapper::mapCategory) }
     }
 
-    override suspend fun getAllVisibleAnimeCategories(): List<Category> {
-        return handler.awaitList { categoriesQueries.getVisibleCategories(CategoryMapper::mapCategory) }
-    }
-
     override fun getAllAsFlow(): Flow<List<Category>> {
         return handler.subscribeToList { categoriesQueries.getCategories(CategoryMapper::mapCategory) }
-    }
-
-    override fun getAllVisibleAnimeCategoriesAsFlow(): Flow<List<Category>> {
-        return handler.subscribeToList { categoriesQueries.getVisibleCategories(CategoryMapper::mapCategory) }
     }
 
     override suspend fun getCategoriesByAnimeId(animeId: Long): List<Category> {
@@ -37,21 +29,9 @@ class CategoryRepositoryImpl(
         }
     }
 
-    override suspend fun getVisibleCategoriesByAnimeId(animeId: Long): List<Category> {
-        return handler.awaitList {
-            categoriesQueries.getVisibleCategoriesByAnimeId(animeId, CategoryMapper::mapCategory)
-        }
-    }
-
     override fun getCategoriesByAnimeIdAsFlow(animeId: Long): Flow<List<Category>> {
         return handler.subscribeToList {
             categoriesQueries.getCategoriesByAnimeId(animeId, CategoryMapper::mapCategory)
-        }
-    }
-
-    override fun getVisibleCategoriesByAnimeIdAsFlow(animeId: Long): Flow<List<Category>> {
-        return handler.subscribeToList {
-            categoriesQueries.getVisibleCategoriesByAnimeId(animeId, CategoryMapper::mapCategory)
         }
     }
 
@@ -90,7 +70,9 @@ class CategoryRepositoryImpl(
             name = update.name,
             order = update.order,
             flags = update.flags,
+            // KMK -->
             hidden = update.hidden?.let { if (it) 1L else 0L },
+            // KMK <--
             categoryId = update.id,
         )
     }

@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
 import tachiyomi.domain.source.model.Source
 import tachiyomi.domain.source.model.SourceWithCount
 
-typealias AnimeSourcePagingSourceType = PagingSource<Long, SAnime>
+typealias SourcePagingSourceType = PagingSource<Long, SAnime>
 
 interface SourceRepository {
 
@@ -19,9 +19,9 @@ interface SourceRepository {
 
     fun getSourcesWithNonLibraryAnime(): Flow<List<SourceWithCount>>
 
-    fun searchAnime(sourceId: Long, query: String, filterList: FilterList): AnimeSourcePagingSourceType
+    fun search(sourceId: Long, query: String, filterList: FilterList): SourcePagingSourceType
 
-    fun getPopularAnime(sourceId: Long): AnimeSourcePagingSourceType
+    fun getPopular(sourceId: Long): SourcePagingSourceType
 
-    fun getLatestAnime(sourceId: Long): AnimeSourcePagingSourceType
+    fun getLatest(sourceId: Long): SourcePagingSourceType
 }
