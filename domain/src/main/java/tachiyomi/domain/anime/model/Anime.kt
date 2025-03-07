@@ -2,13 +2,14 @@ package tachiyomi.domain.anime.model
 
 import androidx.compose.runtime.Immutable
 import eu.kanade.tachiyomi.source.model.UpdateStrategy
-import eu.kanade.tachiyomi.source.model.SAnime
 import tachiyomi.core.common.preference.TriState
 import tachiyomi.domain.anime.interactor.GetCustomAnimeInfo
 import uy.kohesive.injekt.injectLazy
 import java.io.Serializable
 import java.time.Instant
 import kotlin.math.pow
+
+typealias Manga = Anime
 
 @Immutable
 data class Anime(

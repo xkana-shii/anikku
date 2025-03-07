@@ -1,9 +1,9 @@
 package eu.kanade.tachiyomi.data.download
 
 import android.content.Context
-import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.animesource.model.Video
 import eu.kanade.tachiyomi.data.download.model.Download
+import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.util.size
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
@@ -411,7 +411,7 @@ class DownloadManager(
     private suspend fun getEpisodesToDelete(episodes: List<Episode>, anime: Anime): List<Episode> {
         // Retrieve the categories that are set to exclude from being deleted on read
         val categoriesToExclude =
-            downloadPreferences.removeExcludeAnimeCategories().get().map(String::toLong)
+            downloadPreferences.removeExcludeCategories().get().map(String::toLong)
 
         val categoriesForAnime = getCategories.await(anime.id)
             .map { it.id }
@@ -422,7 +422,7 @@ class DownloadManager(
             episodes
         }
 
-        return if (!downloadPreferences.removeBookmarkedEpisodes().get()) {
+        return if (!downloadPreferences.removeBookmarkedChapters().get()) {
             filteredCategoryAnime.filterNot { it.bookmark }
         } else {
             filteredCategoryAnime

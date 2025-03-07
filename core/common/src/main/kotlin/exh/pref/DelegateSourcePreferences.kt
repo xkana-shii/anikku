@@ -7,5 +7,4 @@ class DelegateSourcePreferences(
 ) {
 
     fun delegateSources() = preferenceStore.getBoolean("eh_delegate_sources", true)
-
 }

@@ -395,7 +395,7 @@ class UpdatesScreenModel(
     }
 
     fun resetNewUpdatesCount() {
-        libraryPreferences.newAnimeUpdatesCount().set(0)
+        libraryPreferences.newUpdatesCount().set(0)
     }
 
     @Immutable

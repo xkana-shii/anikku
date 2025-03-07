@@ -28,8 +28,34 @@ class LibraryPreferences(
         LibrarySort.Serializer::deserialize,
     )
 
+    // Random Sort Seed
+
+    fun randomSortSeed() = preferenceStore.getInt("library_random_anime_sort_seed", 0)
+
+    fun portraitColumns() = preferenceStore.getInt("pref_animelib_columns_portrait_key", 0)
+
+    fun landscapeColumns() = preferenceStore.getInt("pref_animelib_columns_landscape_key", 0)
+
     fun lastUpdatedTimestamp() = preferenceStore.getLong(Preference.appStateKey("library_update_last_timestamp"), 0L)
     fun autoUpdateInterval() = preferenceStore.getInt("pref_library_update_interval_key", 0)
+
+    // KMK -->
+    fun showUpdatingProgressBanner() = preferenceStore.getBoolean(
+        Preference.appStateKey("pref_show_updating_progress_banner_key"),
+        true,
+    )
+    // KMK <--
+
+    fun coverRatios() = preferenceStore.getStringSet(
+        Preference.appStateKey("pref_library_cover_ratios_key"),
+        emptySet(),
+    )
+
+    fun coverColors() = preferenceStore.getStringSet(
+        Preference.appStateKey("pref_library_cover_colors_key"),
+        emptySet(),
+    )
+    // KMK <--
 
     fun autoUpdateDeviceRestrictions() = preferenceStore.getStringSet(
         "library_update_restriction",
@@ -37,7 +63,6 @@ class LibraryPreferences(
             DEVICE_ONLY_ON_WIFI,
         ),
     )
-
     fun autoUpdateAnimeRestrictions() = preferenceStore.getStringSet(
         "library_update_manga_restriction",
         setOf(
@@ -50,23 +75,60 @@ class LibraryPreferences(
 
     fun autoUpdateMetadata() = preferenceStore.getBoolean("auto_update_metadata", false)
 
-    fun showContinueWatchingButton() =
-        preferenceStore.getBoolean("display_continue_reading_button", false)
+    fun showContinueWatchingButton() = preferenceStore.getBoolean(
+        "display_continue_reading_button",
+        false,
+    )
 
-    // Common Category
+    // region Filter
 
-    fun categoryTabs() = preferenceStore.getBoolean("display_category_tabs", true)
+    fun filterDownloaded() = preferenceStore.getEnum(
+        "pref_filter_animelib_downloaded_v2",
+        TriState.DISABLED,
+    )
 
-    fun categoryNumberOfItems() = preferenceStore.getBoolean("display_number_of_items", false)
+    fun filterUnseen() = preferenceStore.getEnum("pref_filter_animelib_unread_v2", TriState.DISABLED)
 
-    fun categorizedDisplaySettings() = preferenceStore.getBoolean("categorized_display", false)
+    fun filterStarted() = preferenceStore.getEnum(
+        "pref_filter_animelib_started_v2",
+        TriState.DISABLED,
+    )
 
-    fun hideHiddenCategoriesSettings() = preferenceStore.getBoolean("hidden_categories", false)
+    fun filterBookmarked() = preferenceStore.getEnum(
+        "pref_filter_animelib_bookmarked_v2",
+        TriState.DISABLED,
+    )
+
+    // AM (FILLERMARK) -->
+    fun filterFillermarkedAnime() =
+        preferenceStore.getEnum("pref_filter_animelib_fillermarked_v2", TriState.DISABLED)
+    // <-- AM (FILLERMARK)
+
+    fun filterCompleted() = preferenceStore.getEnum(
+        "pref_filter_animelib_completed_v2",
+        TriState.DISABLED,
+    )
 
     fun filterIntervalCustom() = preferenceStore.getEnum(
         "pref_filter_library_interval_custom",
         TriState.DISABLED,
     )
+
+    // SY -->
+    fun filterLewd() = preferenceStore.getEnum(
+        "pref_filter_library_lewd_v2",
+        TriState.DISABLED,
+    )
+
+    fun libraryReadDuplicateChapters() = preferenceStore.getBoolean("pref_library_mark_duplicate_chapters", false)
+    // SY <--
+
+    fun filterTracking(id: Int) = preferenceStore.getEnum(
+        "pref_filter_animelib_tracked_${id}_v2",
+        TriState.DISABLED,
+    )
+
+    // endregion
 
     // Common badges
 
@@ -78,72 +140,50 @@ class LibraryPreferences(
 
     fun newShowUpdatesCount() = preferenceStore.getBoolean("library_show_updates_count", true)
 
-    // Common Cache
-
-    fun autoClearItemCache() = preferenceStore.getBoolean("auto_clear_chapter_cache", false)
-
-    // Random Sort Seed
-
-    fun randomAnimeSortSeed() = preferenceStore.getInt("library_random_anime_sort_seed", 0)
-
-    // Mixture Columns
-
-    fun portraitColumns() = preferenceStore.getInt("pref_animelib_columns_portrait_key", 0)
-
-    fun landscapeColumns() = preferenceStore.getInt("pref_animelib_columns_landscape_key", 0)
-
-    // Mixture Filter
-
-    fun filterDownloaded() =
-        preferenceStore.getEnum("pref_filter_animelib_downloaded_v2", TriState.DISABLED)
-
-    fun filterUnseen() =
-        preferenceStore.getEnum("pref_filter_animelib_unread_v2", TriState.DISABLED)
-
-    fun filterStarted() =
-        preferenceStore.getEnum("pref_filter_animelib_started_v2", TriState.DISABLED)
-
-    fun filterBookmarked() =
-        preferenceStore.getEnum("pref_filter_animelib_bookmarked_v2", TriState.DISABLED)
-
-    // AM (FILLERMARK) -->
-    fun filterFillermarkedAnime() =
-        preferenceStore.getEnum("pref_filter_animelib_fillermarked_v2", TriState.DISABLED)
-    // <-- AM (FILLERMARK)
-
-    fun filterCompleted() =
-        preferenceStore.getEnum("pref_filter_animelib_completed_v2", TriState.DISABLED)
-
-    fun filterTracking(id: Int) =
-        preferenceStore.getEnum("pref_filter_animelib_tracked_${id}_v2", TriState.DISABLED)
-
-    // Mixture Update Count
-
     fun newMangaUpdatesCount() = preferenceStore.getInt("library_unread_updates_count", 0)
-    fun newAnimeUpdatesCount() = preferenceStore.getInt("library_unseen_updates_count", 0)
+    fun newUpdatesCount() = preferenceStore.getInt(Preference.appStateKey("library_unseen_updates_count"), 0)
 
-    // Mixture Category
+    // endregion
 
-    fun defaultAnimeCategory() = preferenceStore.getInt("default_anime_category", -1)
+    // region Category
 
-    fun lastUsedAnimeCategory() = preferenceStore.getInt(Preference.appStateKey("last_used_anime_category"), 0)
+    fun defaultCategory() = preferenceStore.getInt("default_anime_category", -1)
 
-    fun animeUpdateCategories() =
-        preferenceStore.getStringSet("animelib_update_categories", emptySet())
+    fun lastUsedCategory() = preferenceStore.getInt(Preference.appStateKey("last_used_anime_category"), 0)
 
-    fun animeUpdateCategoriesExclude() =
-        preferenceStore.getStringSet("animelib_update_categories_exclude", emptySet())
+    fun categoryTabs() = preferenceStore.getBoolean("display_category_tabs", true)
+
+    fun categoryNumberOfItems() = preferenceStore.getBoolean("display_number_of_items", false)
+
+    fun categorizedDisplaySettings() = preferenceStore.getBoolean("categorized_display", false)
+
+    // KMK -->
+    fun showHiddenCategories() = preferenceStore.getBoolean("show_hidden_categories", false)
+    // KMK <--
+
+    fun updateCategories() = preferenceStore.getStringSet("animelib_update_categories", emptySet())
+
+    fun updateCategoriesExclude() = preferenceStore.getStringSet(
+        "animelib_update_categories_exclude",
+        emptySet(),
+    )
 
     // Mixture Item
 
-    fun filterEpisodeBySeen() =
-        preferenceStore.getLong("default_episode_filter_by_seen", Anime.SHOW_ALL)
+    fun filterEpisodeBySeen() = preferenceStore.getLong(
+        "default_episode_filter_by_seen",
+        Anime.SHOW_ALL,
+    )
 
-    fun filterEpisodeByDownloaded() =
-        preferenceStore.getLong("default_episode_filter_by_downloaded", Anime.SHOW_ALL)
+    fun filterEpisodeByDownloaded() = preferenceStore.getLong(
+        "default_episode_filter_by_downloaded",
+        Anime.SHOW_ALL,
+    )
 
-    fun filterEpisodeByBookmarked() =
-        preferenceStore.getLong("default_episode_filter_by_bookmarked", Anime.SHOW_ALL)
+    fun filterEpisodeByBookmarked() = preferenceStore.getLong(
+        "default_episode_filter_by_bookmarked",
+        Anime.SHOW_ALL,
+    )
 
     // AM (FILLERMARK) -->
     fun filterEpisodeByFillermarked() =
@@ -180,14 +220,18 @@ class LibraryPreferences(
         )
     }
 
+    fun autoClearChapterCache() = preferenceStore.getBoolean("auto_clear_chapter_cache", false)
+
     // region Swipe Actions
 
-    fun swipeEpisodeStartAction() =
-        preferenceStore.getEnum("pref_episode_swipe_end_action", EpisodeSwipeAction.ToggleSeen)
+    fun swipeEpisodeStartAction() = preferenceStore.getEnum(
+        "pref_episode_swipe_end_action",
+        EpisodeSwipeAction.ToggleBookmark,
+    )
 
     fun swipeEpisodeEndAction() = preferenceStore.getEnum(
         "pref_episode_swipe_start_action",
-        EpisodeSwipeAction.ToggleBookmark,
+        EpisodeSwipeAction.ToggleSeen,
     )
 
     // endregion
@@ -205,15 +249,11 @@ class LibraryPreferences(
     }
 
     // SY -->
-    fun groupAnimeLibraryUpdateType() = preferenceStore.getEnum(
-        "group_anime_library_update_type",
-        GroupLibraryMode.GLOBAL,
-    )
+    fun sortTagsForLibrary() = preferenceStore.getStringSet("sort_anime_tags_for_library", mutableSetOf())
 
-    fun groupAnimeLibraryBy() = preferenceStore.getInt(
-        "group_anime_library_by",
-        LibraryGroup.BY_DEFAULT,
-    )
+    fun groupLibraryUpdateType() = preferenceStore.getEnum("group_anime_library_update_type", GroupLibraryMode.GLOBAL)
+
+    fun groupLibraryBy() = preferenceStore.getInt("group_anime_library_by", LibraryGroup.BY_DEFAULT)
     // SY <--
 
     companion object {

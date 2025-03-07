@@ -18,34 +18,34 @@ class DownloadPreferences(
         "",
     )
 
-    fun autoDownloadWhileWatching() = preferenceStore.getInt("auto_download_while_watching", 0)
+    fun autoDownloadWhileReading() = preferenceStore.getInt("auto_download_while_watching", 0)
 
-    fun removeAfterSeenSlots() = preferenceStore.getInt("remove_after_read_slots", -1)
+    fun removeAfterReadSlots() = preferenceStore.getInt("remove_after_read_slots", -1)
 
     fun removeAfterMarkedAsSeen() = preferenceStore.getBoolean(
         "pref_remove_after_marked_as_read_key",
         false,
     )
 
-    fun removeBookmarkedEpisodes() = preferenceStore.getBoolean("pref_remove_bookmarked", false)
+    fun removeBookmarkedChapters() = preferenceStore.getBoolean("pref_remove_bookmarked", false)
 
     // AM (FILLERMARK) -->
     fun notDownloadFillermarkedItems() = preferenceStore.getBoolean("pref_no_download_fillermarked", false)
     // <-- AM (FILLERMARK)
 
-    fun removeExcludeAnimeCategories() = preferenceStore.getStringSet(
+    fun removeExcludeCategories() = preferenceStore.getStringSet(
         "remove_exclude_anime_categories",
         emptySet(),
     )
 
-    fun downloadNewEpisodes() = preferenceStore.getBoolean("download_new_episode", false)
+    fun downloadNewChapters() = preferenceStore.getBoolean("download_new_episode", false)
 
-    fun downloadNewEpisodeCategories() = preferenceStore.getStringSet(
+    fun downloadNewChapterCategories() = preferenceStore.getStringSet(
         "download_new_anime_categories",
         emptySet(),
     )
 
-    fun downloadNewEpisodeCategoriesExclude() = preferenceStore.getStringSet(
+    fun downloadNewChapterCategoriesExclude() = preferenceStore.getStringSet(
         "download_new_anime_categories_exclude",
         emptySet(),
     )
@@ -55,5 +55,9 @@ class DownloadPreferences(
     fun numberOfThreads() = preferenceStore.getInt("download_threads", 1)
     fun downloadSpeedLimit() = preferenceStore.getInt("download_speed_limit", 0)
 
-    fun downloadNewUnseenEpisodesOnly() = preferenceStore.getBoolean("download_new_unread_episodes_only", false)
+    fun downloadNewUnreadChaptersOnly() = preferenceStore.getBoolean("download_new_unread_episodes_only", false)
+
+    // KMK -->
+    fun downloadCacheRenewInterval() = preferenceStore.getInt("download_cache_renew_interval", 1)
+    // KMK <--
 }

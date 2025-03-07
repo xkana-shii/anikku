@@ -1,8 +1,8 @@
 package eu.kanade.domain.anime.model
 
 import eu.kanade.domain.base.BasePreferences
-import eu.kanade.tachiyomi.source.model.SAnime
 import eu.kanade.tachiyomi.data.cache.CoverCache
+import eu.kanade.tachiyomi.source.model.SAnime
 import tachiyomi.core.common.preference.TriState
 import tachiyomi.domain.anime.model.Anime
 import uy.kohesive.injekt.Injekt

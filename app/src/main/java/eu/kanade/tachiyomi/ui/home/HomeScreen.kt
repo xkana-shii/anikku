@@ -255,7 +255,7 @@ object HomeScreen : Screen() {
                         val count by produceState(initialValue = 0) {
                             val pref = Injekt.get<LibraryPreferences>()
                             combine(
-                                pref.newAnimeUpdatesCount().changes(),
+                                pref.newUpdatesCount().changes(),
                                 pref.newMangaUpdatesCount().changes(),
                             ) { countAnime, countManga -> countAnime + countManga }
                                 .collectLatest { value = if (pref.newShowUpdatesCount().get()) it else 0 }

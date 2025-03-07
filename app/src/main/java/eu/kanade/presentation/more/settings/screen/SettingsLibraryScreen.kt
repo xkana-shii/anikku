@@ -29,13 +29,13 @@ import tachiyomi.domain.category.interactor.ResetCategoryFlags
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.library.model.GroupLibraryMode
 import tachiyomi.domain.library.service.LibraryPreferences
-import tachiyomi.domain.library.service.LibraryPreferences.Companion.DEVICE_CHARGING
-import tachiyomi.domain.library.service.LibraryPreferences.Companion.DEVICE_NETWORK_NOT_METERED
-import tachiyomi.domain.library.service.LibraryPreferences.Companion.DEVICE_ONLY_ON_WIFI
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.ANIME_HAS_UNSEEN
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.ANIME_NON_COMPLETED
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.ANIME_NON_SEEN
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.ANIME_OUTSIDE_RELEASE_PERIOD
+import tachiyomi.domain.library.service.LibraryPreferences.Companion.DEVICE_CHARGING
+import tachiyomi.domain.library.service.LibraryPreferences.Companion.DEVICE_NETWORK_NOT_METERED
+import tachiyomi.domain.library.service.LibraryPreferences.Companion.DEVICE_ONLY_ON_WIFI
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.i18n.pluralStringResource
 import tachiyomi.presentation.core.i18n.stringResource
@@ -76,7 +76,7 @@ object SettingsLibraryScreen : SearchableSettings {
         val userAnimeCategoriesCount = allAnimeCategories.filterNot(Category::isSystemCategory).size
 
         // For default category
-        val animeIds = listOf(libraryPreferences.defaultAnimeCategory().defaultValue()) +
+        val animeIds = listOf(libraryPreferences.defaultCategory().defaultValue()) +
             allAnimeCategories.fastMap { it.id.toInt() }
 
         val animeLabels = listOf(stringResource(MR.strings.default_category_summary)) +
@@ -95,7 +95,7 @@ object SettingsLibraryScreen : SearchableSettings {
                     onClick = { navigator.push(CategoryScreen) },
                 ),
                 Preference.PreferenceItem.ListPreference(
-                    pref = libraryPreferences.defaultAnimeCategory(),
+                    pref = libraryPreferences.defaultCategory(),
                     title = stringResource(MR.strings.default_anime_category),
                     entries = animeIds.zip(animeLabels).toMap().toImmutableMap(),
                 ),
@@ -112,7 +112,7 @@ object SettingsLibraryScreen : SearchableSettings {
                     },
                 ),
                 Preference.PreferenceItem.SwitchPreference(
-                    pref = libraryPreferences.hideHiddenCategoriesSettings(),
+                    pref = libraryPreferences.showHiddenCategories(),
                     title = stringResource(MR.strings.pref_category_hide_hidden),
                 ),
             ),
@@ -129,9 +129,9 @@ object SettingsLibraryScreen : SearchableSettings {
         val autoUpdateIntervalPref = libraryPreferences.autoUpdateInterval()
         val autoUpdateInterval by autoUpdateIntervalPref.collectAsState()
 
-        val animeAutoUpdateCategoriesPref = libraryPreferences.animeUpdateCategories()
+        val animeAutoUpdateCategoriesPref = libraryPreferences.updateCategories()
         val animeAutoUpdateCategoriesExcludePref =
-            libraryPreferences.animeUpdateCategoriesExclude()
+            libraryPreferences.updateCategoriesExclude()
 
         val includedAnime by animeAutoUpdateCategoriesPref.collectAsState()
         val excludedAnime by animeAutoUpdateCategoriesExcludePref.collectAsState()
@@ -204,7 +204,7 @@ object SettingsLibraryScreen : SearchableSettings {
                 ),
                 // SY -->
                 Preference.PreferenceItem.ListPreference(
-                    pref = libraryPreferences.groupAnimeLibraryUpdateType(),
+                    pref = libraryPreferences.groupLibraryUpdateType(),
                     title = stringResource(MR.strings.anime_library_group_updates),
                     entries = persistentMapOf(
                         GroupLibraryMode.GLOBAL to stringResource(

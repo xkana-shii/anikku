@@ -22,10 +22,10 @@ class AnimeStorageScreenModel(
     downloadCacheChanges = downloadCache.changes,
     downloadCacheIsInitializing = downloadCache.isInitializing,
     libraries = getLibraries.subscribe(),
-    categories = { hideHiddenCategories ->
+    categories = { showHiddenCategories ->
         getCategories.subscribe()
             .map { categories ->
-                categories.filterNot { hideHiddenCategories && it.hidden }
+                categories.filterNot { !showHiddenCategories && it.hidden }
             }
     },
     getDownloadSize = { downloadManager.getDownloadSize(anime) },

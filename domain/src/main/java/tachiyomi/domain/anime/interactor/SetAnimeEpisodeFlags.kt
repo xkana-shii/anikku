@@ -8,58 +8,58 @@ class SetAnimeEpisodeFlags(
     private val animeRepository: AnimeRepository,
 ) {
 
-    suspend fun awaitSetDownloadedFilter(anime: Anime, flag: Long): Boolean {
+    suspend fun awaitSetDownloadedFilter(manga: Anime, flag: Long): Boolean {
         return animeRepository.update(
             AnimeUpdate(
-                id = anime.id,
-                episodeFlags = anime.episodeFlags.setFlag(flag, Anime.EPISODE_DOWNLOADED_MASK),
+                id = manga.id,
+                episodeFlags = manga.episodeFlags.setFlag(flag, Anime.EPISODE_DOWNLOADED_MASK),
             ),
         )
     }
 
-    suspend fun awaitSetUnseenFilter(anime: Anime, flag: Long): Boolean {
+    suspend fun awaitSetUnreadFilter(manga: Anime, flag: Long): Boolean {
         return animeRepository.update(
             AnimeUpdate(
-                id = anime.id,
-                episodeFlags = anime.episodeFlags.setFlag(flag, Anime.EPISODE_UNSEEN_MASK),
+                id = manga.id,
+                episodeFlags = manga.episodeFlags.setFlag(flag, Anime.EPISODE_UNSEEN_MASK),
             ),
         )
     }
 
-    suspend fun awaitSetBookmarkFilter(anime: Anime, flag: Long): Boolean {
+    suspend fun awaitSetBookmarkFilter(manga: Anime, flag: Long): Boolean {
         return animeRepository.update(
             AnimeUpdate(
-                id = anime.id,
-                episodeFlags = anime.episodeFlags.setFlag(flag, Anime.EPISODE_BOOKMARKED_MASK),
+                id = manga.id,
+                episodeFlags = manga.episodeFlags.setFlag(flag, Anime.EPISODE_BOOKMARKED_MASK),
             ),
         )
     }
 
     // AM (FILLERMARK) -->
-    suspend fun awaitSetFillermarkFilter(anime: Anime, flag: Long): Boolean {
+    suspend fun awaitSetFillermarkFilter(manga: Anime, flag: Long): Boolean {
         return animeRepository.update(
             AnimeUpdate(
-                id = anime.id,
-                episodeFlags = anime.episodeFlags.setFlag(flag, Anime.EPISODE_FILLERMARKED_MASK),
+                id = manga.id,
+                episodeFlags = manga.episodeFlags.setFlag(flag, Anime.EPISODE_FILLERMARKED_MASK),
             ),
         )
     }
     // <-- AM (FILLERMARK)
 
-    suspend fun awaitSetDisplayMode(anime: Anime, flag: Long): Boolean {
+    suspend fun awaitSetDisplayMode(manga: Anime, flag: Long): Boolean {
         return animeRepository.update(
             AnimeUpdate(
-                id = anime.id,
-                episodeFlags = anime.episodeFlags.setFlag(flag, Anime.EPISODE_DISPLAY_MASK),
+                id = manga.id,
+                episodeFlags = manga.episodeFlags.setFlag(flag, Anime.EPISODE_DISPLAY_MASK),
             ),
         )
     }
 
-    suspend fun awaitSetSortingModeOrFlipOrder(anime: Anime, flag: Long): Boolean {
-        val newFlags = anime.episodeFlags.let {
-            if (anime.sorting == flag) {
+    suspend fun awaitSetSortingModeOrFlipOrder(manga: Anime, flag: Long): Boolean {
+        val newFlags = manga.episodeFlags.let {
+            if (manga.sorting == flag) {
                 // Just flip the order
-                val orderFlag = if (anime.sortDescending()) {
+                val orderFlag = if (manga.sortDescending()) {
                     Anime.EPISODE_SORT_ASC
                 } else {
                     Anime.EPISODE_SORT_DESC
@@ -74,7 +74,7 @@ class SetAnimeEpisodeFlags(
         }
         return animeRepository.update(
             AnimeUpdate(
-                id = anime.id,
+                id = manga.id,
                 episodeFlags = newFlags,
             ),
         )

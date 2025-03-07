@@ -133,7 +133,7 @@ object SettingsDownloadScreen : SearchableSettings {
                     title = stringResource(MR.strings.pref_remove_after_marked_as_read),
                 ),
                 Preference.PreferenceItem.ListPreference(
-                    pref = downloadPreferences.removeAfterSeenSlots(),
+                    pref = downloadPreferences.removeAfterReadSlots(),
                     title = stringResource(MR.strings.pref_remove_after_read),
                     entries = persistentMapOf(
                         -1 to stringResource(MR.strings.disabled),
@@ -145,7 +145,7 @@ object SettingsDownloadScreen : SearchableSettings {
                     ),
                 ),
                 Preference.PreferenceItem.SwitchPreference(
-                    pref = downloadPreferences.removeBookmarkedEpisodes(),
+                    pref = downloadPreferences.removeBookmarkedChapters(),
                     title = stringResource(MR.strings.pref_remove_bookmarked_chapters),
                 ),
                 getExcludedAnimeCategoriesPreference(
@@ -162,7 +162,7 @@ object SettingsDownloadScreen : SearchableSettings {
         categories: () -> List<Category>,
     ): Preference.PreferenceItem.MultiSelectListPreference {
         return Preference.PreferenceItem.MultiSelectListPreference(
-            pref = downloadPreferences.removeExcludeAnimeCategories(),
+            pref = downloadPreferences.removeExcludeCategories(),
             title = stringResource(MR.strings.pref_remove_exclude_categories_anime),
             entries = categories()
                 .associate { it.id.toString() to it.visualName }
@@ -175,10 +175,10 @@ object SettingsDownloadScreen : SearchableSettings {
         downloadPreferences: DownloadPreferences,
         allAnimeCategories: ImmutableList<Category>,
     ): Preference.PreferenceGroup {
-        val downloadNewEpisodesPref = downloadPreferences.downloadNewEpisodes()
-        val downloadNewUnseenEpisodesOnlyPref = downloadPreferences.downloadNewUnseenEpisodesOnly()
-        val downloadNewEpisodeCategoriesPref = downloadPreferences.downloadNewEpisodeCategories()
-        val downloadNewEpisodeCategoriesExcludePref = downloadPreferences.downloadNewEpisodeCategoriesExclude()
+        val downloadNewEpisodesPref = downloadPreferences.downloadNewChapters()
+        val downloadNewUnseenEpisodesOnlyPref = downloadPreferences.downloadNewUnreadChaptersOnly()
+        val downloadNewEpisodeCategoriesPref = downloadPreferences.downloadNewChapterCategories()
+        val downloadNewEpisodeCategoriesExcludePref = downloadPreferences.downloadNewChapterCategoriesExclude()
 
         val downloadNewEpisodes by downloadNewEpisodesPref.collectAsState()
 
@@ -240,7 +240,7 @@ object SettingsDownloadScreen : SearchableSettings {
             title = stringResource(MR.strings.download_ahead),
             preferenceItems = persistentListOf(
                 Preference.PreferenceItem.ListPreference(
-                    pref = downloadPreferences.autoDownloadWhileWatching(),
+                    pref = downloadPreferences.autoDownloadWhileReading(),
                     title = stringResource(MR.strings.auto_download_while_watching),
                     entries = listOf(0, 2, 3, 5, 10)
                         .associateWith {

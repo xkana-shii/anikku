@@ -19,7 +19,7 @@ class HideCategory(
 
         try {
             categoryRepository.updatePartial(update)
-            RenameCategory.Result.Success
+            Result.Success
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, e)
             Result.InternalError(e)

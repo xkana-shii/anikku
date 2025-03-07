@@ -143,6 +143,7 @@ fun BrowseSourceContent(
                 onAnimeLongClick = onAnimeLongClick,
             )
         }
+        else -> {}
     }
 }
 

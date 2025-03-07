@@ -1,8 +1,8 @@
 package eu.kanade.tachiyomi.data.download.model
 
 import eu.kanade.tachiyomi.animesource.model.Video
-import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.network.ProgressListener
+import eu.kanade.tachiyomi.source.online.HttpSource
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import tachiyomi.domain.anime.interactor.GetAnime
