@@ -54,7 +54,6 @@ class SyncPreferences(
             animelibEntries = preferenceStore.getBoolean("anime_lib_entries", true).get(),
             categories = preferenceStore.getBoolean("categories", true).get(),
             animeCategories = preferenceStore.getBoolean("anime_categories", true).get(),
-            chapters = preferenceStore.getBoolean("chapters", true).get(),
             episodes = preferenceStore.getBoolean("episodes", true).get(),
             tracking = preferenceStore.getBoolean("tracking", true).get(),
             animeTracking = preferenceStore.getBoolean("anime_tracking", true).get(),
@@ -71,7 +70,6 @@ class SyncPreferences(
         preferenceStore.getBoolean("anime_lib_entries", true).set(syncSettings.animelibEntries)
         preferenceStore.getBoolean("categories", true).set(syncSettings.categories)
         preferenceStore.getBoolean("anime_categories", true).set(syncSettings.animeCategories)
-        preferenceStore.getBoolean("chapters", true).set(syncSettings.chapters)
         preferenceStore.getBoolean("episodes", true).set(syncSettings.episodes)
         preferenceStore.getBoolean("tracking", true).set(syncSettings.tracking)
         preferenceStore.getBoolean("anime_tracking", true).set(syncSettings.animeTracking)
@@ -86,10 +84,6 @@ class SyncPreferences(
             syncOnAppStart = preferenceStore.getBoolean("sync_on_app_start", false).get(),
             syncOnAppResume = preferenceStore.getBoolean("sync_on_app_resume", false).get(),
 
-            // Manga
-            syncOnChapterRead = preferenceStore.getBoolean("sync_on_chapter_read", false).get(),
-            syncOnChapterOpen = preferenceStore.getBoolean("sync_on_chapter_open", false).get(),
-
             // Anime
             syncOnEpisodeSeen = preferenceStore.getBoolean("sync_on_episode_seen", false).get(),
             syncOnEpisodeOpen = preferenceStore.getBoolean("sync_on_episode_open", false).get(),
@@ -101,12 +95,6 @@ class SyncPreferences(
             .set(syncTriggerOptions.syncOnAppStart)
         preferenceStore.getBoolean("sync_on_app_resume", false)
             .set(syncTriggerOptions.syncOnAppResume)
-
-        // Manga
-        preferenceStore.getBoolean("sync_on_chapter_read", false)
-            .set(syncTriggerOptions.syncOnChapterRead)
-        preferenceStore.getBoolean("sync_on_chapter_open", false)
-            .set(syncTriggerOptions.syncOnChapterOpen)
 
         // Anime
         preferenceStore.getBoolean("sync_on_episode_seen", false)
