@@ -30,7 +30,7 @@ android {
 
     defaultConfig {
 
-        applicationId = "app.anikku"
+        applicationId = "app.anikku.knsh"
 
         versionCode = 1
         versionName = "0.1.0"
