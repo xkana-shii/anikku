@@ -32,8 +32,8 @@ android {
 
         applicationId = "app.anikku.kns"
 
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 4
+        versionName = "0.1.4"
 
         buildConfigField("String", "COMMIT_COUNT", "\"${getCommitCount()}\"")
         buildConfigField("String", "COMMIT_SHA", "\"${getGitSha()}\"")
@@ -255,7 +255,7 @@ dependencies {
         exclude(group = "androidx.viewpager", module = "viewpager")
     }
     implementation(libs.insetter)
-    implementation(libs.bundles.richtext)
+    implementation(libs.richeditor.compose)
     implementation(libs.aboutLibraries.compose)
     implementation(libs.bundles.voyager)
     implementation(libs.compose.materialmotion)
@@ -263,6 +263,7 @@ dependencies {
     implementation(libs.compose.webview)
     implementation(libs.compose.grid)
     implementation(libs.reorderable)
+    implementation(libs.bundles.markdown)
 
     // KMK -->
     implementation(libs.palette.ktx)
@@ -286,6 +287,7 @@ dependencies {
 
     // Tests
     testImplementation(libs.bundles.test)
+    testRuntimeOnly(libs.junit.platform.launcher)
 
     // For detecting memory leaks; see https://square.github.io/leakcanary/
     // debugImplementation(libs.leakcanary.android)
@@ -306,6 +308,9 @@ dependencies {
 
     // Google drive
     implementation(sylibs.google.api.services.drive)
+
+    // ZXing Android Embedded
+    implementation(sylibs.zxing.android.embedded)
 
     // mpv-android
     implementation(libs.aniyomi.mpv)

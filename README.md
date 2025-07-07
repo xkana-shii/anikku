@@ -11,7 +11,7 @@ Discover and watch anime, cartoons, series, and more – easier than ever on you
 
 | Releases | Preview |
 |----------|---------|
-| <div align="center"> [![GitHub downloads](https://img.shields.io/github/downloads/komikku-app/anikku/latest/total?label=Latest%20Downloads&labelColor=27303D&color=0D1117&logo=github&logoColor=FFFFFF&style=flat)](https://github.com/komikku-app/anikku/releases/latest) [![GitHub downloads](https://img.shields.io/github/downloads/komikku-app/anikku/total?label=Total%20Downloads&labelColor=27303D&color=0D1117&logo=github&logoColor=FFFFFF&style=flat)](https://github.com/komikku-app/anikku/releases) [![Build](https://img.shields.io/github/actions/workflow/status/komikku-app/anikku/build_release.yml?labelColor=27303D&label=Stable&labelColor=06599d&color=043b69)](https://github.com/komikku-app/anikku/actions/workflows/build_release.yml) | <div align="center"> [![GitHub downloads](https://img.shields.io/github/downloads/komikku-app/anikku-preview/latest/total?label=Latest%20Downloads&labelColor=27303D&color=0D1117&logo=github&logoColor=FFFFFF&style=flat)](https://github.com/komikku-app/anikku-preview/releases/latest) [![GitHub downloads](https://img.shields.io/github/downloads/komikku-app/anikku-preview/total?label=Total%20Downloads&labelColor=27303D&color=0D1117&logo=github&logoColor=FFFFFF&style=flat)](https://github.com/komikku-app/anikku-preview/releases) [![Preview build](https://img.shields.io/github/actions/workflow/status/komikku-app/anikku-preview/build_app.yml?labelColor=27303D&label=Preview&labelColor=2c2c47&color=1c1c39)](https://github.com/komikku-app/anikku-preview/actions/workflows/build_app.yml) |
+| <div align="center"> [![GitHub downloads](https://img.shields.io/github/downloads/komikku-app/anikku/latest/total?label=Latest%20Downloads&labelColor=27303D&color=0D1117&logo=github&logoColor=FFFFFF&style=flat)](https://github.com/komikku-app/anikku/releases/latest) [![GitHub downloads](https://img.shields.io/github/downloads/komikku-app/anikku/total?label=Total%20Downloads&labelColor=27303D&color=0D1117&logo=github&logoColor=FFFFFF&style=flat)](https://github.com/komikku-app/anikku/releases) [![Stable build](https://img.shields.io/github/actions/workflow/status/komikku-app/anikku/build_release.yml?labelColor=27303D&label=Stable&labelColor=06599d&color=043b69)](https://github.com/komikku-app/anikku/actions/workflows/build_release.yml) | <div align="center"> [![GitHub downloads](https://img.shields.io/github/downloads/komikku-app/anikku-preview/latest/total?label=Latest%20Downloads&labelColor=27303D&color=0D1117&logo=github&logoColor=FFFFFF&style=flat)](https://github.com/komikku-app/anikku-preview/releases/latest) [![GitHub downloads](https://img.shields.io/github/downloads/komikku-app/anikku-preview/total?label=Total%20Downloads&labelColor=27303D&color=0D1117&logo=github&logoColor=FFFFFF&style=flat)](https://github.com/komikku-app/anikku-preview/releases) [![Preview build](https://img.shields.io/github/actions/workflow/status/komikku-app/anikku-preview/build_app.yml?labelColor=27303D&label=Preview&labelColor=2c2c47&color=1c1c39)](https://github.com/komikku-app/anikku-preview/actions/workflows/build_app.yml) |
 
 [![Discord](https://img.shields.io/discord/1242381704459452488.svg?label=&labelColor=6A7EC2&color=7389D8&logo=discord&logoColor=FFFFFF)](https://discord.gg/85jB7V5AJR)
 [![CI](https://img.shields.io/github/actions/workflow/status/komikku-app/anikku/build_push.yml?labelColor=27303D&label=CI)](https://github.com/komikku-app/anikku/actions/workflows/build_push.yml)
@@ -20,10 +20,12 @@ Discover and watch anime, cartoons, series, and more – easier than ever on you
 
 ## Download
 
-[![Anikku Stable](https://img.shields.io/github/release/komikku-app/anikku.svg?maxAge=3600&label=Stable&labelColor=06599d&color=043b69)](https://github.com/komikku-app/anikku/releases/latest)
-[![Anikku Preview](https://img.shields.io/github/v/release/komikku-app/anikku-preview.svg?maxAge=3600&label=Preview&labelColor=2c2c47&color=1c1c39)](https://github.com/komikku-app/anikku-preview/releases/latest)
+[![Stable](https://img.shields.io/github/release/komikku-app/anikku.svg?maxAge=3600&label=Stable&labelColor=06599d&color=043b69)](https://github.com/komikku-app/anikku/releases/latest)
+[![Preview](https://img.shields.io/github/v/release/komikku-app/anikku-preview.svg?maxAge=3600&label=Preview&labelColor=2c2c47&color=1c1c39)](https://github.com/komikku-app/anikku-preview/releases/latest)
 
 *Requires Android 8.0 or higher.*
+
+[![Sponsor me on GitHub](https://custom-icon-badges.demolab.com/badge/-Sponsor-ea4aaa?style=for-the-badge&logo=heart&logoColor=white)](https://github.com/sponsors/cuong-tran "Sponsor me on GitHub")
 
 ## Features
 
@@ -31,7 +33,7 @@ Discover and watch anime, cartoons, series, and more – easier than ever on you
 
 <div align="left">
 
-Features include:
+### Features include:
 
 * **Anikku**:
   * `Anime Suggestions` automatically showing source-website's recommendations / suggestions / related to current entry for all sources.
@@ -40,6 +42,7 @@ Features include:
   * `Bulk-favorite` multiple entries all at once.
   * `Fast browsing` (for who with large library experiencing slow loading)
   * Auto `2-way sync` progress with trackers.
+  * Support `Android TV`, `Fire TV`.
   * From SY:
     * `Anime Recommendations` showing community recommends from Anilist, MyAnimeList.
     * Edit `Anime Info` manually, or fill data from MyAnimeList, Kitsu, Shikimori, Bangumi, Simkl.
@@ -70,28 +73,18 @@ Features include:
   * Auto-install app update.
   * Configurable interval to refresh entries from downloaded storage.
   * And many more from same maintainer's app for Manga reader: [Komikku](https://github.com/komikku-app/komikku)
-* Animetail:
-  * Support for Cast functionality
-  * Support themes monet
-  * Android tv compatibility (only banner)
-  * Optimized Discord Rich Presence for Manga and Anime, no external API.
-* Kuukiyomi:
-  * Torrent support(Needs right extensions) (@Diegopyl1209)
-  * Custom Theme support
-  * resmush.it(Data Saver Provider)
-  * Group by tags in library
-  * Discord Rich Presence for Manga
 * Aniyomi:
   * Watching videos
   * Local watching of downloaded content
   * A configurable player built on mpv-android with multiple options and settings
   * Tracker support: [MyAnimeList](https://myanimelist.net/), [AniList](https://anilist.co/), [Kitsu](https://kitsu.app/), [Simkl](https://simkl.in/), [Shikimori](https://shikimori.one), and [Bangumi](https://bgm.tv/)
   * Categories to organize your library
-  * Light and dark themes
   * Create backups locally to watch offline or to your desired cloud service
-* Other fork features:
-  * Animiru:
-    * Discord Rich Presence
+* Other forks' features:
+  * Torrent support (Needs right extensions) (@Diegopyl1209)
+  * Support for Cast functionality (Animetail)
+  * Group by tags in library (Kuukiyomi)
+  * Discord Rich Presence (Animiru, Kuukiyomi, Animetail)
 
 # Issues, Feature Requests and Contributing
 
@@ -99,8 +92,10 @@ Pull requests are welcome. For major changes, please open an issue first to disc
 
 <details><summary>Issues</summary>
 
-1. **Before reporting a new issue, take a look at the [FAQ](https://mihon.app/docs/faq/general), the [changelog](https://github.com/komikku-app/anikku/releases) and the already opened [issues](https://github.com/komikku-app/anikku/issues).**
-2. If you are unsure, ask here: [![Discord](https://img.shields.io/discord/1195734228319617024.svg?label=&labelColor=6A7EC2&color=7389D8&logo=discord&logoColor=FFFFFF)](https://discord.gg/Nft8MxpR)
+[Website](https://anikku-app.github.io/)
+
+1. **Before reporting a new issue, take a look at the [FAQ](https://anikku-app.github.io/docs/faq/general), the [changelog](https://github.com/komikku-app/anikku/releases) and the already opened [issues](https://github.com/komikku-app/anikku/issues).**
+2. If you are unsure, ask here: [![Discord](https://img.shields.io/discord/1242381704459452488.svg?label=&labelColor=6A7EC2&color=7389D8&logo=discord&logoColor=FFFFFF)](https://discord.gg/85jB7V5AJR)
 
 </details>
 
@@ -144,19 +139,15 @@ Thank you to all the people who have contributed!
     <img src="https://contrib.rocks/image?repo=aniyomiorg/aniyomi" alt="Anikku app contributors" title="Anikku app contributors" width="800"/>
 </a>
 
+![Visitor Count](https://count.getloli.com/get/@komikku-app?theme=capoo-2)
+
 ### Disclaimer
 
 The developer(s) of this application does not have any affiliation with the content providers available, and this application hosts zero content.
 
 <div align="left">
 
-## FAQ
-
-* Anikku [website](https://anikku-app.github.io/) / [Discord](https://discord.gg/85jB7V5AJR)
-
-* Aniyomi [website](https://aniyomi.org/) / [Discord](https://discord.gg/F32UjdJZrR)
-
-### License
+## License
 
 <pre>
 Copyright © 2015 Javier Tomás
