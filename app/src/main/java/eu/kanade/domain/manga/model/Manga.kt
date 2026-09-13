@@ -1,7 +1,6 @@
 package eu.kanade.domain.manga.model
 
 import eu.kanade.domain.base.BasePreferences
-import eu.kanade.tachiyomi.data.cache.BackgroundCache
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.source.model.SManga
 import tachiyomi.core.common.preference.TriState
@@ -19,35 +18,13 @@ val Manga.downloadedFilter: TriState
             else -> TriState.DISABLED
         }
     }
-
-// AY -->
-val Manga.seasonDownloadedFilter: TriState
-    get() {
-        if (Injekt.get<BasePreferences>().downloadedOnly().get()) return TriState.ENABLED_IS
-        return when (seasonDownloadedFilterRaw) {
-            Manga.SEASON_SHOW_DOWNLOADED -> TriState.ENABLED_IS
-            Manga.SEASON_SHOW_NOT_DOWNLOADED -> TriState.ENABLED_NOT
-            else -> TriState.DISABLED
-        }
-    }
-
-fun Manga.seasonsFiltered(): Boolean {
-    return seasonDownloadedFilter != TriState.DISABLED ||
-        seasonUnseenFilter != TriState.DISABLED ||
-        seasonStartedFilter != TriState.DISABLED ||
-        seasonCompletedFilter != TriState.DISABLED ||
-        seasonBookmarkedFilter != TriState.DISABLED ||
-        seasonFillermarkedFilter != TriState.DISABLED
-}
-// <-- AY
-
 fun Manga.chaptersFiltered(): Boolean {
     return unreadFilter != TriState.DISABLED ||
         downloadedFilter != TriState.DISABLED ||
         bookmarkedFilter != TriState.DISABLED ||
-        // AY -->
+        // AM (FILLERMARK) -->
         fillermarkedFilter != TriState.DISABLED
-    // <-- AY
+    // <-- AM (FILLERMARK)
 }
 
 fun Manga.toSManga(): SManga = SManga.create().also {
@@ -60,15 +37,7 @@ fun Manga.toSManga(): SManga = SManga.create().also {
     it.genre = ogGenre.orEmpty().joinToString()
     it.status = ogStatus.toInt()
     // SY <--
-    it.thumbnail_url = ogThumbnailUrl
-    // AY -->
-    it.background_url = backgroundUrl
-    it.fetch_type = fetchType
-    it.season_number = seasonNumber
-    // <-- AY
-    // ANK -->
-    it.update_strategy = updateStrategy
-    // ANK <--
+    it.thumbnail_url = thumbnailUrl
     it.initialized = initialized
 }
 
@@ -84,9 +53,6 @@ fun Manga.copyFrom(other: SManga): Manga {
         ogGenre
     }
     // SY <--
-    // AY -->
-    val backgroundUrl = other.background_url ?: backgroundUrl
-    // <-- AY
     return this.copy(
         // SY -->
         ogAuthor = author,
@@ -98,14 +64,7 @@ fun Manga.copyFrom(other: SManga): Manga {
         // SY -->
         ogStatus = other.status.toLong(),
         // SY <--
-        // AY -->
-        backgroundUrl = backgroundUrl,
-        // <-- AY
         updateStrategy = other.update_strategy,
-        // AY -->
-        fetchType = other.fetch_type,
-        seasonNumber = other.season_number,
-        // <-- AY
         initialized = other.initialized && initialized,
     )
 }
@@ -113,9 +72,3 @@ fun Manga.copyFrom(other: SManga): Manga {
 fun Manga.hasCustomCover(coverCache: CoverCache = Injekt.get()): Boolean {
     return coverCache.getCustomCoverFile(id).exists()
 }
-
-// AY -->
-fun Manga.hasCustomBackground(backgroundCache: BackgroundCache = Injekt.get()): Boolean {
-    return backgroundCache.getCustomBackgroundFile(id).exists()
-}
-// <-- AY

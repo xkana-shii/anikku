@@ -8,9 +8,9 @@ SELECT
     episodes.scanlator,
     episodes.seen,
     episodes.bookmark,
-    -- AY -->
+    -- AM (FILLERMARK) -->
     episodes.fillermark,
-    -- <-- AY
+    -- <-- AM (FILLERMARK)
     episodes.last_second_seen,
     episodes.total_seconds AS totalSeconds,
     animes.source,
@@ -18,14 +18,14 @@ SELECT
     animes.thumbnail_url AS thumbnailUrl,
     animes.cover_last_modified AS coverLastModified,
     episodes.date_upload AS dateUpload,
-    episodes.date_fetch AS datefetch,
-    excluded_scanlators.scanlator AS excludedScanlator
+    episodes.date_fetch AS datefetch
 FROM animes JOIN episodes
 ON animes._id = episodes.anime_id
 LEFT JOIN excluded_scanlators
 ON animes._id = excluded_scanlators.anime_id
 AND episodes.scanlator = excluded_scanlators.scanlator
 WHERE favorite = 1 AND source <> 6969
+AND excluded_scanlators.scanlator IS NULL
 AND date_fetch > date_added
 UNION
 SELECT
@@ -36,9 +36,9 @@ SELECT
     episodes.scanlator,
     episodes.seen,
     episodes.bookmark,
-    -- AY -->
+    -- AM (FILLERMARK) -->
     episodes.fillermark,
-    -- <-- AY
+    -- <-- AM (FILLERMARK)
     episodes.last_second_seen,
     episodes.total_seconds AS totalSeconds,
     animes.source,
@@ -46,8 +46,7 @@ SELECT
     animes.thumbnail_url AS thumbnailUrl,
     animes.cover_last_modified AS coverLastModified,
     episodes.date_upload AS dateUpload,
-    episodes.date_fetch AS datefetch,
-    excluded_scanlators.scanlator AS excludedScanlator
+    episodes.date_fetch AS datefetch
 FROM animes
 LEFT JOIN (
     SELECT merged.anime_id,merged.merge_id
@@ -61,6 +60,7 @@ LEFT JOIN excluded_scanlators
 ON animes._id = excluded_scanlators.anime_id
 AND episodes.scanlator = excluded_scanlators.scanlator
 WHERE favorite = 1 AND source = 6969
+AND excluded_scanlators.scanlator IS NULL
 AND date_fetch > date_added
 ORDER BY datefetch DESC;
 
@@ -68,23 +68,6 @@ getRecentUpdates:
 SELECT *
 FROM updatesView
 WHERE dateUpload > :after
-LIMIT :limit;
-
-getRecentUpdatesWithFilters:
-SELECT *
-FROM updatesView
-WHERE dateUpload > :after
-AND (:read IS NULL OR seen = :read)
--- Started means some progress but not finished, Read means finished chapter, thus:
-AND (
-    :started IS NULL
-    OR (:started = 1 AND last_second_seen > 0 AND seen = 0)
-    OR (:started = 0 AND last_second_seen = 0 AND seen = 0)
-)
-AND (:bookmarked IS NULL OR bookmark = :bookmarked)
-AND (
-    (excludedScanlator IS NULL OR :hideExcludedScanlators = 0)
-)
 LIMIT :limit;
 
 getUpdatesBySeenStatus:

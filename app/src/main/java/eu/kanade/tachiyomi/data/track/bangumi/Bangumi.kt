@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.data.track.bangumi
 
+import android.graphics.Color
 import dev.icerock.moko.resources.StringResource
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Track
@@ -9,6 +10,7 @@ import eu.kanade.tachiyomi.data.track.model.TrackMangaMetadata
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.aniyomi.AYMR
@@ -89,7 +91,9 @@ class Bangumi(id: Long) : BaseTracker(id, "Bangumi") {
         return track
     }
 
-    override fun getLogo() = R.drawable.brand_bangumi
+    override fun getLogo() = R.drawable.ic_tracker_bangumi
+
+    override fun getLogoColor() = Color.rgb(240, 145, 153)
 
     override fun getStatusList(): List<Long> {
         return listOf(WATCHING, COMPLETED, ON_HOLD, DROPPED, PLAN_TO_WATCH)
@@ -117,7 +121,7 @@ class Bangumi(id: Long) : BaseTracker(id, "Bangumi") {
             val oauth = api.accessToken(code)
             interceptor.newAuth(oauth)
             saveCredentials(oauth.userId.toString(), oauth.accessToken)
-        } catch (_: Throwable) {
+        } catch (e: Throwable) {
             logout()
         }
     }
@@ -129,7 +133,7 @@ class Bangumi(id: Long) : BaseTracker(id, "Bangumi") {
     fun restoreToken(): BGMOAuth? {
         return try {
             json.decodeFromString<BGMOAuth>(trackPreferences.trackToken(this).get())
-        } catch (_: Exception) {
+        } catch (e: Exception) {
             null
         }
     }

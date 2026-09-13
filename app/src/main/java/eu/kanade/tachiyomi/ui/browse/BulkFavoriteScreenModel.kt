@@ -17,8 +17,6 @@ import eu.kanade.domain.track.interactor.AddTracks
 import eu.kanade.presentation.components.BulkSelectionToolbar
 import eu.kanade.presentation.manga.DuplicateMangaDialog
 import eu.kanade.tachiyomi.data.cache.CoverCache
-import eu.kanade.tachiyomi.source.getChapterList
-import eu.kanade.tachiyomi.source.getMangaDetails
 import eu.kanade.tachiyomi.util.removeCovers
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
@@ -40,6 +38,7 @@ import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.interactor.SetMangaCategories
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.chapter.interactor.SetMangaDefaultChapterFlags
+import tachiyomi.domain.episode.model.NoEpisodesException
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.interactor.GetDuplicateLibraryManga
 import tachiyomi.domain.manga.model.Manga
@@ -61,8 +60,10 @@ class BulkFavoriteScreenModel(
     private val coverCache: CoverCache = Injekt.get(),
     private val setMangaDefaultChapterFlags: SetMangaDefaultChapterFlags = Injekt.get(),
     private val addTracks: AddTracks = Injekt.get(),
+    // KMK -->
     private val syncChaptersWithSource: SyncChaptersWithSource = Injekt.get(),
     val snackbarHostState: SnackbarHostState = SnackbarHostState(),
+    // KMK <--
 ) : StateScreenModel<BulkFavoriteScreenModel.State>(initialState) {
 
     fun backHandler() {
@@ -249,27 +250,43 @@ class BulkFavoriteScreenModel(
     }
 
     private fun moveMangaToCategoriesAndAddToLibrary(manga: Manga, categories: List<Long>) {
+        val source = sourceManager.getOrStub(manga.source)
         moveMangaToCategory(manga.id, categories)
         if (manga.favorite) return
 
         screenModelScope.launchIO {
-            try {
-                val source = sourceManager.getOrStub(manga.source)
-                setMangaDefaultChapterFlags.await(manga)
-                addTracks.bindEnhancedTrackers(manga, source)
-                updateManga.awaitUpdateFavorite(manga.id, true)
-                if (libraryPreferences.syncOnAdd().get()) {
-                    val sManga = manga.toSManga()
-                    val remoteManga = source.getMangaDetails(sManga)
-                    val chapters = source.getChapterList(sManga)
-                    // Use `manga` instead of `new` so its title got updated with source's `getMangaDetails`
-                    updateManga.awaitUpdateFromSource(manga, remoteManga, false, coverCache)
-                    syncChaptersWithSource.await(chapters, manga, source, false)
+            updateManga.awaitUpdateFavorite(manga.id, true)
+            setMangaDefaultChapterFlags.await(manga)
+            val new = manga.copy(
+                favorite = !manga.favorite,
+                dateAdded = when (manga.favorite) {
+                    true -> 0
+                    false -> Instant.now().toEpochMilli()
+                },
+            )
+            updateManga.await(new.toMangaUpdate().copy(chapterFlags = null))
+            if (new.favorite) {
+                try {
+                    withIOContext {
+                        val networkManga = source.getAnimeDetails(new.toSManga())
+                        updateManga.awaitUpdateFromSource(manga, networkManga, false, coverCache)
+                        val chapters = source.getEpisodeList(new.toSManga())
+                        syncChaptersWithSource.await(chapters, new, source, false)
+                    }
+                } catch (e: Throwable) {
+                    val message = if (e is NoEpisodesException) {
+                        @Suppress("IMPLICIT_CAST_TO_ANY")
+                        "No Chapters found"
+                    } else {
+                        @Suppress("IMPLICIT_CAST_TO_ANY")
+                        logcat(LogPriority.ERROR, e) { "Error while syncing chapters" }
+                    }
+                    screenModelScope.launch {
+                        snackbarHostState.showSnackbar(message = message.toString())
+                    }
                 }
-            } catch (e: Exception) {
-                logcat(LogPriority.ERROR, e)
-                snackbarHostState.showSnackbar(message = "Failed to sync manga: ${e.message}")
             }
+            // KMK <--
         }
     }
 
@@ -352,22 +369,30 @@ class BulkFavoriteScreenModel(
                 addTracks.bindEnhancedTrackers(manga, source)
             }
 
-            updateManga.await(new.toMangaUpdate())
-            if (new.favorite && libraryPreferences.syncOnAdd().get()) {
-                withIOContext {
-                    try {
-                        val sManga = manga.toSManga()
-                        val remoteManga = source.getMangaDetails(sManga)
-                        val chapters = source.getChapterList(sManga)
-                        // Use `manga` instead of `new` so its title got updated with source's `getMangaDetails`
-                        updateManga.awaitUpdateFromSource(manga, remoteManga, false, coverCache)
-                        syncChaptersWithSource.await(chapters, manga, source, false)
-                    } catch (e: Exception) {
-                        logcat(LogPriority.ERROR, e)
-                        snackbarHostState.showSnackbar(message = "Failed to sync manga: ${e.message}")
+            updateManga.await(new.toMangaUpdate().copy(chapterFlags = null))
+            // KMK -->
+            if (new.favorite) {
+                try {
+                    withIOContext {
+                        val networkManga = source.getAnimeDetails(new.toSManga())
+                        updateManga.awaitUpdateFromSource(manga, networkManga, false, coverCache)
+                        val chapters = source.getEpisodeList(new.toSManga())
+                        syncChaptersWithSource.await(chapters, new, source, false)
+                    }
+                } catch (e: Throwable) {
+                    val message = if (e is NoEpisodesException) {
+                        @Suppress("IMPLICIT_CAST_TO_ANY")
+                        "No Chapters found"
+                    } else {
+                        @Suppress("IMPLICIT_CAST_TO_ANY")
+                        logcat(LogPriority.ERROR, e) { "Error while syncing chapters" }
+                    }
+                    screenModelScope.launch {
+                        snackbarHostState.showSnackbar(message = message.toString())
                     }
                 }
             }
+            // KMK <--
         }
     }
 
@@ -419,7 +444,7 @@ class BulkFavoriteScreenModel(
     }
 
     internal fun showMigrateDialog(manga: Manga, duplicate: Manga) {
-        setDialog(Dialog.Migrate(target = manga, current = duplicate))
+        setDialog(Dialog.Migrate(newManga = manga, oldManga = duplicate))
     }
 
     private fun setDialog(dialog: Dialog?) {
@@ -447,7 +472,7 @@ class BulkFavoriteScreenModel(
     }
 
     sealed interface Dialog {
-        data class Migrate(val target: Manga, val current: Manga) : Dialog
+        data class Migrate(val newManga: Manga, val oldManga: Manga) : Dialog
         data class AddDuplicateManga(val manga: Manga, val duplicates: List<MangaWithChapterCount>) : Dialog
         data class BulkAllowDuplicate(val manga: Manga, val duplicates: List<MangaWithChapterCount>, val currentIdx: Int) : Dialog
         data class RemoveManga(val manga: Manga) : Dialog

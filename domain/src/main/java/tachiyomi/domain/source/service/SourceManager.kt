@@ -27,9 +27,5 @@ interface SourceManager {
     fun getVisibleCatalogueSources(): List<CatalogueSource>
     // SY <--
 
-    // KMK -->
-    suspend fun getMergedSources(mangaId: Long): List<Source>
-    // KMK <--
-
     fun getStubSources(): List<StubSource>
 }

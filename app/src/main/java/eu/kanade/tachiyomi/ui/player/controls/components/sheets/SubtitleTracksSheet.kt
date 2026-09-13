@@ -24,14 +24,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.MoreTime
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -41,9 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import eu.kanade.tachiyomi.ui.player.TrackState
-import eu.kanade.tachiyomi.ui.player.VideoTrack
+import eu.kanade.tachiyomi.ui.player.PlayerViewModel.VideoTrack
 import kotlinx.collections.immutable.ImmutableList
 import tachiyomi.i18n.aniyomi.AYMR
 import tachiyomi.presentation.core.components.material.padding
@@ -52,7 +47,8 @@ import tachiyomi.presentation.core.i18n.stringResource
 @Composable
 fun SubtitlesSheet(
     tracks: ImmutableList<VideoTrack>,
-    onSelect: (VideoTrack) -> Unit,
+    selectedTracks: ImmutableList<Int>,
+    onSelect: (Int) -> Unit,
     onAddSubtitle: () -> Unit,
     onOpenSubtitleSettings: () -> Unit,
     onOpenSubtitleDelay: () -> Unit,
@@ -93,9 +89,9 @@ fun SubtitlesSheet(
         },
         track = { track ->
             SubtitleTrackRow(
-                track = track,
-                selected = track.selection,
-                onClick = { onSelect(track) },
+                title = getTrackTitle(track),
+                selected = selectedTracks.indexOf(track.id),
+                onClick = { onSelect(track.id) },
             )
         },
         footer = {
@@ -116,8 +112,8 @@ fun SubtitlesSheet(
 
 @Composable
 fun SubtitleTrackRow(
-    track: VideoTrack,
-    selected: Int,
+    title: String,
+    selected: Int, // -1 unselected, otherwise return 0 and 1 for the selected indices
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -133,16 +129,12 @@ fun SubtitleTrackRow(
             onCheckedChange = { _ -> onClick() },
         )
         Text(
-            text = getTrackTitle(track),
+            text = title,
             fontStyle = if (selected > -1) FontStyle.Italic else FontStyle.Normal,
             fontWeight = if (selected > -1) FontWeight.ExtraBold else FontWeight.Normal,
         )
         Spacer(modifier = Modifier.weight(1f))
-        if (track is VideoTrack.External && track.state == TrackState.Loading) {
-            CircularProgressIndicator(modifier = Modifier.then(Modifier.size(24.dp)))
-        } else if (track is VideoTrack.External && track.state == TrackState.Error) {
-            Icon(Icons.Default.ErrorOutline, null, tint = MaterialTheme.colorScheme.error)
-        } else if (selected != -1) {
+        if (selected != -1) {
             Text(
                 text = "#${selected + 1}",
                 fontStyle = if (selected > -1) FontStyle.Italic else FontStyle.Normal,

@@ -8,11 +8,9 @@ import androidx.compose.material.icons.filled.FormatAlignJustify
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
-import dev.icerock.moko.resources.StringResource
 import eu.kanade.tachiyomi.ui.player.controls.components.panels.SubtitlesBorderStyle
 import tachiyomi.core.common.preference.PreferenceStore
 import tachiyomi.core.common.preference.getEnum
-import tachiyomi.i18n.animiru.AMMR
 
 class SubtitlePreferences(
     private val preferenceStore: PreferenceStore,
@@ -20,7 +18,6 @@ class SubtitlePreferences(
     fun preferredSubLanguages() = preferenceStore.getString("pref_subtitle_lang", "")
     fun subtitleWhitelist() = preferenceStore.getString("pref_subtitle_whitelist", "")
     fun subtitleBlacklist() = preferenceStore.getString("pref_subtitle_blacklist", "")
-    fun subtitleBlackBars() = preferenceStore.getBoolean("pref_subtitle_black_bars", false)
 
     // Non-preferences
 
@@ -49,7 +46,7 @@ class SubtitlePreferences(
     fun subtitleJustification() = preferenceStore.getEnum("pref_sub_justify", SubtitleJustification.Auto)
     fun subtitlePos() = preferenceStore.getInt("pref_sub_pos", 100)
 
-    fun overrideSubsASS() = preferenceStore.getEnum("pref_override_subtitles_ass_enum", SubtitleAssOverride.No)
+    fun overrideSubsASS() = preferenceStore.getBoolean("pref_override_subtitles_ass", false)
 
     fun subtitlesDelay() = preferenceStore.getInt("pref_subtitles_delay", 0)
     fun subtitlesSpeed() = preferenceStore.getFloat("pref_subtitles_speed", 1f)
@@ -64,35 +61,4 @@ enum class SubtitleJustification(
     Center("center", Icons.Default.FormatAlignCenter),
     Right("right", Icons.AutoMirrored.Default.FormatAlignRight),
     Auto("auto", Icons.Default.FormatAlignJustify),
-    ;
-
-    companion object {
-        fun byValue(value: String): SubtitleJustification {
-            return when (value) {
-                "left" -> Left
-                "center" -> Center
-                "right" -> Right
-                else -> Auto
-            }
-        }
-    }
-}
-
-enum class SubtitleAssOverride(
-    val value: String,
-    val titleRes: StringResource,
-) {
-    No("no", AMMR.strings.player_sheets_subtitles_ass_no),
-    Yes("yes", AMMR.strings.player_sheets_subtitles_ass_yes),
-    Scale("scale", AMMR.strings.player_sheets_subtitles_ass_scale),
-    Force("force", AMMR.strings.player_sheets_subtitles_ass_force),
-    Strip("strip", AMMR.strings.player_sheets_subtitles_ass_strip),
-    ;
-
-    companion object {
-        fun byValue(value: String): SubtitleAssOverride =
-            // ANK -->
-            entries.firstOrNull { it.value == value } ?: No
-        // ANK <--
-    }
 }

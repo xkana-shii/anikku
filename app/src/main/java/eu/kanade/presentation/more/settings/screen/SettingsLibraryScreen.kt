@@ -25,6 +25,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableMap
 import kotlinx.coroutines.launch
+import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.interactor.ResetCategoryFlags
 import tachiyomi.domain.category.model.Category
@@ -63,16 +64,17 @@ object SettingsLibraryScreen : SearchableSettings {
         val getCategories = remember { Injekt.get<GetCategories>() }
         val libraryPreferences = remember { Injekt.get<LibraryPreferences>() }
         val allCategories by getCategories.subscribe().collectAsState(initial = emptyList())
+        // SY -->
+        val unsortedPreferences = remember { Injekt.get<UnsortedPreferences>() }
+        // SY <--
 
         return listOf(
             getCategoriesGroup(LocalNavigator.currentOrThrow, allCategories, libraryPreferences),
             getGlobalUpdateGroup(allCategories, libraryPreferences),
-            // AY -->
-            getSeasonBehaviorGroup(libraryPreferences),
-            // <-- AY
             getBehaviorGroup(libraryPreferences),
             // SY -->
             getSortingCategory(LocalNavigator.currentOrThrow, libraryPreferences),
+            getMigrationCategory(unsortedPreferences),
             // SY <--
         )
     }
@@ -243,27 +245,6 @@ object SettingsLibraryScreen : SearchableSettings {
         )
     }
 
-    // AY -->
-    @Composable
-    private fun getSeasonBehaviorGroup(
-        libraryPreferences: LibraryPreferences,
-    ): Preference.PreferenceGroup {
-        return Preference.PreferenceGroup(
-            title = stringResource(AYMR.strings.pref_library_season),
-            preferenceItems = persistentListOf(
-                Preference.PreferenceItem.SwitchPreference(
-                    preference = libraryPreferences.updateSeasonOnRefresh(),
-                    title = stringResource(AYMR.strings.pref_update_seasons_refresh),
-                ),
-                Preference.PreferenceItem.SwitchPreference(
-                    preference = libraryPreferences.updateSeasonOnLibraryUpdate(),
-                    title = stringResource(AYMR.strings.pref_update_seasons_update),
-                ),
-            ),
-        )
-    }
-    // <-- AY
-
     @Composable
     private fun getBehaviorGroup(
         libraryPreferences: LibraryPreferences,
@@ -278,11 +259,11 @@ object SettingsLibraryScreen : SearchableSettings {
                             stringResource(MR.strings.disabled),
                         LibraryPreferences.ChapterSwipeAction.ToggleBookmark to
                             stringResource(MR.strings.action_bookmark),
-                        // AY -->
+                        // AM (FILLERMARK) -->
                         LibraryPreferences.ChapterSwipeAction.ToggleFillermark to stringResource(
                             AMR.strings.action_fillermark_episode,
                         ),
-                        // <-- AY
+                        // <-- AM (FILLERMARK)
                         LibraryPreferences.ChapterSwipeAction.ToggleRead to
                             stringResource(AYMR.strings.action_mark_as_seen),
                         LibraryPreferences.ChapterSwipeAction.Download to
@@ -297,11 +278,11 @@ object SettingsLibraryScreen : SearchableSettings {
                             stringResource(MR.strings.disabled),
                         LibraryPreferences.ChapterSwipeAction.ToggleBookmark to
                             stringResource(MR.strings.action_bookmark),
-                        // AY -->
+                        // AM (FILLERMARK) -->
                         LibraryPreferences.ChapterSwipeAction.ToggleFillermark to stringResource(
                             AMR.strings.action_fillermark_episode,
                         ),
-                        // <-- AY
+                        // <-- AM (FILLERMARK)
                         LibraryPreferences.ChapterSwipeAction.ToggleRead to
                             stringResource(AYMR.strings.action_mark_as_seen),
                         LibraryPreferences.ChapterSwipeAction.Download to
@@ -328,11 +309,6 @@ object SettingsLibraryScreen : SearchableSettings {
                     preference = libraryPreferences.showEmptyCategoriesSearch(),
                     title = stringResource(KMR.strings.pref_show_empty_categories_search),
                 ),
-                Preference.PreferenceItem.SwitchPreference(
-                    preference = libraryPreferences.syncOnAdd(),
-                    title = stringResource(AMR.strings.pref_sync_anime_on_add),
-                    subtitle = stringResource(AMR.strings.pref_sync_anime_on_add_description),
-                ),
                 // KMK <--
             ),
         )
@@ -351,6 +327,23 @@ object SettingsLibraryScreen : SearchableSettings {
                     onClick = {
                         navigator.push(SortTagScreen())
                     },
+                ),
+            ),
+        )
+    }
+
+    @Composable
+    fun getMigrationCategory(unsortedPreferences: UnsortedPreferences): Preference.PreferenceGroup {
+        val skipPreMigration by unsortedPreferences.skipPreMigration().collectAsState()
+        val migrationSources by unsortedPreferences.migrationSources().collectAsState()
+        return Preference.PreferenceGroup(
+            stringResource(SYMR.strings.migration),
+            enabled = skipPreMigration || migrationSources.isNotEmpty(),
+            preferenceItems = persistentListOf(
+                Preference.PreferenceItem.SwitchPreference(
+                    preference = unsortedPreferences.skipPreMigration(),
+                    title = stringResource(SYMR.strings.skip_pre_migration),
+                    subtitle = stringResource(SYMR.strings.pref_skip_pre_migration_summary),
                 ),
             ),
         )

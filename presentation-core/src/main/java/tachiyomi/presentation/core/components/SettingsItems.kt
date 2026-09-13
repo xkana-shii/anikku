@@ -29,12 +29,12 @@ import androidx.compose.material.icons.rounded.CheckBoxOutlineBlank
 import androidx.compose.material.icons.rounded.DisabledByDefault
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.SliderColors
@@ -74,7 +74,6 @@ import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.theme.header
 import tachiyomi.presentation.core.util.collectAsState
-import tachiyomi.presentation.core.util.secondaryItemAlpha
 
 object SettingsItemsPaddings {
     val Horizontal = 24.dp
@@ -194,7 +193,7 @@ fun SliderItem(
     label: String,
     onChange: (Int) -> Unit,
     steps: Int = with(valueRange) { (last - first) - 1 },
-    valueString: String = value.toString(),
+    valueText: String = value.toString(),
     labelStyle: TextStyle = MaterialTheme.typography.bodyMedium,
     pillColor: Color = MaterialTheme.colorScheme.surfaceContainerHigh,
 ) {
@@ -202,10 +201,10 @@ fun SliderItem(
         value = value,
         valueRange = valueRange,
         steps = steps,
-        title = label,
-        valueString = valueString,
+        label = label,
+        valueText = valueText,
         onChange = onChange,
-        titleStyle = labelStyle,
+        labelStyle = labelStyle,
         pillColor = pillColor,
         modifier = Modifier.padding(
             horizontal = SettingsItemsPaddings.Horizontal,
@@ -218,14 +217,12 @@ fun SliderItem(
 fun BaseSliderItem(
     value: Int,
     valueRange: IntProgression,
-    title: String,
+    label: String,
     onChange: (Int) -> Unit,
     modifier: Modifier = Modifier,
-    subtitle: String? = null,
     steps: Int = with(valueRange) { (last - first) - 1 },
-    valueString: String = value.toString(),
-    titleStyle: TextStyle = MaterialTheme.typography.titleLarge,
-    subtitleStyle: TextStyle = MaterialTheme.typography.bodySmall,
+    valueText: String = value.toString(),
+    labelStyle: TextStyle = MaterialTheme.typography.bodyMedium,
     pillColor: Color = MaterialTheme.colorScheme.surfaceContainerHigh,
     colors: SliderColors = SliderDefaults.colors(),
 ) {
@@ -240,21 +237,13 @@ fun BaseSliderItem(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
         ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = title,
-                    style = titleStyle,
-                )
-                if (subtitle != null) {
-                    Text(
-                        text = subtitle,
-                        style = subtitleStyle,
-                        modifier = Modifier.secondaryItemAlpha(),
-                    )
-                }
-            }
+            Text(
+                text = label,
+                style = labelStyle,
+                modifier = Modifier.weight(1f),
+            )
             Pill(
-                text = valueString,
+                text = valueText,
                 style = MaterialTheme.typography.bodyMedium,
                 color = pillColor,
             )
@@ -279,17 +268,12 @@ fun SliderItemPreview() {
     MaterialTheme(if (isSystemInDarkTheme()) darkColorScheme() else lightColorScheme()) {
         var value by remember { mutableIntStateOf(0) }
         Surface {
-            BaseSliderItem(
+            SliderItem(
                 value = value,
                 valueRange = 0..10,
-                title = "Item per row",
-                subtitle = "Subtitle",
-                valueString = if (value == 0) "Auto" else value.toString(),
+                label = "Item per row",
+                valueText = if (value == 0) "Auto" else value.toString(),
                 onChange = { value = it },
-                modifier = Modifier.padding(
-                    horizontal = SettingsItemsPaddings.Horizontal,
-                    vertical = SettingsItemsPaddings.Vertical,
-                ),
             )
         }
     }
@@ -310,7 +294,7 @@ fun SelectItem(
     ) {
         OutlinedTextField(
             modifier = Modifier
-                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
+                .menuAnchor(MenuAnchorType.PrimaryNotEditable)
                 .fillMaxWidth()
                 .padding(
                     horizontal = SettingsItemsPaddings.Horizontal,
@@ -333,7 +317,7 @@ fun SelectItem(
         )
 
         ExposedDropdownMenu(
-            modifier = Modifier.exposedDropdownSize(matchAnchorWidth = true),
+            modifier = Modifier.exposedDropdownSize(matchTextFieldWidth = true),
             expanded = expanded,
             onDismissRequest = { expanded = false },
         ) {
@@ -477,6 +461,7 @@ fun RepeatingIconButton(
         modifier = modifier.pointerInteropFilter {
             pressed = when (it.action) {
                 MotionEvent.ACTION_DOWN -> true
+
                 else -> false
             }
 

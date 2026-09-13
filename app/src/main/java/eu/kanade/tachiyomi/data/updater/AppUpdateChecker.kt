@@ -5,8 +5,8 @@ import android.os.Build
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.util.system.isFossBuildType
 import eu.kanade.tachiyomi.util.system.isPreviewBuildType
-import exh.source.ExhPreferences
 import tachiyomi.core.common.util.lang.withIOContext
+import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.release.interactor.GetApplicationRelease
 import tachiyomi.domain.release.service.AppUpdatePolicy
 import uy.kohesive.injekt.Injekt
@@ -22,14 +22,14 @@ class AppUpdateChecker(
     private val getApplicationRelease: GetApplicationRelease by injectLazy()
 
     // KMK -->
-    private val exhPreferences by lazy { Injekt.get<ExhPreferences>() }
+    private val preferences by lazy { Injekt.get<UnsortedPreferences>() }
     // KMK <--
 
     suspend fun checkForUpdate(
         context: Context,
         forceCheck: Boolean = false,
         // KMK -->
-        autoUpdate: Boolean = AppUpdatePolicy.DISABLE_AUTO_DOWNLOAD !in exhPreferences.appShouldAutoUpdate().get(),
+        autoUpdate: Boolean = AppUpdatePolicy.DISABLE_AUTO_DOWNLOAD !in preferences.appShouldAutoUpdate().get(),
         // KMK <--
     ): GetApplicationRelease.Result {
         return withIOContext {
@@ -97,9 +97,9 @@ val GITHUB_REPO: String by lazy { getGithubRepo() }
 
 fun getGithubRepo(peekIntoPreview: Boolean = false): String =
     if (isPreviewBuildType || peekIntoPreview) {
-        "komikku-app/anikku-preview"
+        "kana-shii/anikku-preview"
     } else {
-        "komikku-app/anikku"
+        "kana-shii/anikku"
     }
 
 val RELEASE_TAG: String by lazy { getReleaseTag() }

@@ -1,5 +1,6 @@
 package eu.kanade.presentation.browse
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -88,7 +89,12 @@ fun ExtensionScreen(
     onOpenExtension: (Extension.Installed) -> Unit,
     onClickUpdateAll: () -> Unit,
     onRefresh: () -> Unit,
+    onSearchQueryChange: (String?) -> Unit,
 ) {
+    BackHandler(!state.searchQuery.isNullOrEmpty()) {
+        onSearchQueryChange(null)
+    }
+
     val navigator = LocalNavigator.currentOrThrow
 
     PullRefresh(

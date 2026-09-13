@@ -133,26 +133,11 @@ class SyncChaptersWithSource(
                         name = chapter.name,
                         chapterNumber = chapter.chapterNumber,
                         scanlator = chapter.scanlator,
-                        // AY -->
-                        summary = chapter.summary,
-                        // <-- AY
                         sourceOrder = chapter.sourceOrder,
                     )
                     if (chapter.dateUpload != 0L) {
                         toChangeChapter = toChangeChapter.copy(dateUpload = chapter.dateUpload)
                     }
-                    // AY -->
-                    if (!toChangeChapter.fillermark) {
-                        toChangeChapter = toChangeChapter.copy(
-                            fillermark = sourceChapter.fillermark,
-                        )
-                    }
-                    if (toChangeChapter.previewUrl.isNullOrBlank()) {
-                        toChangeChapter = toChangeChapter.copy(
-                            previewUrl = sourceChapter.previewUrl,
-                        )
-                    }
-                    // <-- AY
                     updatedChapters.add(toChangeChapter)
                 }
             }
@@ -212,7 +197,7 @@ class SyncChaptersWithSource(
                 bookmark = chapter.chapterNumber in deletedBookmarkedChapterNumbers,
             )
 
-            // Try to use the fetch date of the original entry to not pollute 'Updates' tab
+            // Try to to use the fetch date of the original entry to not pollute 'Updates' tab
             deletedChapterNumberDateFetchMap[chapter.chapterNumber]?.let {
                 chapter = chapter.copy(dateFetch = it)
             }

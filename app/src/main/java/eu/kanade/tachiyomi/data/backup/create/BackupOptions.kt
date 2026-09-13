@@ -24,12 +24,7 @@ data class BackupOptions(
     val customInfo: Boolean = true,
     val savedSearchesFeeds: Boolean = true,
     // SY <--
-    // AY -->
     val extensions: Boolean = false,
-    // <-- AY
-    // ANK -->
-    val seasons: Boolean = true,
-    // ANK <--
 ) {
 
     fun asBooleanArray() = booleanArrayOf(
@@ -48,12 +43,7 @@ data class BackupOptions(
         customInfo,
         savedSearchesFeeds,
         // SY <--
-        // AY -->
         extensions,
-        // <-- AY
-        // ANK -->
-        seasons,
-        // ANK <--
     )
 
     fun canCreate() =
@@ -78,14 +68,6 @@ data class BackupOptions(
                 setter = { options, enabled -> options.copy(chapters = enabled) },
                 enabled = { it.libraryEntries },
             ),
-            // ANK -->
-            Entry(
-                label = AMR.strings.seasons,
-                getter = BackupOptions::seasons,
-                setter = { options, enabled -> options.copy(seasons = enabled) },
-                enabled = { it.libraryEntries },
-            ),
-            // ANK <--
             Entry(
                 label = MR.strings.track,
                 getter = BackupOptions::tracking,
@@ -175,16 +157,11 @@ data class BackupOptions(
             customButton = array[8],
             sourceSettings = array[9],
             privateSettings = array[10],
+            extensions = array[11],
             // SY -->
-            customInfo = array[11],
-            savedSearchesFeeds = array[12],
+            customInfo = array[12],
+            savedSearchesFeeds = array[13],
             // SY <--
-            // AY -->
-            extensions = array[13],
-            // <-- AY
-            // ANK -->
-            seasons = array[14],
-            // ANK <--
         )
     }
 

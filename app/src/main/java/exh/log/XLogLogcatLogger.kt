@@ -18,6 +18,7 @@ class XLogLogcatLogger : LogcatLogger {
             LogPriority.INFO -> LogLevel.Info.int
             LogPriority.DEBUG -> LogLevel.Debug.int
             LogPriority.VERBOSE -> LogLevel.Verbose.int
+            else -> LogLevel.All.int
         }
     }
 }

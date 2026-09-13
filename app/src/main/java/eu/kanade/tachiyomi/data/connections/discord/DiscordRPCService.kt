@@ -178,14 +178,12 @@ class DiscordRPCService : Service() {
         fun start(context: Context, connectionsManager: ConnectionsManager = Injekt.get()) {
             handler.removeCallbacksAndMessages(null)
             val token = connectionsPreferences.connectionsToken(connectionsManager.discord).get()
-            if (connectionsPreferences.enableDiscordRPC().get()) {
-                if (token.isBlank()) {
-                    Timber.tag(TAG).w("Discord RPC not started due to missing token")
-                    connectionsPreferences.enableDiscordRPC().set(false)
-                } else if (rpc == null) {
-                    since = System.currentTimeMillis()
-                    context.startForegroundService(Intent(context, DiscordRPCService::class.java))
-                }
+            if (rpc == null && connectionsPreferences.enableDiscordRPC().get() && token.isNotBlank()) {
+                since = System.currentTimeMillis()
+                context.startForegroundService(Intent(context, DiscordRPCService::class.java))
+            } else if (token.isBlank()) {
+                Timber.tag(TAG).w("Discord RPC not started due to missing token")
+                connectionsPreferences.enableDiscordRPC().set(false)
             }
         }
 
@@ -214,9 +212,8 @@ class DiscordRPCService : Service() {
             }
         }
 
-        fun restart(context: Context, connectionsManager: ConnectionsManager = Injekt.get()) {
-            val token = connectionsPreferences.connectionsToken(connectionsManager.discord).get()
-            if (connectionsPreferences.enableDiscordRPC().get() && token.isNotBlank()) {
+        fun restart(context: Context) {
+            if (connectionsPreferences.enableDiscordRPC().get()) {
                 val restartIntent = Intent(context, DiscordRPCService::class.java).apply {
                     action = ACTION_RESTART
                 }
@@ -226,11 +223,8 @@ class DiscordRPCService : Service() {
                     Timber.tag(TAG).e(e, "Failed to send restart intent: ${e.message}")
                     // Fallback to stop/start if service isn't running
                     stop(context, 0L)
-                    handler.postDelayed({ start(context, connectionsManager) }, 1000L)
+                    handler.postDelayed({ start(context) }, 1000L)
                 }
-            } else if (token.isBlank()) {
-                Timber.tag(TAG).w("Discord RPC not started due to missing token")
-                connectionsPreferences.enableDiscordRPC().set(false)
             }
         }
 

@@ -27,6 +27,7 @@ class CastMediaBuilder(
     private val activity: PlayerActivity,
 ) {
 
+    private val player by lazy { activity.player }
     private val prefserver: LocalHttpServerHolder by injectLazy()
     private val port = prefserver.port().get()
 
@@ -55,9 +56,7 @@ class CastMediaBuilder(
             .setStreamType(MediaInfo.STREAM_TYPE_BUFFERED)
             .addMetadata(video)
             .addTracks(video)
-            // ANK -->
-            .setStreamDuration((viewModel.duration ?: 0).toLong() * 1000)
-            // ANK <--
+            .setStreamDuration((player.duration ?: 0).toLong() * 1000)
             .build()
     }
 
@@ -74,7 +73,7 @@ class CastMediaBuilder(
         if (videoUrl.startsWith("magnet") && videoUrl.contains("index=")) {
             index = try {
                 videoUrl.substringAfter("index=").toInt()
-            } catch (_: NumberFormatException) {
+            } catch (e: NumberFormatException) {
                 0
             }
         }
@@ -138,7 +137,7 @@ class CastMediaBuilder(
                 }
             }
         } catch (ex: Exception) {
-            logcat(LogPriority.DEBUG, ex) { "Error getting local IP address" }
+            logcat(LogPriority.DEBUG) { "Error getting local IP address" }
         }
         return "127.0.0.1"
     }

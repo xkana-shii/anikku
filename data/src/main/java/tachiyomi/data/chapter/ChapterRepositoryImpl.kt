@@ -25,9 +25,9 @@ class ChapterRepositoryImpl(
                         chapter.scanlator,
                         chapter.read,
                         chapter.bookmark,
-                        // AY -->
+                        // AM (FILLERMARK) -->
                         chapter.fillermark,
-                        // <-- AY
+                        // <-- AM (FILLERMARK)
                         chapter.lastPageRead,
                         chapter.totalPages,
                         chapter.chapterNumber,
@@ -35,10 +35,6 @@ class ChapterRepositoryImpl(
                         chapter.dateFetch,
                         chapter.dateUpload,
                         chapter.version,
-                        // AY -->
-                        chapter.summary,
-                        chapter.previewUrl,
-                        // <-- AY
                     )
                     val lastInsertId = episodesQueries.selectLastInsertedRowId().executeAsOne()
                     chapter.copy(id = lastInsertId)
@@ -68,9 +64,9 @@ class ChapterRepositoryImpl(
                     scanlator = chapterUpdate.scanlator,
                     seen = chapterUpdate.read,
                     bookmark = chapterUpdate.bookmark,
-                    // AY -->
+                    // AM (FILLERMARK) -->
                     fillermark = chapterUpdate.fillermark,
-                    // <-- AY
+                    // <-- AM (FILLERMARK)
                     lastSecondSeen = chapterUpdate.lastPageRead,
                     totalSeconds = chapterUpdate.totalPages,
                     episodeNumber = chapterUpdate.chapterNumber,
@@ -80,10 +76,6 @@ class ChapterRepositoryImpl(
                     episodeId = chapterUpdate.id,
                     version = chapterUpdate.version,
                     isSyncing = 0,
-                    // AY -->
-                    summary = chapterUpdate.summary,
-                    previewUrl = chapterUpdate.previewUrl,
-                    // <-- AY
                 )
             }
         }
@@ -105,6 +97,8 @@ class ChapterRepositoryImpl(
                 // KMK -->
                 Manga.EPISODE_SHOW_NOT_BOOKMARKED,
                 Manga.EPISODE_SHOW_BOOKMARKED,
+                Manga.EPISODE_SHOW_NOT_FILLERMARKED,
+                Manga.EPISODE_SHOW_FILLERMARKED,
                 // KMK <--
                 ChapterMapper::mapChapter,
             )
@@ -132,6 +126,12 @@ class ChapterRepositoryImpl(
         }
     }
 
+    // AM (FILLERMARK) -->
+    override suspend fun getFillermarkedChaptersByMangaId(mangaId: Long): List<Chapter> {
+        return handler.awaitList { episodesQueries.getFillermarkedEpisodesByAnimeId(mangaId, ChapterMapper::mapChapter) }
+    }
+    // <-- AM (FILLERMARK)
+
     override suspend fun getChapterById(id: Long): Chapter? {
         return handler.awaitOneOrNull { episodesQueries.getEpisodeById(id, ChapterMapper::mapChapter) }
     }
@@ -144,6 +144,8 @@ class ChapterRepositoryImpl(
                 // KMK -->
                 Manga.EPISODE_SHOW_NOT_BOOKMARKED,
                 Manga.EPISODE_SHOW_BOOKMARKED,
+                Manga.EPISODE_SHOW_NOT_FILLERMARKED,
+                Manga.EPISODE_SHOW_FILLERMARKED,
                 // KMK <--
                 ChapterMapper::mapChapter,
             )
@@ -173,6 +175,8 @@ class ChapterRepositoryImpl(
                 // KMK -->
                 Manga.EPISODE_SHOW_NOT_BOOKMARKED,
                 Manga.EPISODE_SHOW_BOOKMARKED,
+                Manga.EPISODE_SHOW_NOT_FILLERMARKED,
+                Manga.EPISODE_SHOW_FILLERMARKED,
                 // KMK <--
                 ChapterMapper::mapChapter,
             )
@@ -190,6 +194,8 @@ class ChapterRepositoryImpl(
                 // KMK -->
                 Manga.EPISODE_SHOW_NOT_BOOKMARKED,
                 Manga.EPISODE_SHOW_BOOKMARKED,
+                Manga.EPISODE_SHOW_NOT_FILLERMARKED,
+                Manga.EPISODE_SHOW_FILLERMARKED,
                 // KMK <--
                 ChapterMapper::mapChapter,
             )

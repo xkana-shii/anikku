@@ -5,6 +5,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.manga.DownloadAction
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.i18n.aniyomi.AYMR
@@ -17,26 +18,9 @@ fun DownloadDropdownMenu(
     onDismissRequest: () -> Unit,
     onDownloadClicked: (DownloadAction) -> Unit,
     modifier: Modifier = Modifier,
-    offset: DpOffset = /* KMK --> */ DefaultDropdownMenuOffset, /* KMK <-- */
-) {
-    DropdownMenu(
-        expanded = expanded,
-        onDismissRequest = onDismissRequest,
-        modifier = modifier,
-        offset = offset,
-        content = {
-            DownloadDropdownMenuItems(
-                onDismissRequest = onDismissRequest,
-                onDownloadClicked = onDownloadClicked,
-            )
-        },
-    )
-}
-
-@Composable
-private fun DownloadDropdownMenuItems(
-    onDismissRequest: () -> Unit,
-    onDownloadClicked: (DownloadAction) -> Unit,
+    // KMK -->
+    offset: DpOffset = DpOffset(0.dp, 0.dp),
+    // KMK <--
 ) {
     val options = persistentListOf(
         DownloadAction.NEXT_1_CHAPTER to pluralStringResource(AYMR.plurals.download_amount_anime, 1, 1),
@@ -46,13 +30,22 @@ private fun DownloadDropdownMenuItems(
         DownloadAction.UNSEEN_CHAPTERS to stringResource(AYMR.strings.download_unseen),
     )
 
-    options.forEach { (downloadAction, string) ->
-        DropdownMenuItem(
-            text = { Text(text = string) },
-            onClick = {
-                onDownloadClicked(downloadAction)
-                onDismissRequest()
-            },
-        )
+    DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = onDismissRequest,
+        modifier = modifier,
+        // KMK -->
+        offset = offset,
+        // KMK <--
+    ) {
+        options.map { (downloadAction, string) ->
+            DropdownMenuItem(
+                text = { Text(text = string) },
+                onClick = {
+                    onDownloadClicked(downloadAction)
+                    onDismissRequest()
+                },
+            )
+        }
     }
 }

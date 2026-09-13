@@ -1,6 +1,5 @@
 package eu.kanade.tachiyomi.ui.browse.extension
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined._18UpRating
 import androidx.compose.material3.AlertDialog
@@ -67,9 +66,6 @@ fun extensionsTab(
             ),
         ),
         content = { contentPadding, _ ->
-            BackHandler(enabled = state.searchQuery != null) {
-                extensionsScreenModel.search(null)
-            }
             ExtensionScreen(
                 state = state,
                 contentPadding = contentPadding,
@@ -105,6 +101,7 @@ fun extensionsTab(
                 onUninstallExtension = { extensionsScreenModel.uninstallExtension(it) },
                 onUpdateExtension = extensionsScreenModel::updateExtension,
                 onRefresh = extensionsScreenModel::findAvailableExtensions,
+                onSearchQueryChange = extensionsScreenModel::updateSearchQuery,
             )
 
             privateExtensionToUninstall?.let { extension ->

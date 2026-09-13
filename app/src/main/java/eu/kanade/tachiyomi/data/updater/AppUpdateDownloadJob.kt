@@ -32,7 +32,6 @@ import eu.kanade.tachiyomi.util.system.setForegroundSafely
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.system.workManager
 import exh.log.xLogE
-import exh.source.ExhPreferences
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
@@ -43,6 +42,7 @@ import okhttp3.internal.http2.StreamResetException
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.util.lang.launchUI
 import tachiyomi.core.common.util.lang.withIOContext
+import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.release.service.AppUpdatePolicy
 import tachiyomi.i18n.MR
 import uy.kohesive.injekt.Injekt
@@ -60,7 +60,7 @@ class AppUpdateDownloadJob(private val context: Context, workerParams: WorkerPar
     private val network: NetworkHelper by injectLazy()
 
     // KMK -->
-    private val exhPreferences = Injekt.get<ExhPreferences>()
+    private val preferences = Injekt.get<UnsortedPreferences>()
     // KMK <--
 
     override suspend fun doWork(): Result {
@@ -71,18 +71,14 @@ class AppUpdateDownloadJob(private val context: Context, workerParams: WorkerPar
                 return Result.failure()
             }
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
-                val restrictions = exhPreferences.appShouldAutoUpdate().get()
-                if ((
-                        AppUpdatePolicy.DEVICE_ONLY_ON_WIFI in restrictions &&
-                            // KMK -->
-                            !context.isConnectedToEthernet() &&
-                            // KMK <--
-                            !context.isConnectedToWifi()
-                        ) ||
-                    (
-                        AppUpdatePolicy.DEVICE_NETWORK_NOT_METERED in restrictions &&
-                            context.connectivityManager.isActiveNetworkMetered
-                        )
+                val restrictions = preferences.appShouldAutoUpdate().get()
+                if ((AppUpdatePolicy.DEVICE_ONLY_ON_WIFI in restrictions) &&
+                    // KMK -->
+                    !context.isConnectedToEthernet() &&
+                    // KMK <--
+                    !context.isConnectedToWifi() ||
+                    (AppUpdatePolicy.DEVICE_NETWORK_NOT_METERED in restrictions) &&
+                    context.connectivityManager.isActiveNetworkMetered
                 ) {
                     return Result.retry()
                 }
@@ -298,7 +294,7 @@ class AppUpdateDownloadJob(private val context: Context, workerParams: WorkerPar
                     // KMK -->
                     if (scheduled) {
                         data.putBoolean(SCHEDULED_RUN, true)
-                        val restrictions = Injekt.get<ExhPreferences>().appShouldAutoUpdate().get()
+                        val restrictions = Injekt.get<UnsortedPreferences>().appShouldAutoUpdate().get()
                         val networkType = if (AppUpdatePolicy.DEVICE_NETWORK_NOT_METERED in restrictions) {
                             NetworkType.UNMETERED
                         } else {

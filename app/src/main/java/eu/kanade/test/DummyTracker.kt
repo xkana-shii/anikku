@@ -1,5 +1,6 @@
 package eu.kanade.test
 
+import android.graphics.Color
 import dev.icerock.moko.resources.StringResource
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.track.Tracker
@@ -10,7 +11,6 @@ import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import okhttp3.OkHttpClient
-import tachiyomi.domain.anime.model.Anime
 import tachiyomi.domain.track.model.Track
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.aniyomi.AYMR
@@ -22,7 +22,8 @@ data class DummyTracker(
     override val supportsPrivateTracking: Boolean = false,
     override val isLoggedIn: Boolean = false,
     override val isLoggedInFlow: Flow<Boolean> = flowOf(false),
-    val valLogo: Int = R.drawable.brand_anilist,
+    val valLogoColor: Int = Color.rgb(18, 25, 35),
+    val valLogo: Int = R.drawable.ic_tracker_anilist,
     val valStatuses: List<Long> = (1L..6L).toList(),
     val valWatchingStatus: Long = 1L,
     val valRewatchingStatus: Long = 1L,
@@ -34,6 +35,8 @@ data class DummyTracker(
 
     override val client: OkHttpClient
         get() = TODO("Not yet implemented")
+
+    override fun getLogoColor(): Int = valLogoColor
 
     override fun getLogo(): Int = valLogo
 
@@ -92,9 +95,7 @@ data class DummyTracker(
 
     override suspend fun register(
         item: eu.kanade.tachiyomi.data.database.models.Track,
-        // AM -->
-        anime: Anime,
-        // <-- AM
+        animeId: Long,
     ) = Unit
 
     override suspend fun setRemoteStatus(
@@ -136,4 +137,6 @@ data class DummyTracker(
     // KMK -->
     override fun hasNotStartedReading(status: Long): Boolean = status == 2L
     // KMK <--
+
+    override suspend fun getPaginatedMangaList(page: Int, statusId: Long): List<TrackMangaMetadata> = emptyList()
 }

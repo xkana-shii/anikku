@@ -2,7 +2,6 @@ package tachiyomi.data.history
 
 import kotlinx.coroutines.flow.Flow
 import logcat.LogPriority
-import tachiyomi.core.common.util.lang.toLong
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.domain.history.model.History
@@ -15,23 +14,13 @@ class HistoryRepositoryImpl(
     private val handler: DatabaseHandler,
 ) : HistoryRepository {
 
-    override fun getHistory(
-        query: String,
-        // KMK -->
-        unfinishedManga: Boolean?,
-        unfinishedChapter: Boolean?,
-        nonLibraryEntries: Boolean?,
-        // KMK <--
-    ): Flow<List<HistoryWithRelations>> {
+    override fun getHistory(query: String): Flow<List<HistoryWithRelations>> {
         return handler.subscribeToList {
             historyViewQueries.history(
-                // KMK -->
                 Manga.EPISODE_SHOW_NOT_BOOKMARKED,
                 Manga.EPISODE_SHOW_BOOKMARKED,
-                unfinishedManga?.toLong(),
-                unfinishedChapter,
-                nonLibraryEntries,
-                // KMK <--
+                Manga.EPISODE_SHOW_NOT_FILLERMARKED,
+                Manga.EPISODE_SHOW_FILLERMARKED,
                 query,
                 HistoryMapper::mapHistoryWithRelations,
             )
@@ -43,6 +32,8 @@ class HistoryRepositoryImpl(
             historyViewQueries.getLatestHistory(
                 Manga.EPISODE_SHOW_NOT_BOOKMARKED,
                 Manga.EPISODE_SHOW_BOOKMARKED,
+                Manga.EPISODE_SHOW_NOT_FILLERMARKED,
+                Manga.EPISODE_SHOW_FILLERMARKED,
                 HistoryMapper::mapHistoryWithRelations,
             )
         }
@@ -56,21 +47,17 @@ class HistoryRepositoryImpl(
         return handler.awaitList { historyQueries.getHistoryByAnimeId(mangaId, HistoryMapper::mapHistory) }
     }
 
-    // KMK -->
-    override suspend fun resetHistory(historyIds: List<Long>) {
+    override suspend fun resetHistory(historyId: Long) {
         try {
-            handler.await { historyQueries.resetHistoryByIds(historyIds) }
-            // KMK <--
+            handler.await { historyQueries.resetHistoryById(historyId) }
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, throwable = e)
         }
     }
 
-    // KMK -->
-    override suspend fun resetHistoryByMangaIds(mangaIds: List<Long>) {
+    override suspend fun resetHistoryByMangaId(mangaId: Long) {
         try {
-            handler.await { historyQueries.resetHistoryByAnimeIds(mangaIds) }
-            // KMK <--
+            handler.await { historyQueries.resetHistoryByAnimeId(mangaId) }
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, throwable = e)
         }
@@ -115,6 +102,10 @@ class HistoryRepositoryImpl(
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, throwable = e)
         }
+    }
+
+    override suspend fun getByMangaId(mangaId: Long): List<History> {
+        return handler.awaitList { historyQueries.getHistoryByAnimeId(mangaId, HistoryMapper::mapHistory) }
     }
     // SY <--
 }

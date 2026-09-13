@@ -1,6 +1,5 @@
 package mihon.core.migration
 
-import io.kotest.assertions.nondeterministic.eventually
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
@@ -18,7 +17,6 @@ import org.junit.jupiter.api.Assertions.assertInstanceOf
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import kotlin.time.Duration.Companion.seconds
 
 class MigratorTest {
 
@@ -28,7 +26,7 @@ class MigratorTest {
     lateinit var migrationStrategyFactory: MigrationStrategyFactory
 
     @BeforeEach
-    fun initialize() {
+    fun initilize() {
         migrationContext = MigrationContext(false)
         migrationJobFactory = spyk(MigrationJobFactory(migrationContext, CoroutineScope(Dispatchers.Main + Job())))
         migrationCompletedListener = spyk<MigrationCompletedListener>(block = {})
@@ -47,7 +45,7 @@ class MigratorTest {
 
         verify { migrationJobFactory.create(capture(migrations)) }
         assertEquals(1, migrations.captured.size)
-        eventually(2.seconds) { verify { migrationCompletedListener() } }
+        verify { migrationCompletedListener() }
     }
 
     @Test
@@ -88,7 +86,7 @@ class MigratorTest {
 
         verify { migrationJobFactory.create(capture(migrations)) }
         assertEquals(2, migrations.captured.size)
-        eventually(2.seconds) { verify { migrationCompletedListener() } }
+        verify { migrationCompletedListener() }
     }
 
     @Test
@@ -116,7 +114,7 @@ class MigratorTest {
 
         verify { migrationJobFactory.create(capture(migrations)) }
         assertEquals(10, migrations.captured.size)
-        eventually(2.seconds) { verify { migrationCompletedListener() } }
+        verify { migrationCompletedListener() }
     }
 
     @Test
@@ -137,7 +135,7 @@ class MigratorTest {
 
         verify { migrationJobFactory.create(capture(migrations)) }
         assertEquals(2, migrations.captured.size)
-        eventually(2.seconds) { verify { migrationCompletedListener() } }
+        verify { migrationCompletedListener() }
     }
 
     companion object {

@@ -5,11 +5,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CalendarMonth
-import androidx.compose.material.icons.outlined.FilterList
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.FlipToBack
+import androidx.compose.material.icons.outlined.Panorama
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.SelectAll
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -36,13 +36,13 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.components.FastScrollLazyColumn
 import tachiyomi.presentation.core.components.material.PullRefresh
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.EmptyScreen
 import tachiyomi.presentation.core.screens.LoadingScreen
-import tachiyomi.presentation.core.theme.active
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.time.LocalDate
@@ -53,16 +53,18 @@ fun UpdateScreen(
     state: UpdatesScreenModel.State,
     snackbarHostState: SnackbarHostState,
     lastUpdated: Long,
+    libraryUpdateInProgress: Boolean,
     onClickCover: (UpdatesItem) -> Unit,
     onSelectAll: (Boolean) -> Unit,
     onInvertSelection: () -> Unit,
     onCalendarClicked: () -> Unit,
     onUpdateLibrary: () -> Boolean,
+    onCancelUpdateLibrary: () -> Boolean,
     onDownloadChapter: (List<UpdatesItem>, ChapterDownloadAction) -> Unit,
     onMultiBookmarkClicked: (List<UpdatesItem>, bookmark: Boolean) -> Unit,
-    // AY -->
+    // AM (FILLERMARK) -->
     onMultiFillermarkClicked: (List<UpdatesItem>, fillermark: Boolean) -> Unit,
-    // <-- AY
+    // <-- AM (FILLERMARK)
     onMultiMarkAsReadClicked: (List<UpdatesItem>, read: Boolean) -> Unit,
     onMultiDeleteClicked: (List<UpdatesItem>) -> Unit,
     // KMK -->
@@ -72,13 +74,13 @@ fun UpdateScreen(
     // KMK <--
     onUpdateSelected: (UpdatesItem, /* KMK --> */ UpdatesScreenModel.UpdateSelectionOptions /* KMK <-- */) -> Unit,
     onOpenChapter: (UpdatesItem, altPlayer: Boolean) -> Unit,
-    onFilterClicked: () -> Unit,
-    hasActiveFilters: Boolean,
     // KMK -->
-    usePanoramaCover: Boolean,
     collapseToggle: (key: String) -> Unit,
     // KMK <--
 ) {
+    // KMK -->
+    val usePanoramaCover = remember { mutableStateOf(false) }
+    // KMK <--
     BackHandler(enabled = state.selectionMode, onBack = { onSelectAll(false) })
 
     Scaffold(
@@ -86,13 +88,17 @@ fun UpdateScreen(
             UpdatesAppBar(
                 onCalendarClicked = { onCalendarClicked() },
                 onUpdateLibrary = { onUpdateLibrary() },
-                onFilterClicked = { onFilterClicked() },
-                hasFilters = hasActiveFilters,
+                onCancelUpdateLibrary = { onCancelUpdateLibrary() },
+                isUpdatingLibrary = libraryUpdateInProgress,
                 actionModeCounter = state.selected.size,
                 onSelectAll = { onSelectAll(true) },
                 onInvertSelection = { onInvertSelection() },
                 onCancelActionMode = { onSelectAll(false) },
                 scrollBehavior = scrollBehavior,
+                // KMK -->
+                usePanoramaCover = usePanoramaCover.value,
+                usePanoramaCoverClick = { usePanoramaCover.value = !usePanoramaCover.value },
+                // KMK
             )
         },
         bottomBar = {
@@ -100,9 +106,9 @@ fun UpdateScreen(
                 selected = state.selected,
                 onDownloadChapter = onDownloadChapter,
                 onMultiBookmarkClicked = onMultiBookmarkClicked,
-                // AY -->
+                // AM (FILLERMARK) -->
                 onMultiFillermarkClicked = onMultiFillermarkClicked,
-                // <-- AY
+                // <-- AM (FILLERMARK)
                 onMultiMarkAsReadClicked = onMultiMarkAsReadClicked,
                 onMultiDeleteClicked = onMultiDeleteClicked,
                 onOpenEpisode = onOpenChapter,
@@ -145,7 +151,7 @@ fun UpdateScreen(
                             // KMK -->
                             expandedState = state.expandedState,
                             collapseToggle = collapseToggle,
-                            usePanoramaCover = usePanoramaCover,
+                            usePanoramaCover = usePanoramaCover.value,
                             // KMK <--
                             selectionMode = state.selectionMode,
                             onUpdateSelected = onUpdateSelected,
@@ -169,14 +175,18 @@ fun UpdateScreen(
 private fun UpdatesAppBar(
     onCalendarClicked: () -> Unit,
     onUpdateLibrary: () -> Unit,
-    onFilterClicked: () -> Unit,
-    hasFilters: Boolean,
+    onCancelUpdateLibrary: () -> Unit,
+    isUpdatingLibrary: Boolean,
     // For action mode
     actionModeCounter: Int,
     onSelectAll: () -> Unit,
     onInvertSelection: () -> Unit,
     onCancelActionMode: () -> Unit,
     scrollBehavior: TopAppBarScrollBehavior,
+    // KMK -->
+    usePanoramaCover: Boolean,
+    usePanoramaCoverClick: () -> Unit,
+    // KMK <--
     modifier: Modifier = Modifier,
 ) {
     AppBar(
@@ -185,21 +195,29 @@ private fun UpdatesAppBar(
         actions = {
             AppBarActions(
                 persistentListOf(
+                    // KMK -->
                     AppBar.Action(
-                        title = stringResource(MR.strings.action_filter),
-                        icon = Icons.Outlined.FilterList,
-                        iconTint = if (hasFilters) MaterialTheme.colorScheme.active else LocalContentColor.current,
-                        onClick = onFilterClicked,
+                        title = stringResource(KMR.strings.action_panorama_cover),
+                        icon = Icons.Outlined.Panorama,
+                        iconTint = MaterialTheme.colorScheme.primary.takeIf { usePanoramaCover },
+                        onClick = usePanoramaCoverClick,
                     ),
+                    // KMK <--
                     AppBar.Action(
                         title = stringResource(MR.strings.action_view_upcoming),
                         icon = Icons.Outlined.CalendarMonth,
                         onClick = onCalendarClicked,
                     ),
                     AppBar.Action(
-                        title = stringResource(MR.strings.action_update_library),
-                        icon = Icons.Outlined.Refresh,
-                        onClick = onUpdateLibrary,
+                        title = if (isUpdatingLibrary) stringResource(KMR.strings.action_cancel_update) else stringResource(MR.strings.action_update_library),
+                        icon = if (isUpdatingLibrary) Icons.Outlined.Close else Icons.Outlined.Refresh,
+                        onClick = {
+                            if (isUpdatingLibrary) {
+                                onCancelUpdateLibrary()
+                            } else {
+                                onUpdateLibrary()
+                            }
+                        },
                     ),
                 ),
             )
@@ -231,9 +249,9 @@ private fun UpdatesBottomBar(
     selected: List<UpdatesItem>,
     onDownloadChapter: (List<UpdatesItem>, ChapterDownloadAction) -> Unit,
     onMultiBookmarkClicked: (List<UpdatesItem>, bookmark: Boolean) -> Unit,
-    // AY -->
+    // AM (FILLERMARK) -->
     onMultiFillermarkClicked: (List<UpdatesItem>, fillermark: Boolean) -> Unit,
-    // <-- AY
+    // <-- AM (FILLERMARK)
     onMultiMarkAsReadClicked: (List<UpdatesItem>, read: Boolean) -> Unit,
     onMultiDeleteClicked: (List<UpdatesItem>) -> Unit,
     onOpenEpisode: (UpdatesItem, altPlayer: Boolean) -> Unit,
@@ -248,14 +266,14 @@ private fun UpdatesBottomBar(
         onRemoveBookmarkClicked = {
             onMultiBookmarkClicked.invoke(selected, false)
         }.takeIf { selected.fastAll { it.update.bookmark } },
-        // AY -->
+        // AM (FILLERMARK) -->
         onFillermarkClicked = {
             onMultiFillermarkClicked.invoke(selected, true)
         }.takeIf { selected.fastAny { !it.update.fillermark } },
         onRemoveFillermarkClicked = {
             onMultiFillermarkClicked.invoke(selected, false)
         }.takeIf { selected.fastAll { it.update.fillermark } },
-        // <-- AY
+        // <-- AM (FILLERMARK)
         onMarkAsReadClicked = {
             onMultiMarkAsReadClicked(selected, true)
         }.takeIf { selected.fastAny { !it.update.read } },
@@ -282,7 +300,6 @@ private fun UpdatesBottomBar(
 sealed interface UpdatesUiModel {
     data class Header(val date: LocalDate, val mangaCount: Int) : UpdatesUiModel
     open class Item(open val item: UpdatesItem, open val isExpandable: Boolean = false) : UpdatesUiModel
-
     // KMK -->
     /** The first [Item] in a group of chapters from same manga */
     data class Leader(override val item: UpdatesItem, override val isExpandable: Boolean) : Item(item)

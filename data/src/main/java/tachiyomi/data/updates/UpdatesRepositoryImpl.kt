@@ -1,7 +1,6 @@
 package tachiyomi.data.updates
 
 import kotlinx.coroutines.flow.Flow
-import tachiyomi.core.common.util.lang.toLong
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.domain.manga.model.MangaCover
 import tachiyomi.domain.updates.model.UpdatesWithRelations
@@ -26,25 +25,9 @@ class UpdatesRepositoryImpl(
         }
     }
 
-    override fun subscribeAll(
-        after: Long,
-        limit: Long,
-        unread: Boolean?,
-        started: Boolean?,
-        bookmarked: Boolean?,
-        hideExcludedScanlators: Boolean,
-    ): Flow<List<UpdatesWithRelations>> {
+    override fun subscribeAll(after: Long, limit: Long): Flow<List<UpdatesWithRelations>> {
         return databaseHandler.subscribeToList {
-            updatesViewQueries.getRecentUpdatesWithFilters(
-                after = after,
-                limit = limit,
-                // invert because unread in Kotlin -> read column in SQL
-                read = unread?.let { !it },
-                started = started?.toLong(),
-                bookmarked = bookmarked,
-                hideExcludedScanlators = hideExcludedScanlators.toLong(),
-                mapper = ::mapUpdatesWithRelations,
-            )
+            updatesViewQueries.getRecentUpdates(after, limit, ::mapUpdatesWithRelations)
         }
     }
 
@@ -71,9 +54,9 @@ class UpdatesRepositoryImpl(
         scanlator: String?,
         read: Boolean,
         bookmark: Boolean,
-        // AY -->
+        // AM (FILLERMARK) -->
         fillermark: Boolean,
-        // <-- AY
+        // <-- AM (FILLERMARK)
         lastPageRead: Long,
         totalPages: Long,
         sourceId: Long,
@@ -82,7 +65,6 @@ class UpdatesRepositoryImpl(
         coverLastModified: Long,
         @Suppress("UNUSED_PARAMETER") dateUpload: Long,
         dateFetch: Long,
-        @Suppress("UNUSED_PARAMETER") excludedScanlator: String?,
     ): UpdatesWithRelations = UpdatesWithRelations(
         mangaId = mangaId,
         // SY -->
@@ -93,9 +75,9 @@ class UpdatesRepositoryImpl(
         scanlator = scanlator,
         read = read,
         bookmark = bookmark,
-        // AY -->
+        // AM (FILLERMARK) -->
         fillermark = fillermark,
-        // <-- AY
+        // <-- AM (FILLERMARK)
         lastPageRead = lastPageRead,
         totalPages = totalPages,
         sourceId = sourceId,

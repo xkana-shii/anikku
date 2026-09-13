@@ -16,7 +16,6 @@ import okhttp3.OkHttpClient
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.core.common.util.system.logcat
-import tachiyomi.domain.anime.model.Anime
 import tachiyomi.domain.track.interactor.InsertTrack
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -76,12 +75,10 @@ abstract class BaseTracker(
         trackPreferences.setCredentials(this, username, password)
     }
 
-    // AM -->
-    override suspend fun register(item: Track, anime: Anime) {
-        item.anime_id = anime.id
+    override suspend fun register(item: Track, animeId: Long) {
+        item.anime_id = animeId
         try {
-            addTracks.bind(this, item, anime)
-            // <-- AM
+            addTracks.bind(this, item, animeId)
         } catch (e: Throwable) {
             withUIContext { Injekt.get<Application>().toast(e.message) }
         }
@@ -135,6 +132,10 @@ abstract class BaseTracker(
     }
 
     override suspend fun getMangaMetadata(track: DomainTrack): TrackMangaMetadata {
+        throw NotImplementedError("Not implemented.")
+    }
+
+    override suspend fun getPaginatedMangaList(page: Int, statusId: Long): List<TrackMangaMetadata> {
         throw NotImplementedError("Not implemented.")
     }
 

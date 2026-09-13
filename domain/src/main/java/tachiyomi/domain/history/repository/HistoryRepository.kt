@@ -7,14 +7,7 @@ import tachiyomi.domain.history.model.HistoryWithRelations
 
 interface HistoryRepository {
 
-    fun getHistory(
-        query: String,
-        // KMK -->
-        unfinishedManga: Boolean?,
-        unfinishedChapter: Boolean?,
-        nonLibraryEntries: Boolean?,
-        // KMK <--
-    ): Flow<List<HistoryWithRelations>>
+    fun getHistory(query: String): Flow<List<HistoryWithRelations>>
 
     suspend fun getLastHistory(): HistoryWithRelations?
 
@@ -22,11 +15,9 @@ interface HistoryRepository {
 
     suspend fun getHistoryByMangaId(mangaId: Long): List<History>
 
-    // KMK -->
-    suspend fun resetHistory(historyIds: List<Long>)
+    suspend fun resetHistory(historyId: Long)
 
-    suspend fun resetHistoryByMangaIds(mangaIds: List<Long>)
-    // KMK <--
+    suspend fun resetHistoryByMangaId(mangaId: Long)
 
     suspend fun deleteAllHistory(): Boolean
 
@@ -34,5 +25,7 @@ interface HistoryRepository {
 
     // SY -->
     suspend fun upsertHistory(historyUpdates: List<HistoryUpdate>)
+
+    suspend fun getByMangaId(mangaId: Long): List<History>
     // SY <--
 }

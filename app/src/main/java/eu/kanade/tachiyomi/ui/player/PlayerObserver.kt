@@ -1,12 +1,14 @@
 package eu.kanade.tachiyomi.ui.player
 
-import `is`.xyz.mpv.MPV
-import `is`.xyz.mpv.MPVNode
+import android.widget.Toast
+import eu.kanade.tachiyomi.util.system.toast
+import `is`.xyz.mpv.MPVLib
 import logcat.LogPriority
+import tachiyomi.core.common.util.system.logcat
 
 class PlayerObserver(val activity: PlayerActivity) :
-    MPV.EventObserver,
-    MPV.LogObserver {
+    MPVLib.EventObserver,
+    MPVLib.LogObserver {
 
     override fun eventProperty(property: String) {
         activity.runOnUiThread { activity.onObserverEvent(property) }
@@ -28,35 +30,32 @@ class PlayerObserver(val activity: PlayerActivity) :
         activity.runOnUiThread { activity.onObserverEvent(property, value) }
     }
 
-    override fun eventProperty(property: String, value: MPVNode) {
-        activity.runOnUiThread { activity.onObserverEvent(property, value) }
+    override fun event(eventId: Int) {
+        activity.runOnUiThread { activity.event(eventId) }
     }
 
-    override fun event(eventId: Int, data: MPVNode) {
-        activity.runOnUiThread { activity.event(eventId, data) }
+    override fun efEvent(err: String?) {
+        var errorMessage = err ?: "Error: File ended"
+        if (!httpError.isNullOrEmpty()) {
+            errorMessage += ": $httpError"
+            httpError = null
+        }
+        logcat(LogPriority.ERROR) { errorMessage }
+        activity.runOnUiThread {
+            activity.toast(errorMessage, Toast.LENGTH_LONG)
+        }
     }
 
-    var httpError: String? = null
+    private var httpError: String? = null
 
     override fun logMessage(prefix: String, level: Int, text: String) {
-        if (level == MPV.mpvLogLevel.MPV_LOG_LEVEL_ERROR) {
-            if (text.startsWith(TRACK_LOAD_FAILURE)) {
-                val url = text.removePrefix(TRACK_LOAD_FAILURE).substringBeforeLast(".")
-                activity.onTrackLoadedFailure(url)
-            }
-        }
-
         val logPriority = when (level) {
-            MPV.mpvLogLevel.MPV_LOG_LEVEL_FATAL, MPV.mpvLogLevel.MPV_LOG_LEVEL_ERROR -> LogPriority.ERROR
-            MPV.mpvLogLevel.MPV_LOG_LEVEL_WARN -> LogPriority.WARN
-            MPV.mpvLogLevel.MPV_LOG_LEVEL_INFO -> LogPriority.INFO
+            MPVLib.mpvLogLevel.MPV_LOG_LEVEL_FATAL, MPVLib.mpvLogLevel.MPV_LOG_LEVEL_ERROR -> LogPriority.ERROR
+            MPVLib.mpvLogLevel.MPV_LOG_LEVEL_WARN -> LogPriority.WARN
+            MPVLib.mpvLogLevel.MPV_LOG_LEVEL_INFO -> LogPriority.INFO
             else -> LogPriority.VERBOSE
         }
-        if (text.contains("HTTP error")) httpError = text.removePrefix("http: ")
+        if (text.contains("HTTP error")) httpError = text
         logcat.logcat("mpv/$prefix", logPriority) { text }
-    }
-
-    companion object {
-        const val TRACK_LOAD_FAILURE = "Can not open external file "
     }
 }

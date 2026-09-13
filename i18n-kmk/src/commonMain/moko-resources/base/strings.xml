@@ -5,6 +5,7 @@
     <string name="action_source_search">Search in source</string>
     <string name="action_library_search">Library search</string>
     <string name="action_toggle_nsfw_only">Toggle NSFW only</string>
+    <string name="action_cancel_update">Cancel update</string>
     <string name="action_bulk_select">Bulk selection mode</string>
     <string name="action_faq_and_guides">FAQ and Guides</string>
     <string name="action_move_up">Move up</string>
@@ -17,10 +18,7 @@
     <string name="action_open_folder">Open folder</string>
     <string name="action_clear_manga">Clear manga</string>
     <string name="action_update">Update</string>
-        <!-- History section -->
-    <string name="action_filter_unfinished_manga">Unfinished manga</string>
-    <string name="action_filter_unfinished_chapter">Unfinished chapter</string>
-    <string name="action_filter_non_library_entries">Non-library entries</string>
+
     <!-- Reader -->
       <!-- Reader Actions -->
     <string name="action_copy_to_clipboard_first_page">Copy first page to clipboard</string>
@@ -85,9 +83,7 @@
     <string name="action_display_language_icon">Use language icon</string>
     <string name="pref_library_filter_categories_details">Entries in excluded categories will not be shown even if they are also in included categories.</string>
     <string name="updating">Updating</string>
-    <string name="pref_show_empty_categories_search">Show empty categories during search/filtering</string>
-    <string name="pref_sync_manga_on_add">Sync manga when adding to library</string>
-    <string name="pref_sync_manga_on_add_description">Automatically fetches the metadata and chapter list of a new manga when adding it to the library</string>
+    <string name="pref_show_empty_categories_search">Show empty categories during search/filtering.</string>
     <!-- Extension section -->
     <string name="extensions_page_need_refresh">Refresh extension page to update list.</string>
     <string name="extensions_page_more">More extensions...</string>
@@ -104,18 +100,20 @@
     <!-- Tracking section -->
     <string name="pref_auto_sync_progress_from_trackers">Auto sync progress from Trackers</string>
     <string name="sync_progress_from_trackers_up_to_chapter">Sync progress from Trackers up to chapter %d</string>
+    <string name="pref_auto_reread_behavior">Auto rewatch</string>
+    <!-- Reread prompt -->
+    <string name="reread_prompt_title">Start rewatching?</string>
+    <string name="reread_prompt_body">Reset progress to %1$s and set status to Rewatching?\n(You can always change this in Settings &gt; Tracking &gt; Auto rewatch)</string>
+    <string name="chapter_label">Episode %s</string>
+    <string name="this_chapter_label">this episode</string>
+    <!-- Auto Reread settings -->
+    <string name="pref_auto_reread_behaviour_title">Auto rewatch behaviour</string>
+    <string name="pref_auto_reread_reset_to">Reset to</string>
+    <string name="pref_auto_reread_reset_to_zero">Reset to 0</string>
+    <string name="pref_auto_reread_reset_to_current_chapter">Reset to current episode</string>
     <!-- Sync section -->
     <string name="pref_show_restoring_progress_banner">Show restoring progress banner</string>
     <string name="pref_show_syncing_progress_banner">Show syncing progress banner</string>
-    <string name="web_dav">WebDAV</string>
-    <string name="pref_webdav_url">WebDAV Server URL</string>
-    <string name="pref_webdav_url_summ">Enter the WebDAV server address</string>
-    <string name="pref_webdav_username">Username</string>
-    <string name="pref_webdav_username_summ">Enter your WebDAV account username</string>
-    <string name="pref_webdav_password">Password</string>
-    <string name="pref_webdav_password_summ">Enter your WebDAV account password</string>
-    <string name="pref_webdav_folder">WebDAV data folder</string>
-    <string name="pref_webdav_folder_summ">The application will store the data in this folder</string>
     <!-- Advanced section -->
     <string name="pref_clean_invalid_downloads">Clean invalid downloads</string>
     <string name="pref_clean_invalid_downloads_summary">Find and remove all downloads, files, folders which are not saved in your library</string>
@@ -172,11 +170,8 @@
     <string name="sort_feed_confirmation">Would you like to sort the feeds alphabetically?</string>
     <!-- Migration -->
     <string name="current_">Current: %1$s</string>
-    <string name="migrationConfigScreen_smartSearchSingleEntryTitle">Use smart search</string>
-    <string name="migrationConfigScreen_smartSearchSingleEntrySubtitle">If enabled, automatically picks the best match result. Otherwise, shows all search results for manual selection.</string>
+    <string name="migrating_all_entries">Migrating all entries from source</string>
     <!-- Misc -->
-    <string name="job_failed_schedule_update_check">Failed to schedule automatic library update: %s</string>
-    <string name="job_failed_schedule_backup_check">Failed to schedule automatic backup: %s</string>
     <string name="label_to_be_updated">To be updated</string>
     <string name="sponsor_me">Sponsor Me</string>
 
@@ -184,7 +179,8 @@
     <string name="special_services">Special Services</string>
     <string name="pref_category_connections">Connections</string>
     <string name="pref_connections_summary">Discord, more to come..</string>
-    <string name="pref_discord_configuration">Open to configure Discord RPC</string>
+    <string name="connections_info">Special Services that are unique to %s and enhance the way you use the app</string>
+    <string name="pref_discord_configuration">Configure Discord RPC</string>
     <string name="connections_discord">Discord</string>
     <string name="connections_discord_info">This Discord Service works through token logging. Use at your own risk. Your token is stored locally and %s does not share it anywhere else</string>
     <string name="pref_discord_rpc">Discord Rich Presence</string>
@@ -203,6 +199,7 @@
     <string name="active_account">Active Account</string>
     <string name="no_accounts_found">No accounts found</string>
     <string name="login_failed">Failed to login</string>
+
     <!-- Discord section -->
     <string name="discord_status_description">%1$s %2$s</string>
     <string name="discord_status_using">Using</string>
@@ -211,6 +208,7 @@
     <string name="discord_status_messing">Messing around with</string>
     <string name="discord_download_button">Read on %s</string>
     <string name="discord_app_description">Komikku - a manga reader app</string>
+
     <!-- Discord RPC Customization -->
     <string name="pref_category_discord_customization">Discord Customization</string>
     <string name="pref_discord_custom_message">Custom Message</string>

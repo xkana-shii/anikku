@@ -1,6 +1,5 @@
 package tachiyomi.domain.manga.model
 
-import eu.kanade.tachiyomi.animesource.model.FetchType
 import eu.kanade.tachiyomi.source.model.UpdateStrategy
 
 typealias AnimeUpdate = MangaUpdate
@@ -15,9 +14,6 @@ data class MangaUpdate(
     val viewerFlags: Long? = null,
     val chapterFlags: Long? = null,
     val coverLastModified: Long? = null,
-    // AY -->
-    val backgroundLastModified: Long? = null,
-    // <-- AY
     val url: String? = null,
     val title: String? = null,
     val artist: String? = null,
@@ -26,9 +22,6 @@ data class MangaUpdate(
     val genre: List<String>? = null,
     val status: Long? = null,
     val thumbnailUrl: String? = null,
-    // AY -->
-    val backgroundUrl: String? = null,
-    // <-- AY
     val updateStrategy: UpdateStrategy? = null,
     val initialized: Boolean? = null,
     val version: Long? = null,
@@ -36,13 +29,6 @@ data class MangaUpdate(
     // SY -->
     val filteredScanlators: List<String>? = null,
     // SY <--
-    // AY -->
-    val fetchType: FetchType? = null,
-    val parentId: Long? = null,
-    val seasonFlags: Long? = null,
-    val seasonNumber: Double? = null,
-    val seasonSourceOrder: Long? = null,
-    // <-- AY
 )
 
 fun Manga.toMangaUpdate(): MangaUpdate {
@@ -57,9 +43,6 @@ fun Manga.toMangaUpdate(): MangaUpdate {
         viewerFlags = viewerFlags,
         chapterFlags = chapterFlags,
         coverLastModified = coverLastModified,
-        // AY -->
-        backgroundLastModified = backgroundLastModified,
-        // <-- AY
         url = url,
         // SY -->
         title = ogTitle,
@@ -70,19 +53,9 @@ fun Manga.toMangaUpdate(): MangaUpdate {
         genre = ogGenre,
         status = ogStatus,
         // SY <--
-        // AY -->
-        backgroundUrl = backgroundUrl,
-        // <-- AY
         updateStrategy = updateStrategy,
         initialized = initialized,
         version = version,
         notes = notes,
-        // AY -->
-        fetchType = fetchType,
-        parentId = parentId,
-        seasonFlags = seasonFlags,
-        seasonNumber = seasonNumber,
-        seasonSourceOrder = seasonSourceOrder,
-        // <-- AY
     )
 }

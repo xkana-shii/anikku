@@ -11,7 +11,6 @@ import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.view.View
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
@@ -79,11 +78,9 @@ import eu.kanade.tachiyomi.animesource.model.Video
 import eu.kanade.tachiyomi.data.BackupRestoreStatus
 import eu.kanade.tachiyomi.data.LibraryUpdateStatus
 import eu.kanade.tachiyomi.data.SyncStatus
-import eu.kanade.tachiyomi.data.backup.create.BackupCreateJob
 import eu.kanade.tachiyomi.data.coil.MangaCoverMetadata
 import eu.kanade.tachiyomi.data.connections.discord.DiscordRPCService
 import eu.kanade.tachiyomi.data.download.DownloadCache
-import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
 import eu.kanade.tachiyomi.data.updater.AppUpdateChecker
 import eu.kanade.tachiyomi.data.updater.AppUpdateJob
@@ -107,7 +104,6 @@ import eu.kanade.tachiyomi.util.system.isReleaseBuildType
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.system.updaterEnabled
 import eu.kanade.tachiyomi.util.view.setComposeContent
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -117,12 +113,10 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import logcat.LogPriority
 import mihon.core.migration.Migrator
 import mihon.core.migration.Migrator.scope
 import tachiyomi.core.common.Constants
-import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.preference.Preference
 import tachiyomi.core.common.preference.PreferenceStore
 import tachiyomi.core.common.util.lang.launchIO
@@ -131,8 +125,6 @@ import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.backup.service.BackupPreferences
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.release.interactor.GetApplicationRelease
-import tachiyomi.i18n.MR
-import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.util.collectAsState
 import uy.kohesive.injekt.Injekt
@@ -342,9 +334,6 @@ class MainActivity : BaseActivity() {
 
                 HandleOnNewIntent(context = context, navigator = navigator)
 
-                // KMK -->
-                RearmJobs()
-                // KMK <--
                 CheckForUpdates()
                 ShowOnboarding()
             }
@@ -361,8 +350,10 @@ class MainActivity : BaseActivity() {
             var showChangelog by remember {
                 mutableStateOf(
                     // KMK -->
-                    (isReleaseBuildType && didMigration) ||
-                        (isPreviewBuildType && previewCurrentVersion > previewLastVersion.get()),
+                    isReleaseBuildType &&
+                        didMigration ||
+                        isPreviewBuildType &&
+                        previewCurrentVersion > previewLastVersion.get(),
                     // KMK <--
                 )
             }
@@ -405,7 +396,7 @@ class MainActivity : BaseActivity() {
         val startTime = System.currentTimeMillis()
         splashScreen?.setKeepOnScreenCondition {
             val elapsed = System.currentTimeMillis() - startTime
-            elapsed <= SPLASH_MIN_DURATION || (!ready && elapsed <= SPLASH_MAX_DURATION)
+            elapsed <= SPLASH_MIN_DURATION || !ready && elapsed <= SPLASH_MAX_DURATION
         }
         setSplashScreenExitAnimation(splashScreen)
 
@@ -455,46 +446,6 @@ class MainActivity : BaseActivity() {
                 .collectLatest { handleIntentAction(it, navigator) }
         }
     }
-
-    // KMK -->
-    @Composable
-    private fun RearmJobs() {
-        val context = LocalContext.current
-
-        LaunchedEffect(Unit) {
-            launchIO {
-                try {
-                    if (!LibraryUpdateJob.isPeriodicUpdateScheduled(context)) {
-                        LibraryUpdateJob.setupTask(context)
-                    }
-                } catch (e: Exception) {
-                    logcat(LogPriority.ERROR, e)
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(
-                            context,
-                            stringResource(KMR.strings.job_failed_schedule_update_check, stringResource(MR.strings.unknown_error)),
-                            Toast.LENGTH_LONG,
-                        ).show()
-                    }
-                }
-                try {
-                    if (!BackupCreateJob.isPeriodicBackupScheduled(context)) {
-                        BackupCreateJob.setupTask(context)
-                    }
-                } catch (e: Exception) {
-                    logcat(LogPriority.ERROR, e)
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(
-                            context,
-                            stringResource(KMR.strings.job_failed_schedule_backup_check, stringResource(MR.strings.unknown_error)),
-                            Toast.LENGTH_LONG,
-                        ).show()
-                    }
-                }
-            }
-        }
-    }
-    // KMK <--
 
     @Composable
     private fun CheckForUpdates() {

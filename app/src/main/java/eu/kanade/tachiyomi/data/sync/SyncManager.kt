@@ -14,7 +14,6 @@ import eu.kanade.tachiyomi.data.backup.restore.restorers.MangaRestorer
 import eu.kanade.tachiyomi.data.sync.service.GoogleDriveSyncService
 import eu.kanade.tachiyomi.data.sync.service.SyncData
 import eu.kanade.tachiyomi.data.sync.service.SyncYomiSyncService
-import eu.kanade.tachiyomi.data.sync.service.WebDavSyncService
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.protobuf.ProtoBuf
 import logcat.LogPriority
@@ -56,9 +55,6 @@ class SyncManager(
         NONE(0),
         SYNCYOMI(1),
         GOOGLE_DRIVE(2),
-        // KMK -->
-        WebDAV(3),
-        // KMK <--
         ;
 
         companion object {
@@ -98,9 +94,6 @@ class SyncManager(
             readEntries = syncOptions.seenEntries,
             savedSearchesFeeds = syncOptions.savedSearchesFeeds,
             // SY <--
-            // ANK -->
-            seasons = syncOptions.seasons,
-            // ANK <--
         )
 
         logcat(LogPriority.DEBUG) { "Begin create backup" }
@@ -143,12 +136,6 @@ class SyncManager(
             SyncService.GOOGLE_DRIVE -> {
                 GoogleDriveSyncService(context, json, syncPreferences)
             }
-
-            // KMK -->
-            SyncService.WebDAV -> {
-                WebDavSyncService(context, json, syncPreferences, notifier)
-            }
-            // KMK <--
 
             else -> {
                 logcat(LogPriority.ERROR) { "Invalid sync service type: $syncService" }
@@ -270,6 +257,8 @@ class SyncManager(
                 // KMK -->
                 Manga.EPISODE_SHOW_NOT_BOOKMARKED,
                 Manga.EPISODE_SHOW_BOOKMARKED,
+                Manga.EPISODE_SHOW_NOT_FILLERMARKED,
+                Manga.EPISODE_SHOW_FILLERMARKED,
                 // KMK <--
             ).executeAsList()
         }

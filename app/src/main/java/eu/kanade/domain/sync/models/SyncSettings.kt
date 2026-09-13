@@ -16,8 +16,4 @@ data class SyncSettings(
     val seenEntries: Boolean = true,
     val savedSearchesFeeds: Boolean = true,
     // SY <--
-
-    // ANK -->
-    val seasons: Boolean = true,
-    // ANK <--
 )

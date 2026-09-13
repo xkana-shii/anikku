@@ -7,9 +7,9 @@ import eu.kanade.tachiyomi.animesource.model.Hoster
 import eu.kanade.tachiyomi.animesource.model.SAnime
 import eu.kanade.tachiyomi.animesource.model.SEpisode
 import eu.kanade.tachiyomi.animesource.model.Video
+import eu.kanade.tachiyomi.animesource.model.copy
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.source.Source
-import eu.kanade.tachiyomi.source.getChapterList
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.online.HttpSource
 import exh.source.MERGED_SOURCE_ID
@@ -63,10 +63,6 @@ class MergedSource : HttpSource() {
 
     override fun videoListParse(response: Response) = throw UnsupportedOperationException()
     override fun videoUrlParse(response: Response) = throw UnsupportedOperationException()
-
-    // ANK -->
-    override fun seasonListParse(response: Response) = throw UnsupportedOperationException()
-    // ANK <--
 
     @Deprecated("Use the 1.x API instead", replaceWith = ReplaceWith("getEpisodeList(anime)"))
     override fun fetchEpisodeList(anime: SAnime) = throw UnsupportedOperationException()
@@ -139,7 +135,7 @@ class MergedSource : HttpSource() {
                                 try {
                                     val (source, loadedManga, reference) = it.load()
                                     if (loadedManga != null && reference.getChapterUpdates) {
-                                        val chapterList = source.getChapterList(loadedManga.toSManga())
+                                        val chapterList = source.getEpisodeList(loadedManga.toSManga())
                                         val results =
                                             syncChaptersWithSource.await(chapterList, loadedManga, source)
 

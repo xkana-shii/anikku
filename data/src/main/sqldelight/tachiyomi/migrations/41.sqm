@@ -20,6 +20,8 @@ SELECT
     coalesce(EP.seenCount, 0) AS seenCount,
     coalesce(EP.bookmarkCount, 0) AS bookmarkCount,
     coalesce(EP.bookmarkSeenCount, 0) AS bookmarkSeenCount,
+    coalesce(EP.fillermarkCount, 0) AS fillermarkCount,
+    coalesce(EP.fillermarkSeenCount, 0) AS fillermarkSeenCount,
     -- KMK <--
     history.last_seen AS seenAt,
     history.time_watch AS watchDuration,
@@ -45,6 +47,8 @@ LEFT JOIN(
         sum(seen) AS seenCount,
         sum(bookmark) AS bookmarkCount,
         sum(CASE WHEN bookmark = 1 AND seen = 1 THEN 1 ELSE 0 END) AS bookmarkSeenCount,
+        sum(fillermark) AS fillermarkCount,
+        sum(CASE WHEN fillermark = 1 AND seen = 1 THEN 1 ELSE 0 END) AS fillermarkSeenCount,
         excluded_scanlators.scanlator AS ex_scanlator
     FROM episodes
     LEFT JOIN excluded_scanlators
@@ -69,10 +73,11 @@ SELECT
     coalesce(EP.bookmarkCount, 0) AS bookmarkCount,
     -- KMK -->
     coalesce(EP.bookmarkSeenCount, 0) AS bookmarkedSeenCount,
+    coalesce(EP.fillermarkSeenCount, 0) AS fillermarkedSeenCount,
     -- KMK <--
-    -- AY -->
+    -- AM (FILLERMARK) -->
     coalesce(EP.fillermarkCount, 0) AS fillermarkCount,
-    -- <-- AY
+    -- <-- AM (FILLERMARK)
     coalesce(AC.category_id, 0) AS category
 FROM animes A
 LEFT JOIN(
@@ -86,11 +91,12 @@ LEFT JOIN(
         sum(episodes.bookmark) AS bookmarkCount,
         -- KMK -->
         sum(CASE WHEN episodes.bookmark = 1 AND episodes.seen = 1 THEN 1 ELSE 0 END) AS bookmarkSeenCount,
+        sum(CASE WHEN episodes.fillermark = 1 AND episodes.seen = 1 THEN 1 ELSE 0 END) AS fillermarkSeenCount,
         -- KMK <--
         excluded_scanlators.scanlator AS ex_scanlator,
-        -- AY -->
+        -- AM (FILLERMARK) -->
         sum(episodes.fillermark) AS fillermarkCount
-        -- <-- AY
+        -- <-- AM (FILLERMARK)
     FROM episodes
     LEFT JOIN excluded_scanlators
     ON episodes.anime_id = excluded_scanlators.anime_id
@@ -115,10 +121,11 @@ SELECT
     coalesce(EP.bookmarkCount, 0) AS bookmarkCount,
     -- KMK -->
     coalesce(EP.bookmarkSeenCount, 0) AS bookmarkedSeenCount,
+    coalesce(EP.fillermarkSeenCount, 0) AS fillermarkedSeenCount,
     -- KMK <--
-    -- AY -->
+    -- AM (FILLERMARK) -->
     coalesce(EP.fillermarkCount, 0) AS fillermarkCount,
-    -- <-- AY
+    -- <-- AM (FILLERMARK)
     coalesce(AC.category_id, 0) AS category
 FROM animes A
 LEFT JOIN (
@@ -138,11 +145,12 @@ LEFT JOIN(
         sum(episodes.bookmark) AS bookmarkCount,
         -- KMK -->
         sum(CASE WHEN episodes.bookmark = 1 AND episodes.seen = 1 THEN 1 ELSE 0 END) AS bookmarkSeenCount,
+        sum(CASE WHEN episodes.fillermark = 1 AND episodes.seen = 1 THEN 1 ELSE 0 END) AS fillermarkSeenCount,
         -- KMK <--
         excluded_scanlators.scanlator AS ex_scanlator,
-        -- AY -->
+        -- AM (FILLERMARK) -->
         sum(episodes.fillermark) AS fillermarkCount
-        -- <-- AY
+        -- <-- AM (FILLERMARK)
     FROM episodes
     LEFT JOIN excluded_scanlators
     ON episodes.anime_id = excluded_scanlators.anime_id

@@ -36,7 +36,7 @@ val LocalPreferenceMinHeight = compositionLocalOf(structuralEqualityPolicy()) { 
 
 @Composable
 fun StatusWrapper(
-    item: Preference.PreferenceItem<*, *>,
+    item: Preference.PreferenceItem<*>,
     highlightKey: String?,
     content: @Composable () -> Unit,
 ) {
@@ -57,7 +57,7 @@ fun StatusWrapper(
 
 @Composable
 internal fun PreferenceItem(
-    item: Preference.PreferenceItem<*, *>,
+    item: Preference.PreferenceItem<*>,
     highlightKey: String?,
 ) {
     val scope = rememberCoroutineScope()
@@ -84,18 +84,17 @@ internal fun PreferenceItem(
             }
             is Preference.PreferenceItem.SliderPreference -> {
                 BaseSliderItem(
+                    label = item.title,
                     value = item.value,
                     valueRange = item.valueRange,
+                    valueText = item.subtitle.takeUnless { it.isNullOrEmpty() } ?: item.value.toString(),
                     steps = item.steps,
-                    title = item.title,
-                    subtitle = item.subtitle,
-                    valueString = item.valueString.takeUnless { it.isNullOrEmpty() } ?: item.value.toString(),
+                    labelStyle = MaterialTheme.typography.titleLarge.copy(fontSize = TitleFontSize),
                     onChange = {
                         scope.launch {
                             item.onValueChanged(it)
                         }
                     },
-                    titleStyle = MaterialTheme.typography.titleLarge.copy(fontSize = TitleFontSize),
                     modifier = Modifier.padding(
                         horizontal = PrefsHorizontalPadding,
                         vertical = PrefsVerticalPadding,
@@ -229,13 +228,13 @@ internal fun PreferenceItem(
             }
             // AM (CONNECTIONS) -->
             is Preference.PreferenceItem.ConnectionPreference -> {
-                val isLoggedIn by item.service.isLoggedInFlow.collectAsState(item.service.isLogged)
-                ConnectionPreferenceWidget(
-                    service = item.service,
-                    checked = isLoggedIn,
-                    onClick = { if (isLoggedIn) item.openSettings() else item.login() },
-                    subtitle = item.subtitle,
-                )
+                item.service.run {
+                    ConnectionPreferenceWidget(
+                        service = this,
+                        checked = isLogged,
+                        onClick = { if (isLogged) item.openSettings() else item.login() },
+                    )
+                }
             }
             // <-- AM (CONNECTIONS)
             is Preference.PreferenceItem.InfoPreference -> {

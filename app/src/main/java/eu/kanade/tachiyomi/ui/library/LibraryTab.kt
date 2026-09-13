@@ -36,6 +36,7 @@ import eu.kanade.presentation.library.LibrarySettingsDialog
 import eu.kanade.presentation.library.ResetInfoMangaDialog
 import eu.kanade.presentation.library.components.LibraryContent
 import eu.kanade.presentation.library.components.LibraryToolbar
+import eu.kanade.presentation.library.tracker.TrackerMangaListScreen
 import eu.kanade.presentation.manga.components.LibraryBottomActionMenu
 import eu.kanade.presentation.more.onboarding.GETTING_STARTED_URL
 import eu.kanade.presentation.util.Tab
@@ -45,6 +46,7 @@ import eu.kanade.tachiyomi.data.connections.discord.DiscordScreen
 import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.data.sync.SyncDataJob
+import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationScreen
 import eu.kanade.tachiyomi.ui.browse.source.SourcesScreen
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreen
 import eu.kanade.tachiyomi.ui.category.CategoryScreen
@@ -64,9 +66,9 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
-import mihon.feature.migration.config.MigrationConfigScreen
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.util.lang.launchIO
+import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.episode.model.Episode
 import tachiyomi.domain.library.model.LibraryGroup
@@ -181,6 +183,8 @@ data object LibraryTab : Tab {
                     },
                     // SY -->
                     isSyncEnabled = state.isSyncEnabled,
+                    onClickTrackerManga = { navigator.push(TrackerMangaListScreen()) },
+                    hasLoggedInTrackers = state.hasLoggedInTrackers,
                     // SY <--
                     searchQuery = state.searchQuery,
                     onSearchQueryChange = screenModel::search,
@@ -201,24 +205,27 @@ data object LibraryTab : Tab {
                     onDownloadClicked = screenModel::performDownloadAction
                         .takeIf { state.selectedManga.fastAll { !it.isLocal() } },
                     onDeleteClicked = screenModel::openDeleteMangaDialog,
-                    onMigrateClicked = {
-                        val selection = state
-                            // KMK -->
-                            .selectedManga
+                    // SY -->
+                    onClickMigrate = {
+                        val selectedMangaIds = state.selectedManga
                             .filterNot { it.source == MERGED_SOURCE_ID }
                             .map { it.id }
-                        // KMK <--
                         screenModel.clearSelection()
-                        // KMK -->
-                        if (selection.isEmpty()) {
-                            context.toast(SYMR.strings.no_valid_entry)
+                        if (selectedMangaIds.isNotEmpty()) {
+                            PreMigrationScreen.navigateToMigration(
+                                Injekt.get<UnsortedPreferences>().skipPreMigration().get(),
+                                navigator,
+                                selectedMangaIds,
+                            )
                         } else {
-                            // KMK <--
-                            navigator.push(MigrationConfigScreen(selection))
+                            context.toast(SYMR.strings.no_valid_entry)
                         }
                     },
+                    onClickCollectRecommendations = screenModel::showRecommendationSearchDialog.takeIf { state.selection.size > 1 },
+                    // SY <--
                     // KMK -->
-                    onMergeClicked = {
+                    onClickResetInfo = screenModel::openResetInfoMangaDialog.takeIf { state.showResetInfo },
+                    onClickMerge = {
                         if (state.selection.size == 1) {
                             val manga = state.selectedManga.first()
                             // Invoke merging for this manga
@@ -256,8 +263,8 @@ data object LibraryTab : Tab {
                             context.toast(SYMR.strings.no_valid_entry)
                         }
                     },
-                    onSelectionUpdateClicked = {
-                        val started = screenModel.updateSelectedManga()
+                    onClickRefreshSelected = {
+                        val started = screenModel.refreshSelectedManga()
                         scope.launch {
                             val msgRes = if (started) {
                                 KMR.strings.updating
@@ -271,10 +278,6 @@ data object LibraryTab : Tab {
                         }
                     },
                     // KMK <--
-                    // SY -->
-                    onClickCollectRecommendations = screenModel::showRecommendationSearchDialog.takeIf { state.selection.size > 1 },
-                    onClickResetInfo = screenModel::resetInfo.takeIf { state.showResetInfo },
-                    // SY <--
                 )
             },
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
@@ -300,9 +303,6 @@ data object LibraryTab : Tab {
                 else -> {
                     LibraryContent(
                         categories = state.displayedCategories,
-                        // KMK -->
-                        activeCategoryIndex = state.coercedActiveCategoryIndex,
-                        // KMK <--
                         searchQuery = state.searchQuery,
                         selection = state.selection,
                         contentPadding = contentPadding,

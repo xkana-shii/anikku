@@ -18,6 +18,8 @@ SELECT
     coalesce(EP.seenCount, 0) AS seenCount,
     coalesce(EP.bookmarkCount, 0) AS bookmarkCount,
     coalesce(EP.bookmarkSeenCount, 0) AS bookmarkSeenCount,
+    coalesce(EP.fillermarkCount, 0) AS fillermarkCount,
+    coalesce(EP.fillermarkSeenCount, 0) AS fillermarkSeenCount,
     -- KMK <--
     history.last_seen AS seenAt,
     history.time_watch AS watchDuration,
@@ -43,6 +45,8 @@ LEFT JOIN(
         sum(seen) AS seenCount,
         sum(bookmark) AS bookmarkCount,
         sum(CASE WHEN bookmark = 1 AND seen = 1 THEN 1 ELSE 0 END) AS bookmarkSeenCount,
+        sum(fillermark) AS fillermarkCount,
+        sum(CASE WHEN fillermark = 1 AND seen = 1 THEN 1 ELSE 0 END) AS fillermarkSeenCount,
         excluded_scanlators.scanlator AS ex_scanlator
     FROM episodes
     LEFT JOIN excluded_scanlators
@@ -72,27 +76,22 @@ totalSeconds,
 CASE
     WHEN (episodeFlags & :bookmarkUnmask) != 0 THEN totalCount - bookmarkCount
     WHEN (episodeFlags & :bookmarkMask) != 0 THEN bookmarkCount
+    WHEN (episodeFlags & :fillermarkUnmask) != 0 THEN totalCount - fillermarkCount
+    WHEN (episodeFlags & :fillermarkMask) != 0 THEN fillermarkCount
     ELSE totalCount
-END AS totalCountCalculated,
+END AS totalCount,
 CASE
     WHEN (episodeFlags & :bookmarkUnmask) != 0 THEN seenCount - bookmarkSeenCount
     WHEN (episodeFlags & :bookmarkMask) != 0 THEN bookmarkSeenCount
+    WHEN (episodeFlags & :fillermarkUnmask) != 0 THEN seenCount - fillermarkSeenCount
+    WHEN (episodeFlags & :fillermarkMask) != 0 THEN fillermarkSeenCount
     ELSE seenCount
-END AS seenCountCalculated,
+END AS seenCount,
 -- KMK <--
 seenAt,
 watchDuration
 FROM historyView
 WHERE historyView.seenAt > 0
--- KMK -->
-AND (
-    :unfinishedManga IS NULL
-    OR (:unfinishedManga = 1 AND totalCountCalculated > seenCountCalculated)
-    OR (:unfinishedManga = 0 AND totalCountCalculated <= seenCountCalculated)
-)
-AND (:unfinishedChapter IS NULL OR seen != :unfinishedChapter)
-AND (:nonLibraryEntries IS NULL OR favorite != :nonLibraryEntries)
--- KMK <--
 AND maxSeenAtEpisodeId = historyView.episodeId
 AND lower(historyView.title) LIKE ('%' || :query || '%')
 ORDER BY seenAt DESC;
@@ -115,11 +114,15 @@ totalSeconds,
 CASE
     WHEN (episodeFlags & :bookmarkUnmask) != 0 THEN totalCount - bookmarkCount
     WHEN (episodeFlags & :bookmarkMask) != 0 THEN bookmarkCount
+    WHEN (episodeFlags & :fillermarkUnmask) != 0 THEN totalCount - fillermarkCount
+    WHEN (episodeFlags & :fillermarkMask) != 0 THEN fillermarkCount
     ELSE totalCount
 END AS totalCount,
 CASE
     WHEN (episodeFlags & :bookmarkUnmask) != 0 THEN seenCount - bookmarkSeenCount
     WHEN (episodeFlags & :bookmarkMask) != 0 THEN bookmarkSeenCount
+    WHEN (episodeFlags & :fillermarkUnmask) != 0 THEN seenCount - fillermarkSeenCount
+    WHEN (episodeFlags & :fillermarkMask) != 0 THEN fillermarkSeenCount
     ELSE seenCount
 END AS seenCount,
 -- KMK <--

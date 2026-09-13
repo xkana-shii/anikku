@@ -18,6 +18,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.presentation.core.components.material.padding
+import tachiyomi.presentation.core.util.selectedBackground
 
 @Composable
 fun BaseMangaListItem(
@@ -27,6 +28,7 @@ fun BaseMangaListItem(
     onClickCover: () -> Unit = onClickItem,
     // KMK -->
     onLongClick: () -> Unit = onClickItem,
+    selected: Boolean,
     // KMK <--
     cover: @Composable RowScope.() -> Unit = { defaultCover(manga, onClickCover) },
     actions: @Composable RowScope.() -> Unit = {},
@@ -38,6 +40,7 @@ fun BaseMangaListItem(
     Row(
         modifier = modifier
             // KMK -->
+            .selectedBackground(selected)
             .combinedClickable(
                 // KMK <--
                 onClick = onClickItem,

@@ -60,8 +60,14 @@ class GetApplicationRelease(
         val releases = service.releaseNotes(arguments)
             .filter { !it.preRelease }
 
-        val latest = releases.getLatest() ?: return Result.NoNewUpdate
-        return Result.NewUpdate(latest)
+        val release = releases.firstOrNull()
+            ?.copy(
+                info = releases.joinToString("\r---\r") {
+                    "## ${it.version}\r\r${it.info}"
+                },
+            )
+        if (release == null) return Result.NoNewUpdate
+        return Result.NewUpdate(release)
     }
     // KMK <--
 
@@ -128,11 +134,13 @@ class GetApplicationRelease(
 
 // KMK --.
 internal fun List<Release>.getLatest(): Release? {
+    val checksumRegex = """---(\R|.)*Checksums(\R|.)*""".toRegex()
+
     return firstOrNull()
         ?.copy(
-            info = joinToString("\r-----\r") {
+            info = joinToString("\r---\r") {
                 "## ${it.version}\r\r" +
-                    it.info
+                    it.info.replace(checksumRegex, "")
             },
         )
 }

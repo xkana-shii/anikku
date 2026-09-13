@@ -9,14 +9,6 @@ val migrations: List<Migration>
         SetupSyncDataMigration(),
         // KMK -->
         SetupAppUpdateMigration(),
-        MergedMangaDedupeModeMigration(),
         // KMK <--
         PrefLangMigration(),
-        // ANK -->
-        EpisodeSortingFlagsMigration(),
-        SyncPrefKeyMigration(),
-        // ANK <--
-        // AM -->
-        SubtitleAssEnumMigration(),
-        // <-- AM
     )

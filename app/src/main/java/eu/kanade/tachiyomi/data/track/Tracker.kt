@@ -1,6 +1,7 @@
 package eu.kanade.tachiyomi.data.track
 
 import androidx.annotation.CallSuper
+import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
 import dev.icerock.moko.resources.StringResource
 import eu.kanade.tachiyomi.data.database.models.Track
@@ -9,7 +10,6 @@ import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.Flow
 import okhttp3.OkHttpClient
-import tachiyomi.domain.anime.model.Anime
 import tachiyomi.domain.track.model.Track as DomainTrack
 
 interface Tracker {
@@ -24,6 +24,9 @@ interface Tracker {
     val supportsReadingDates: Boolean
 
     val supportsPrivateTracking: Boolean
+
+    @ColorInt
+    fun getLogoColor(): Int
 
     @DrawableRes
     fun getLogo(): Int
@@ -71,9 +74,7 @@ interface Tracker {
     fun saveCredentials(username: String, password: String)
 
     // TODO: move this to an interactor, and update all trackers based on common data
-    // AM -->
-    suspend fun register(item: Track, anime: Anime)
-    // <-- AM
+    suspend fun register(item: Track, animeId: Long)
 
     suspend fun setRemoteStatus(track: Track, status: Long)
 
@@ -89,6 +90,8 @@ interface Tracker {
 
     // SY -->
     suspend fun getMangaMetadata(track: DomainTrack): TrackMangaMetadata
+
+    suspend fun getPaginatedMangaList(page: Int, statusId: Long): List<TrackMangaMetadata>
     // SY <--
 
     // KMK -->

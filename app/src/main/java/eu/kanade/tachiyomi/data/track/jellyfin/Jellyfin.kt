@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.data.track.jellyfin
 
+import android.graphics.Color
 import dev.icerock.moko.resources.StringResource
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Track
@@ -14,7 +15,6 @@ import okhttp3.Dns
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.aniyomi.AYMR
-import tachiyomi.domain.manga.model.Manga as Anime
 import tachiyomi.domain.track.model.Track as DomainTrack
 
 class Jellyfin(id: Long) : BaseTracker(id, "Jellyfin"), EnhancedTracker {
@@ -34,7 +34,9 @@ class Jellyfin(id: Long) : BaseTracker(id, "Jellyfin"), EnhancedTracker {
 
     val api by lazy { JellyfinApi(id, client) }
 
-    override fun getLogo() = R.drawable.brand_jellyfin
+    override fun getLogo() = R.drawable.ic_tracker_jellyfin
+
+    override fun getLogoColor() = Color.rgb(0, 11, 37)
 
     override fun getStatusList(): List<Long> = listOf(UNSEEN, WATCHING, COMPLETED)
 
@@ -90,18 +92,9 @@ class Jellyfin(id: Long) : BaseTracker(id, "Jellyfin"), EnhancedTracker {
     override suspend fun match(manga: Manga): TrackSearch? =
         try {
             api.getTrackSearch(manga.url)
-        } catch (_: Exception) {
+        } catch (e: Exception) {
             null
         }
-
-    // AM -->
-    override suspend fun matchSeason(anime: Anime): TrackSearch {
-        return TrackSearch.create(id).apply {
-            title = anime.title
-            tracking_url = anime.url
-        }
-    }
-    // <-- AM
 
     override fun isTrackFrom(track: DomainTrack, manga: Manga, source: Source?): Boolean =
         track.remoteUrl == manga.url && source?.let { accept(it) } == true

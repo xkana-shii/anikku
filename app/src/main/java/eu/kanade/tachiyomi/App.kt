@@ -20,9 +20,6 @@ import androidx.work.Configuration
 import androidx.work.WorkManager
 import coil3.ImageLoader
 import coil3.SingletonImageLoader
-import coil3.disk.DiskCache
-import coil3.disk.directory
-import coil3.memory.MemoryCache
 import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import coil3.request.allowRgb565
 import coil3.request.crossfade
@@ -77,7 +74,6 @@ import exh.log.xLogD
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import logcat.AndroidLogcatLogger
 import logcat.LogPriority
 import logcat.LogcatLogger
 import mihon.core.migration.Migrator
@@ -137,25 +133,16 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
         Injekt.importModule(PreferenceModule(this))
         Injekt.importModule(AppModule(this))
         Injekt.importModule(DomainModule())
-        // KMK -->
-        Injekt.importModule(KMKDomainModule())
-        // KMK <--
         // SY -->
         Injekt.importModule(SYPreferenceModule(this))
         Injekt.importModule(SYDomainModule())
         // SY <--
+        // KMK -->
+        Injekt.importModule(KMKDomainModule())
+        // KMK <--
 
         setupExhLogging() // EXH logging
-        if (!LogcatLogger.isInstalled) {
-            val minLogPriority = when {
-                networkPreferences.verboseLogging().get() -> LogPriority.VERBOSE
-                BuildConfig.DEBUG -> LogPriority.DEBUG
-                else -> LogPriority.INFO
-            }
-            LogcatLogger.install()
-            LogcatLogger.loggers += XLogLogcatLogger() // SY Redirect Logcat to XLog
-            LogcatLogger.loggers += AndroidLogcatLogger(minLogPriority)
-        }
+        LogcatLogger.install(XLogLogcatLogger()) // SY Redirect Logcat to XLog
 
         setupNotificationChannels()
 
@@ -182,7 +169,7 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
                         val pendingIntent = PendingIntent.getBroadcast(
                             this@App,
                             0,
-                            Intent(ACTION_DISABLE_INCOGNITO_MODE).setPackage(BuildConfig.APPLICATION_ID),
+                            Intent(ACTION_DISABLE_INCOGNITO_MODE),
                             PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE,
                         )
                         setContentIntent(pendingIntent)
@@ -212,6 +199,10 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
 
         // Updates widget update
         WidgetManager(Injekt.get(), Injekt.get()).apply { init(scope) }
+
+        /*if (!LogcatLogger.isInstalled && networkPreferences.verboseLogging().get()) {
+            LogcatLogger.install(AndroidLogcatLogger(LogPriority.VERBOSE))
+        }*/
 
         if (!WorkManager.isInitialized()) {
             WorkManager.initialize(this, Configuration.Builder().build())
@@ -258,19 +249,6 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
                 add(MangaKeyer())
             }
 
-            diskCache(
-                DiskCache.Builder()
-                    .directory(context.cacheDir.resolve("image_cache"))
-                    .maxSizePercent(0.02)
-                    .build(),
-            )
-
-            memoryCache(
-                MemoryCache.Builder()
-                    .maxSizePercent(context)
-                    .build(),
-            )
-
             crossfade((300 * this@App.animatorDurationScale).toInt())
             allowRgb565(DeviceUtil.isLowRamDevice(this@App))
             if (networkPreferences.verboseLogging().get()) logger(DebugLogger())
@@ -309,8 +287,8 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
             // Override the value passed as X-Requested-With in WebView requests
             val stackTrace = Looper.getMainLooper().thread.stackTrace
             val isChromiumCall = stackTrace.any { trace ->
-                trace.className.lowercase() in chromiumClasses &&
-                    trace.methodName.lowercase() in chromiumMethods
+                trace.className.equals("org.chromium.base.BuildInfo", ignoreCase = true) &&
+                    setOf("getAll", "getPackageName", "<init>").any { trace.methodName.equals(it, ignoreCase = true) }
             }
 
             if (isChromiumCall) {
@@ -415,13 +393,6 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
                 registered = false
             }
         }
-    }
-
-    companion object {
-        // KMK -->
-        private val chromiumClasses = setOf("org.chromium.base.buildinfo", "org.chromium.base.apkinfo")
-        private val chromiumMethods = setOf("getall", "getpackagename", "<init>")
-        // KMK <--
     }
 }
 

@@ -9,7 +9,6 @@ import eu.kanade.tachiyomi.data.backup.models.BackupMergedMangaReference
 import eu.kanade.tachiyomi.data.backup.models.BackupTracking
 import exh.source.MERGED_SOURCE_ID
 import tachiyomi.data.DatabaseHandler
-import tachiyomi.data.FetchTypeColumnAdapter
 import tachiyomi.data.UpdateStrategyColumnAdapter
 import tachiyomi.data.manga.MangaMapper
 import tachiyomi.data.manga.MergedMangaMapper
@@ -74,9 +73,6 @@ class MangaRestorer(
     suspend fun restore(
         backupManga: BackupManga,
         backupCategories: List<BackupCategory>,
-        // AY -->
-        backupSeasons: List<BackupManga>,
-        // <-- AY
     ) {
         handler.await(inTransaction = true) {
             val dbManga = findExistingManga(backupManga)
@@ -86,20 +82,6 @@ class MangaRestorer(
             } else {
                 restoreExistingManga(manga, dbManga)
             }
-
-            // AY -->
-            backupSeasons.forEach { bs ->
-                val dbAnime = findExistingManga(bs)
-                val anime = bs.getMangaImpl().copy(
-                    parentId = restoredManga.id,
-                )
-                if (dbAnime == null) {
-                    restoreNewManga(anime)
-                } else {
-                    restoreExistingManga(anime, dbAnime)
-                }
-            }
-            // <-- AY
 
             restoreMangaDetails(
                 manga = restoredManga,
@@ -128,13 +110,9 @@ class MangaRestorer(
 
     private suspend fun restoreExistingManga(manga: Manga, dbManga: Manga): Manga {
         return if (manga.version > dbManga.version) {
-            updateManga(
-                dbManga.copyFrom(manga).copy(id = dbManga.id, /* AY --> */ parentId = manga.parentId /* <-- AY */),
-            )
+            updateManga(dbManga.copyFrom(manga).copy(id = dbManga.id))
         } else {
-            updateManga(
-                manga.copyFrom(dbManga).copy(id = dbManga.id, /* AY --> */ parentId = manga.parentId /* <-- AY */),
-            )
+            updateManga(manga.copyFrom(dbManga).copy(id = dbManga.id))
         }
     }
 
@@ -151,10 +129,6 @@ class MangaRestorer(
             // SY <--
             initialized = this.initialized || newer.initialized,
             version = newer.version,
-            // AY -->
-            fetchType = newer.fetchType,
-            parentId = newer.parentId,
-            // <-- AY
         )
     }
 
@@ -186,15 +160,6 @@ class MangaRestorer(
                 version = manga.version,
                 isSyncing = 1,
                 notes = manga.notes,
-                // AY -->
-                fetchType = manga.fetchType.let(FetchTypeColumnAdapter::encode),
-                parentId = manga.parentId,
-                seasonFlags = manga.seasonFlags,
-                seasonNumber = manga.seasonNumber,
-                seasonSourceOrder = manga.seasonSourceOrder,
-                backgroundUrl = manga.backgroundUrl,
-                backgroundLastModified = manga.backgroundLastModified,
-                // <-- AY
             )
         }
         return manga
@@ -234,9 +199,9 @@ class MangaRestorer(
             chapter.copy(
                 id = dbChapter.id,
                 bookmark = chapter.bookmark || dbChapter.bookmark,
-                // AY -->
+                // AM (FILLERMARK) -->
                 fillermark = chapter.fillermark || dbChapter.fillermark,
-                // <-- AY
+                // <-- AM (FILLERMARK)
                 read = chapter.read,
                 lastPageRead = chapter.lastPageRead,
                 // KMK -->
@@ -252,9 +217,9 @@ class MangaRestorer(
                     bookmark = chapter.bookmark || dbChapter.bookmark,
                     sourceOrder = max(chapter.sourceOrder, dbChapter.sourceOrder),
                     dateUpload = min(chapter.dateUpload, dbChapter.dateUpload),
-                    // AY -->
+                    // AM (FILLERMARK) -->
                     fillermark = chapter.fillermark || dbChapter.fillermark,
-                    // <-- AY
+                    // <-- AM (FILLERMARK)
                 )
                 // KMK <--
                 .let {
@@ -292,9 +257,9 @@ class MangaRestorer(
                     chapter.scanlator,
                     chapter.read,
                     chapter.bookmark,
-                    // AY -->
+                    // AM (FILLERMARK) -->
                     chapter.fillermark,
-                    // <-- AY
+                    // <-- AM (FILLERMARK)
                     chapter.lastPageRead,
                     chapter.totalPages,
                     chapter.chapterNumber,
@@ -302,10 +267,6 @@ class MangaRestorer(
                     chapter.dateFetch,
                     chapter.dateUpload,
                     chapter.version,
-                    // AY -->
-                    chapter.summary,
-                    chapter.previewUrl,
-                    // <-- AY
                 )
             }
         }
@@ -319,15 +280,11 @@ class MangaRestorer(
                     url = null,
                     name = null,
                     scanlator = null,
-                    // AY -->
-                    summary = null,
-                    previewUrl = null,
-                    // <-- AY
                     seen = chapter.read,
                     bookmark = chapter.bookmark,
-                    // AY -->
+                    // AM (FILLERMARK) -->
                     fillermark = chapter.fillermark,
-                    // <-- AY
+                    // <-- AM (FILLERMARK)
                     lastSecondSeen = chapter.lastPageRead,
                     totalSeconds = chapter.totalPages,
                     episodeNumber = null,
@@ -375,15 +332,6 @@ class MangaRestorer(
                 updateStrategy = manga.updateStrategy,
                 version = manga.version,
                 notes = manga.notes,
-                // AY -->
-                fetchType = manga.fetchType,
-                parentId = manga.parentId,
-                seasonFlags = manga.seasonFlags,
-                seasonNumber = manga.seasonNumber,
-                seasonSourceOrder = manga.seasonSourceOrder,
-                backgroundUrl = manga.backgroundUrl,
-                backgroundLastModified = manga.backgroundLastModified,
-                // <-- AY
             )
             animesQueries.selectLastInsertedRowId()
         }

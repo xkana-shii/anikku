@@ -13,21 +13,7 @@ class GetHistory(
         return repository.getHistoryByMangaId(mangaId)
     }
 
-    fun subscribe(
-        query: String,
-        // KMK -->
-        unfinishedManga: Boolean?,
-        unfinishedChapter: Boolean?,
-        nonLibraryEntries: Boolean?,
-        // KMK <--
-    ): Flow<List<HistoryWithRelations>> {
-        return repository.getHistory(
-            query,
-            // KMK -->
-            unfinishedManga,
-            unfinishedChapter,
-            nonLibraryEntries,
-            // KMK <--
-        )
+    fun subscribe(query: String): Flow<List<HistoryWithRelations>> {
+        return repository.getHistory(query)
     }
 }

@@ -19,7 +19,6 @@ package eu.kanade.presentation.player.components
 
 import androidx.annotation.IntRange
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -34,15 +33,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SliderColors
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.SliderState
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -53,7 +46,7 @@ import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import eu.kanade.tachiyomi.R
@@ -61,7 +54,6 @@ import tachiyomi.presentation.core.components.BaseSliderItem
 import tachiyomi.presentation.core.components.Pill
 import tachiyomi.presentation.core.components.material.Slider
 import tachiyomi.presentation.core.components.material.padding
-import tachiyomi.presentation.core.util.secondaryItemAlpha
 import kotlin.math.max
 import kotlin.math.min
 
@@ -71,15 +63,16 @@ fun SliderItem(
     valueRange: IntProgression,
     label: String,
     onChange: (Int) -> Unit,
+    modifier: Modifier = Modifier,
     steps: Int = with(valueRange) { (last - first) - 1 },
-    valueString: String = value.toString(),
+    valueText: String = value.toString(),
     labelStyle: TextStyle = MaterialTheme.typography.bodyMedium,
     pillColor: Color = MaterialTheme.colorScheme.surfaceContainerHigh,
     tint: Color? = null,
     icon: @Composable () -> Unit = {},
 ) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(
                 horizontal = MaterialTheme.padding.medium,
@@ -92,11 +85,12 @@ fun SliderItem(
         BaseSliderItem(
             value = value,
             valueRange = valueRange,
-            steps = steps,
-            title = label,
-            valueString = valueString,
+            label = label,
             onChange = onChange,
-            titleStyle = labelStyle,
+            modifier = modifier,
+            steps = steps,
+            valueText = valueText,
+            labelStyle = labelStyle,
             pillColor = pillColor,
             colors = tint?.let { generateSliderColors(it) } ?: SliderDefaults.colors(),
         )
@@ -109,14 +103,15 @@ fun SliderItem(
     valueRange: ClosedFloatingPointRange<Float>,
     label: String,
     onChange: (Float) -> Unit,
+    modifier: Modifier = Modifier,
     steps: Int = 0,
-    valueString: String = value.toString(),
+    valueText: String = value.toString(),
     labelStyle: TextStyle = MaterialTheme.typography.bodyMedium,
     pillColor: Color = MaterialTheme.colorScheme.surfaceContainerHigh,
     icon: @Composable () -> Unit = {},
 ) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(
                 horizontal = MaterialTheme.padding.medium,
@@ -129,11 +124,12 @@ fun SliderItem(
         BaseSliderItem(
             value = value,
             valueRange = valueRange,
+            label = label,
+            onChange = { onChange(it) },
+            modifier = modifier,
             steps = steps,
-            title = label,
-            valueString = valueString,
-            onChange = onChange,
-            titleStyle = labelStyle,
+            valueText = valueText,
+            labelStyle = labelStyle,
             pillColor = pillColor,
         )
     }
@@ -143,14 +139,12 @@ fun SliderItem(
 fun BaseSliderItem(
     value: Float,
     valueRange: ClosedFloatingPointRange<Float>,
-    title: String,
+    label: String,
     onChange: (Float) -> Unit,
     modifier: Modifier = Modifier,
-    subtitle: String? = null,
     steps: Int = 0,
-    valueString: String = value.toString(),
-    titleStyle: TextStyle = MaterialTheme.typography.titleLarge,
-    subtitleStyle: TextStyle = MaterialTheme.typography.bodySmall,
+    valueText: String = value.toString(),
+    labelStyle: TextStyle = MaterialTheme.typography.bodyMedium,
     pillColor: Color = MaterialTheme.colorScheme.surfaceContainerHigh,
     colors: SliderColors = SliderDefaults.colors(),
 ) {
@@ -165,21 +159,13 @@ fun BaseSliderItem(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
         ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = title,
-                    style = titleStyle,
-                )
-                if (subtitle != null) {
-                    Text(
-                        text = subtitle,
-                        style = subtitleStyle,
-                        modifier = Modifier.secondaryItemAlpha(),
-                    )
-                }
-            }
+            Text(
+                text = label,
+                style = labelStyle,
+                modifier = Modifier.weight(1f),
+            )
             Pill(
-                text = valueString,
+                text = valueText,
                 style = MaterialTheme.typography.bodyMedium,
                 color = pillColor,
             )
@@ -202,21 +188,19 @@ fun BaseSliderItem(
 fun VerticalSliderItem(
     value: Int,
     valueRange: IntProgression,
-    title: String,
+    label: String,
     onChange: (Int) -> Unit,
-    subtitle: String? = null,
+    modifier: Modifier = Modifier,
     steps: Int = with(valueRange) { (last - first) - 1 },
-    valueString: String = value.toString(),
-    titleStyle: TextStyle = MaterialTheme.typography.titleLarge,
-    subtitleStyle: TextStyle = MaterialTheme.typography.bodySmall,
+    valueText: String = value.toString(),
+    labelStyle: TextStyle = MaterialTheme.typography.bodyMedium,
     pillColor: Color = MaterialTheme.colorScheme.surfaceContainerHigh,
-    colors: SliderColors = SliderDefaults.colors(),
     icon: @Composable () -> Unit = {},
 ) {
     val haptic = LocalHapticFeedback.current
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxHeight()
             .padding(
                 horizontal = MaterialTheme.padding.medium,
@@ -226,7 +210,7 @@ fun VerticalSliderItem(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         icon()
-        BaseVerticalSliderItem(
+        VerticalSlider(
             value = value,
             valueRange = valueRange,
             steps = steps,
@@ -235,7 +219,6 @@ fun VerticalSliderItem(
                 onChange(it)
                 haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
             },
-            colors = colors,
             modifier = Modifier.weight(1f),
         )
         Column(
@@ -243,18 +226,11 @@ fun VerticalSliderItem(
             verticalArrangement = Arrangement.Center,
         ) {
             Text(
-                text = title,
-                style = titleStyle,
+                text = label,
+                style = labelStyle,
             )
-            if (subtitle != null) {
-                Text(
-                    text = subtitle,
-                    style = subtitleStyle,
-                    modifier = Modifier.secondaryItemAlpha(),
-                )
-            }
             Pill(
-                text = valueString,
+                text = valueText,
                 style = MaterialTheme.typography.bodyMedium,
                 color = pillColor,
             )
@@ -263,7 +239,7 @@ fun VerticalSliderItem(
 }
 
 @Composable
-fun BaseVerticalSliderItem(
+fun VerticalSlider(
     value: Int,
     onValueChange: (Int) -> Unit,
     modifier: Modifier = Modifier,
@@ -318,47 +294,39 @@ fun BaseVerticalSliderItem(
     )
 }
 
+@Preview
 @Composable
-@PreviewLightDark
 private fun PreviewVerticalSliderItem() {
-    MaterialTheme(if (isSystemInDarkTheme()) darkColorScheme() else lightColorScheme()) {
-        var value by remember { mutableIntStateOf(2) }
-        Surface {
-            Row {
-                VerticalSliderItem(
-                    value = value,
-                    valueRange = 1..5,
-                    title = "Filter",
-                    subtitle = "Subtitle",
-                    onChange = { value = it },
-                    icon = {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_play_seek_triangle),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(width = 16.dp, height = 20.dp),
-                            tint = MaterialTheme.colorScheme.onSurface,
-                        )
-                    },
-                )
-                SliderItem(
-                    value = value,
-                    valueRange = 1..5,
-                    label = "Filter",
-                    onChange = { value = it },
-                    icon = {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_play_seek_triangle),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(width = 16.dp, height = 20.dp),
-                            tint = MaterialTheme.colorScheme.onSurface,
-                        )
-                    },
-                )
-            }
-        }
-    }
+    VerticalSliderItem(
+        value = 2,
+        valueRange = 1..5,
+        label = "sex",
+        onChange = {},
+        icon = {
+            Icon(
+                painter = painterResource(R.drawable.ic_play_seek_triangle),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(width = 16.dp, height = 20.dp),
+                tint = Color.White,
+            )
+        },
+    )
+    SliderItem(
+        value = 2,
+        valueRange = 1..5,
+        label = "sex",
+        onChange = {},
+        icon = {
+            Icon(
+                painter = painterResource(R.drawable.ic_play_seek_triangle),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(width = 16.dp, height = 20.dp),
+                tint = Color.White,
+            )
+        },
+    )
 }
 
 fun generateSliderColors(baseColor: Color): SliderColors {

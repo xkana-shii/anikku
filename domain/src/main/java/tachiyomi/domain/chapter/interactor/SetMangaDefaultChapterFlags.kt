@@ -20,16 +20,12 @@ class SetMangaDefaultChapterFlags(
                     unreadFilter = filterChapterByRead().get(),
                     downloadedFilter = filterChapterByDownloaded().get(),
                     bookmarkedFilter = filterChapterByBookmarked().get(),
-                    // AY -->
+                    // AM (FILLERMARK) -->
                     fillermarkedFilter = filterChapterByFillermarked().get(),
-                    // <-- AY
+                    // <-- AM (FILLERMARK)
                     sortingMode = sortChapterBySourceOrNumber().get(),
                     sortingDirection = sortChapterByAscendingOrDescending().get(),
                     displayMode = displayChapterByNameOrNumber().get(),
-                    // AY -->
-                    showPreviews = showEpisodeThumbnailPreviews().get(),
-                    showSummaries = showEpisodeSummaries().get(),
-                    // <-- AY
                 )
             }
         }

@@ -50,7 +50,7 @@ open class RecommendsScreenModel(
         ioCoroutineScope.launch {
             val recommendationSources = when (args) {
                 is RecommendsScreen.Args.SingleSourceManga -> {
-                    val manga = getManga.await(args.mangaId) ?: return@launch
+                    val manga = getManga.await(args.mangaId)!!
                     mutableState.update { it.copy(title = manga.title) }
 
                     RecommendationPagingSource.createSources(

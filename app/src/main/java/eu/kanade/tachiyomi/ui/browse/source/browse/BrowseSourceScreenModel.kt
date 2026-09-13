@@ -27,14 +27,10 @@ import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.track.interactor.AddTracks
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.util.ioCoroutineScope
-import eu.kanade.tachiyomi.data.cache.BackgroundCache
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.extension.ExtensionManager
 import eu.kanade.tachiyomi.source.CatalogueSource
-import eu.kanade.tachiyomi.source.getChapterList
-import eu.kanade.tachiyomi.source.getMangaDetails
 import eu.kanade.tachiyomi.source.model.FilterList
-import eu.kanade.tachiyomi.util.removeBackgrounds
 import eu.kanade.tachiyomi.util.removeCovers
 import exh.metadata.metadata.RaisedSearchMetadata
 import exh.source.LOCAL_SOURCE_PACKAGE
@@ -70,6 +66,7 @@ import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.interactor.SetMangaCategories
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.chapter.interactor.SetMangaDefaultChapterFlags
+import tachiyomi.domain.episode.model.NoEpisodesException
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.interactor.GetDuplicateLibraryManga
 import tachiyomi.domain.manga.interactor.GetManga
@@ -104,9 +101,6 @@ open class BrowseSourceScreenModel(
     sourcePreferences: SourcePreferences = Injekt.get(),
     private val libraryPreferences: LibraryPreferences = Injekt.get(),
     private val coverCache: CoverCache = Injekt.get(),
-    // AY -->
-    private val backgroundCache: BackgroundCache = Injekt.get(),
-    // <-- AY
     private val getRemoteManga: GetRemoteManga = Injekt.get(),
     private val getDuplicateLibraryManga: GetDuplicateLibraryManga = Injekt.get(),
     private val getCategories: GetCategories = Injekt.get(),
@@ -414,30 +408,31 @@ open class BrowseSourceScreenModel(
 
             if (!new.favorite) {
                 new = new.removeCovers(coverCache)
-                // AY -->
-                new = new.removeBackgrounds(backgroundCache)
-                // <-- AY
             } else {
                 setMangaDefaultChapterFlags.await(manga)
                 addTracks.bindEnhancedTrackers(manga, source)
             }
 
-            updateManga.await(new.toMangaUpdate())
+            updateManga.await(new.toMangaUpdate().copy(chapterFlags = null))
             // KMK -->
-            if (new.favorite && libraryPreferences.syncOnAdd().get()) {
-                withIOContext {
-                    try {
-                        val sManga = manga.toSManga()
-                        val remoteManga = source.getMangaDetails(sManga)
-                        val chapters = source.getChapterList(sManga)
-                        // Use `manga` instead of `new` so its title got updated with source's `getMangaDetails`
-                        updateManga.awaitUpdateFromSource(manga, remoteManga, false, coverCache)
-                        syncChaptersWithSource.await(chapters, manga, source, false)
-                    } catch (e: Exception) {
-                        logcat(LogPriority.ERROR, e)
-                        screenModelScope.launch {
-                            snackbarHostState.showSnackbar(message = "Failed to sync manga: ${e.message}")
-                        }
+            if (new.favorite) {
+                try {
+                    withIOContext {
+                        val networkManga = source.getAnimeDetails(new.toSManga())
+                        updateManga.awaitUpdateFromSource(manga, networkManga, false, coverCache)
+                        val chapters = source.getEpisodeList(new.toSManga())
+                        syncChaptersWithSource.await(chapters, new, source, false)
+                    }
+                } catch (e: Throwable) {
+                    val message = if (e is NoEpisodesException) {
+                        @Suppress("IMPLICIT_CAST_TO_ANY")
+                        "No Chapters found"
+                    } else {
+                        @Suppress("IMPLICIT_CAST_TO_ANY")
+                        logcat(LogPriority.ERROR, e) { "Error while syncing chapters" }
+                    }
+                    screenModelScope.launch {
+                        snackbarHostState.showSnackbar(message = message.toString())
                     }
                 }
             }
@@ -557,7 +552,7 @@ open class BrowseSourceScreenModel(
             val manga: Manga,
             val initialSelection: ImmutableList<CheckboxState.State<Category>>,
         ) : Dialog
-        data class Migrate(val target: Manga, val current: Manga) : Dialog
+        data class Migrate(val newManga: Manga, val oldManga: Manga) : Dialog
 
         // SY -->
         data class DeleteSavedSearch(val idToDelete: Long, val name: String) : Dialog

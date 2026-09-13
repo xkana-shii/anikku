@@ -17,9 +17,7 @@
 
 package eu.kanade.tachiyomi.ui.player.controls.components.panels
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -27,46 +25,39 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AlignVerticalCenter
-import androidx.compose.material.icons.filled.BorderStyle
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.EditOff
 import androidx.compose.material.icons.filled.FormatSize
 import androidx.compose.material.icons.filled.Tune
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import eu.kanade.presentation.components.DropdownMenu
 import eu.kanade.presentation.player.components.ExpandableCard
 import eu.kanade.presentation.player.components.SliderItem
+import eu.kanade.presentation.player.components.SwitchPreference
 import eu.kanade.tachiyomi.ui.player.controls.CARDS_MAX_WIDTH
 import eu.kanade.tachiyomi.ui.player.controls.components.sheets.toFixed
 import eu.kanade.tachiyomi.ui.player.controls.panelCardsColors
-import eu.kanade.tachiyomi.ui.player.settings.SubtitleAssOverride
+import eu.kanade.tachiyomi.ui.player.settings.SubtitlePreferences
+import `is`.xyz.mpv.MPVLib
+import tachiyomi.core.common.preference.deleteAndGet
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.aniyomi.AYMR
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 
 @Composable
-fun SubtitlesMiscellaneousCard(
-    overrideAssSubs: SubtitleAssOverride,
-    subScale: Float,
-    subPos: Int,
-    onOverrideAssSubsChange: (SubtitleAssOverride) -> Unit,
-    onSubScaleChange: (Float) -> Unit,
-    onSubPosChange: (Int) -> Unit,
-    onReset: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
+fun SubtitlesMiscellaneousCard(modifier: Modifier = Modifier) {
+    val preferences = remember { Injekt.get<SubtitlePreferences>() }
     var isExpanded by remember { mutableStateOf(true) }
     ExpandableCard(
         isExpanded,
@@ -81,62 +72,36 @@ fun SubtitlesMiscellaneousCard(
         colors = panelCardsColors(),
     ) {
         Column {
-            var selectingOverrideAss by remember { mutableStateOf(false) }
-            Box {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable(
-                            onClick = {
-                                selectingOverrideAss = !selectingOverrideAss
-                            },
-                        )
-                        .padding(
-                            horizontal = MaterialTheme.padding.medium,
-                            vertical = MaterialTheme.padding.small,
-                        ),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.large),
-                ) {
-                    Icon(Icons.Default.BorderStyle, null)
-                    Column {
-                        Text(
-                            text = stringResource(AYMR.strings.player_sheets_sub_override_ass),
-                            style = MaterialTheme.typography.bodyLarge,
-                        )
-                        Text(
-                            text = stringResource(overrideAssSubs.titleRes),
-                            style = MaterialTheme.typography.bodyMedium,
-                        )
-                    }
-                }
-                DropdownMenu(expanded = selectingOverrideAss, onDismissRequest = { selectingOverrideAss = false }) {
-                    SubtitleAssOverride.entries.forEach {
-                        DropdownMenuItem(
-                            text = { Text(stringResource(it.titleRes)) },
-                            onClick = {
-                                onOverrideAssSubsChange(it)
-                                // ANK -->
-                                selectingOverrideAss = false
-                                // ANK <--
-                            },
-                            trailingIcon = {
-                                if (overrideAssSubs == it) {
-                                    Icon(
-                                        imageVector = Icons.Default.Check,
-                                        contentDescription = null,
-                                    )
-                                }
-                            },
-                        )
-                    }
-                }
+            var overrideAssSubs by remember {
+                mutableStateOf(MPVLib.getPropertyString("sub-ass-override").also { println(it) } == "force")
+            }
+            SwitchPreference(
+                overrideAssSubs,
+                onValueChange = {
+                    overrideAssSubs = it
+                    preferences.overrideSubsASS().set(it)
+                    MPVLib.setPropertyString("sub-ass-override", if (it) "force" else "scale")
+                },
+                content = { Text(stringResource(AYMR.strings.player_sheets_sub_override_ass)) },
+                modifier = Modifier
+                    .padding(MaterialTheme.padding.medium)
+                    .fillMaxWidth(),
+            )
+            var subScale by remember {
+                mutableFloatStateOf(MPVLib.getPropertyDouble("sub-scale").toFloat())
+            }
+            var subPos by remember {
+                mutableStateOf(MPVLib.getPropertyInt("sub-pos"))
             }
             SliderItem(
                 label = stringResource(AYMR.strings.player_sheets_sub_scale),
                 value = subScale,
-                valueString = subScale.toFixed(2).toString(),
-                onChange = onSubScaleChange,
+                valueText = subScale.toFixed(2).toString(),
+                onChange = {
+                    subScale = it
+                    preferences.subtitleFontScale().set(it)
+                    MPVLib.setPropertyDouble("sub-scale", it.toDouble())
+                },
                 valueRange = 0f..5f,
                 icon = {
                     Icon(
@@ -148,7 +113,11 @@ fun SubtitlesMiscellaneousCard(
             SliderItem(
                 label = stringResource(AYMR.strings.player_sheets_sub_position),
                 value = subPos,
-                onChange = onSubPosChange,
+                onChange = {
+                    subPos = it
+                    preferences.subtitlePos().set(it)
+                    MPVLib.setPropertyInt("sub-pos", it)
+                },
                 valueRange = 0..150,
                 steps = 0,
                 icon = {
@@ -164,7 +133,20 @@ fun SubtitlesMiscellaneousCard(
                     .padding(end = MaterialTheme.padding.medium, bottom = MaterialTheme.padding.medium),
                 horizontalArrangement = Arrangement.End,
             ) {
-                TextButton(onClick = onReset) {
+                TextButton(
+                    onClick = {
+                        preferences.subtitlePos().deleteAndGet().let {
+                            subPos = it
+                            MPVLib.setPropertyInt("sub-pos", it)
+                        }
+                        preferences.subtitleFontScale().deleteAndGet().let {
+                            subScale = it
+                            MPVLib.setPropertyDouble("sub-scale", it.toDouble())
+                        }
+                        preferences.overrideSubsASS().deleteAndGet().let { overrideAssSubs = it }
+                        MPVLib.setPropertyString("sub-ass-override", "scale") // mpv's default is 'scale'
+                    },
+                ) {
                     Row {
                         Icon(Icons.Default.EditOff, null)
                         Text(stringResource(MR.strings.action_reset))

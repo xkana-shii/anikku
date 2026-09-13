@@ -21,7 +21,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.ContextCompat
@@ -66,7 +65,6 @@ import eu.kanade.tachiyomi.util.system.setDefaultSettings
 import eu.kanade.tachiyomi.util.system.toast
 import exh.debug.SettingsDebugScreen
 import exh.log.EHLogLevel
-import exh.source.ExhPreferences
 import exh.util.toAnnotatedString
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
@@ -80,6 +78,7 @@ import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.util.lang.launchNonCancellable
 import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.core.common.util.system.logcat
+import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.interactor.GetAllManga
@@ -98,7 +97,6 @@ import uy.kohesive.injekt.api.get
 import java.io.File
 
 object SettingsAdvancedScreen : SearchableSettings {
-    @Suppress("unused")
     private fun readResolve(): Any = SettingsAdvancedScreen
 
     @ReadOnlyComposable
@@ -114,7 +112,7 @@ object SettingsAdvancedScreen : SearchableSettings {
         val basePreferences = remember { Injekt.get<BasePreferences>() }
         val networkPreferences = remember { Injekt.get<NetworkPreferences>() }
         val libraryPreferences = remember { Injekt.get<LibraryPreferences>() }
-        val exhPreferences = remember { Injekt.get<ExhPreferences>() }
+        val unsortedPreferences = remember { Injekt.get<UnsortedPreferences>() }
 
         return listOf(
             Preference.PreferenceItem.TextPreference(
@@ -154,7 +152,7 @@ object SettingsAdvancedScreen : SearchableSettings {
             ),
             // KMK -->
             Preference.PreferenceItem.MultiSelectListPreference(
-                preference = exhPreferences.appShouldAutoUpdate(),
+                preference = unsortedPreferences.appShouldAutoUpdate(),
                 entries = persistentMapOf(
                     AppUpdatePolicy.DEVICE_ONLY_ON_WIFI to stringResource(MR.strings.connected_to_wifi),
                     AppUpdatePolicy.DEVICE_NETWORK_NOT_METERED to stringResource(MR.strings.network_not_metered),
@@ -204,7 +202,7 @@ object SettingsAdvancedScreen : SearchableSettings {
                                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                                 }
                                 context.startActivity(intent)
-                            } catch (_: ActivityNotFoundException) {
+                            } catch (e: ActivityNotFoundException) {
                                 context.toast(MR.strings.battery_optimization_setting_activity_not_found)
                             }
                         } else {
@@ -452,6 +450,7 @@ object SettingsAdvancedScreen : SearchableSettings {
                 // KMK -->
                 Preference.PreferenceItem.InfoPreference(stringResource(KMR.strings.pref_private_installer_warning)),
                 // KMK <--
+                /*
                 Preference.PreferenceItem.TextPreference(
                     title = stringResource(MR.strings.ext_revoke_trust),
                     onClick = {
@@ -459,6 +458,7 @@ object SettingsAdvancedScreen : SearchableSettings {
                         context.toast(MR.strings.requires_app_restart)
                     },
                 ),
+                 */
             ),
         )
     }
@@ -469,8 +469,8 @@ object SettingsAdvancedScreen : SearchableSettings {
         onDismissRequest: () -> Unit,
         onCleanupDownloads: (removeRead: Boolean, removeNonFavorite: Boolean) -> Unit,
     ) {
-        val resources = LocalResources.current
-        val options = remember(resources) { resources.getStringArray(R.array.clean_up_downloads).toList() }
+        val context = LocalContext.current
+        val options = remember { context.resources.getStringArray(R.array.clean_up_downloads).toList() }
         val selection = remember {
             options.toMutableStateList()
         }
@@ -598,13 +598,13 @@ object SettingsAdvancedScreen : SearchableSettings {
     private fun getDeveloperToolsGroup(): Preference.PreferenceGroup {
         val context = LocalContext.current
         val navigator = LocalNavigator.currentOrThrow
-        val exhPreferences = remember { Injekt.get<ExhPreferences>() }
+        val unsortedPreferences = remember { Injekt.get<UnsortedPreferences>() }
         val securityPreferences = remember { Injekt.get<SecurityPreferences>() }
         return Preference.PreferenceGroup(
             title = stringResource(SYMR.strings.developer_tools),
             preferenceItems = persistentListOf(
                 Preference.PreferenceItem.ListPreference(
-                    preference = exhPreferences.logLevel(),
+                    preference = unsortedPreferences.logLevel(),
                     entries = EHLogLevel.entries.mapIndexed { index, ehLogLevel ->
                         index to "${context.stringResource(ehLogLevel.nameRes)} (${
                             context.stringResource(ehLogLevel.description)

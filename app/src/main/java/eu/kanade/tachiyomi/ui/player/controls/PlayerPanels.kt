@@ -33,19 +33,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import eu.kanade.tachiyomi.ui.player.DebandSettings
-import eu.kanade.tachiyomi.ui.player.Debanding
 import eu.kanade.tachiyomi.ui.player.Panels
-import eu.kanade.tachiyomi.ui.player.VideoFilters
 import eu.kanade.tachiyomi.ui.player.controls.components.panels.AudioDelayPanel
-import eu.kanade.tachiyomi.ui.player.controls.components.panels.SubColorType
 import eu.kanade.tachiyomi.ui.player.controls.components.panels.SubtitleDelayPanel
 import eu.kanade.tachiyomi.ui.player.controls.components.panels.SubtitleSettingsPanel
-import eu.kanade.tachiyomi.ui.player.controls.components.panels.SubtitlesBorderStyle
-import eu.kanade.tachiyomi.ui.player.controls.components.panels.VideoSettingsPanel
+import eu.kanade.tachiyomi.ui.player.controls.components.panels.VideoFiltersPanel
 import eu.kanade.tachiyomi.ui.player.settings.PlayerPreferences
-import eu.kanade.tachiyomi.ui.player.settings.SubtitleAssOverride
-import eu.kanade.tachiyomi.ui.player.settings.SubtitleJustification
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -53,60 +46,7 @@ import uy.kohesive.injekt.api.get
 fun PlayerPanels(
     panelShown: Panels,
     onDismissRequest: () -> Unit,
-    // Subtitle settings panel state
-    isBold: Boolean,
-    isItalic: Boolean,
-    subJustify: SubtitleJustification,
-    subFont: String,
-    subFontSize: Int,
-    subBorderStyle: SubtitlesBorderStyle,
-    subBorderSize: Int,
-    subShadowOffset: Int,
-    subColor: SubColorType,
-    currentSubtitleColor: Int,
-    overrideAssSubs: SubtitleAssOverride,
-    subScale: Float,
-    subPos: Int,
-    onSubBoldChange: (Boolean) -> Unit,
-    onSubItalicChange: (Boolean) -> Unit,
-    onSubJustifyChange: (SubtitleJustification) -> Unit,
-    onSubFontChange: (String) -> Unit,
-    onSubFontSizeChange: (Int) -> Unit,
-    onSubBorderStyleChange: (SubtitlesBorderStyle) -> Unit,
-    onSubBorderSizeChange: (Int) -> Unit,
-    onSubShadowOffsetChange: (Int) -> Unit,
-    onSubColorChange: (Int) -> Unit,
-    onSubColorTypeChange: (SubColorType) -> Unit,
-    onOverrideAssSubsChange: (SubtitleAssOverride) -> Unit,
-    onSubScaleChange: (Float) -> Unit,
-    onSubPosChange: (Int) -> Unit,
-    onSubtitleSettingsReset: () -> Unit,
-    onSubtitleMiscReset: () -> Unit,
-    subDelayMsPrimary: Int,
-    subDelayMsSecondary: Int,
-    subSpeed: Double,
-    onSubDelayPrimaryChange: (Int) -> Unit,
-    onSubDelaySecondaryChange: (Int) -> Unit,
-    onSubSpeedChange: (Double) -> Unit,
-    onSubDelayApply: () -> Unit,
-    onSubDelayReset: () -> Unit,
-    onSubColorReset: (SubColorType) -> Unit,
-    // Audio delay panel state
-    audioDelayMs: Int,
-    onAudioDelayChange: (Int) -> Unit,
-    onAudioDelayApply: () -> Unit,
-    onAudioDelayReset: () -> Unit,
-    // Video settings panel state
-    deband: Debanding,
-    onDebandChange: (Debanding) -> Unit,
-    onVideoFilterChange: (VideoFilters, Int) -> Unit,
-    debandSettings: (DebandSettings) -> Int,
-    onDebandSettingsChange: (DebandSettings, Int) -> Unit,
-    onDebandReset: () -> Unit,
-    isGpuNextEnabled: Boolean,
-    filterValue: (VideoFilters) -> Int,
-    onFilterReset: () -> Unit,
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
 ) {
     AnimatedContent(
         targetState = panelShown,
@@ -123,75 +63,16 @@ fun PlayerPanels(
                 Box(Modifier.fillMaxHeight())
             }
             Panels.SubtitleSettings -> {
-                SubtitleSettingsPanel(
-                    onDismissRequest = onDismissRequest,
-                    isBold = isBold,
-                    isItalic = isItalic,
-                    justify = subJustify,
-                    font = subFont,
-                    fontSize = subFontSize,
-                    borderStyle = subBorderStyle,
-                    borderSize = subBorderSize,
-                    shadowOffset = subShadowOffset,
-                    onIsBoldChange = onSubBoldChange,
-                    onIsItalicChange = onSubItalicChange,
-                    onJustificationChange = onSubJustifyChange,
-                    onFontChange = onSubFontChange,
-                    onFontSizeChange = onSubFontSizeChange,
-                    onBorderStyleChange = onSubBorderStyleChange,
-                    onBorderSizeChange = onSubBorderSizeChange,
-                    onShadowOffsetChange = onSubShadowOffsetChange,
-                    onTypographyReset = onSubtitleSettingsReset,
-                    currentColorType = subColor,
-                    currentSubtitleColor = currentSubtitleColor,
-                    onColorChange = onSubColorChange,
-                    onColorReset = onSubColorReset,
-                    onColorTypeChange = onSubColorTypeChange,
-                    overrideAssSubs = overrideAssSubs,
-                    subScale = subScale,
-                    subPos = subPos,
-                    onOverrideAssSubsChange = onOverrideAssSubsChange,
-                    onSubScaleChange = onSubScaleChange,
-                    onSubPosChange = onSubPosChange,
-                    onMiscReset = onSubtitleMiscReset,
-                    modifier = Modifier,
-                )
+                SubtitleSettingsPanel(onDismissRequest)
             }
             Panels.SubtitleDelay -> {
-                SubtitleDelayPanel(
-                    delayMs = subDelayMsPrimary,
-                    secondaryDelayMs = subDelayMsSecondary,
-                    speed = subSpeed,
-                    onSpeedChange = onSubSpeedChange,
-                    onDelayChange = onSubDelayPrimaryChange,
-                    onSecondaryDelayChange = onSubDelaySecondaryChange,
-                    onApply = onSubDelayApply,
-                    onReset = onSubDelayReset,
-                    onDismissRequest = onDismissRequest,
-                )
+                SubtitleDelayPanel(onDismissRequest)
             }
             Panels.AudioDelay -> {
-                AudioDelayPanel(
-                    delayMs = audioDelayMs,
-                    onDelayChange = onAudioDelayChange,
-                    onApply = onAudioDelayApply,
-                    onReset = onAudioDelayReset,
-                    onDismissRequest = onDismissRequest,
-                )
+                AudioDelayPanel(onDismissRequest)
             }
             Panels.VideoFilters -> {
-                VideoSettingsPanel(
-                    onDismissRequest = onDismissRequest,
-                    onVideoFilterChange = onVideoFilterChange,
-                    deband = deband,
-                    onDebandChange = onDebandChange,
-                    debandSettings = debandSettings,
-                    onDebandSettingsChange = onDebandSettingsChange,
-                    onDebandReset = onDebandReset,
-                    isGpuNextEnabled = isGpuNextEnabled,
-                    filterValue = filterValue,
-                    onFilterReset = onFilterReset,
-                )
+                VideoFiltersPanel(onDismissRequest)
             }
         }
     }

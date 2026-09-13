@@ -43,10 +43,8 @@ fun BrowseSourceContent(
     source: Source?,
     mangaList: LazyPagingItems<StateFlow</* SY --> */Pair<Manga, RaisedSearchMetadata?>/* SY <-- */>>,
     columns: GridCells,
-    // AY -->
     entries: Int = 0,
     topBarHeight: Int = 0,
-    // <-- AY
     displayMode: LibraryDisplayMode,
     snackbarHostState: SnackbarHostState,
     contentPadding: PaddingValues,
@@ -169,10 +167,8 @@ fun BrowseSourceContent(
         LibraryDisplayMode.List -> {
             BrowseSourceList(
                 mangaList = mangaList,
-                // AY -->
                 entries = entries,
                 topBarHeight = topBarHeight,
-                // <-- AY
                 contentPadding = contentPadding,
                 onMangaClick = onMangaClick,
                 onMangaLongClick = onMangaLongClick,

@@ -38,7 +38,6 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import dev.icerock.moko.resources.StringResource
-import eu.kanade.domain.track.interactor.RefreshResult
 import eu.kanade.domain.track.interactor.RefreshTracks
 import eu.kanade.domain.track.model.toDbTrack
 import eu.kanade.domain.ui.UiPreferences
@@ -49,19 +48,15 @@ import eu.kanade.presentation.track.TrackScoreSelector
 import eu.kanade.presentation.track.TrackStatusSelector
 import eu.kanade.presentation.track.TrackerSearch
 import eu.kanade.presentation.util.Screen
-import eu.kanade.tachiyomi.animesource.model.FetchType
 import eu.kanade.tachiyomi.data.track.DeletableTracker
 import eu.kanade.tachiyomi.data.track.EnhancedTracker
 import eu.kanade.tachiyomi.data.track.Tracker
 import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
-import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.util.lang.convertEpochMillisZone
-import eu.kanade.tachiyomi.util.lang.toLocalDate
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import eu.kanade.tachiyomi.util.system.openInBrowser
 import eu.kanade.tachiyomi.util.system.toast
-import exh.source.MERGED_SOURCE_ID
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
@@ -77,8 +72,6 @@ import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.manga.interactor.GetManga
-import tachiyomi.domain.manga.interactor.GetMergedReferencesById
-import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.domain.track.interactor.DeleteTrack
 import tachiyomi.domain.track.interactor.GetTracks
@@ -90,17 +83,14 @@ import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import uy.kohesive.injekt.injectLazy
 import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
 import java.time.ZoneOffset
 
 data class TrackInfoDialogHomeScreen(
     private val mangaId: Long,
     private val mangaTitle: String,
-    // AM -->
-    private val isSeason: Boolean,
-    // <-- AM
     private val sourceId: Long,
 ) : Screen() {
 
@@ -108,15 +98,7 @@ data class TrackInfoDialogHomeScreen(
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
         val context = LocalContext.current
-        val screenModel = rememberScreenModel {
-            Model(
-                mangaId,
-                sourceId,
-                // AM -->
-                isSeason,
-                // <-- AM
-            )
-        }
+        val screenModel = rememberScreenModel { Model(mangaId, sourceId) }
 
         val dateFormat = remember { UiPreferences.dateFormat(Injekt.get<UiPreferences>().dateFormat().get()) }
         val state by screenModel.state.collectAsState()
@@ -124,9 +106,6 @@ data class TrackInfoDialogHomeScreen(
         TrackInfoDialogHome(
             trackItems = state.trackItems,
             dateFormat = dateFormat,
-            // AM -->
-            isSeason = isSeason,
-            // <-- AM
             onStatusClick = {
                 navigator.push(
                     TrackStatusSelectorScreen(
@@ -218,29 +197,12 @@ data class TrackInfoDialogHomeScreen(
     private class Model(
         private val mangaId: Long,
         private val sourceId: Long,
-        // AM -->
-        private val isSeason: Boolean,
-        // <-- AM
         private val getTracks: GetTracks = Injekt.get(),
-        // SY -->
-        private val trackerManager: TrackerManager = Injekt.get(),
-        // SY <--
-        // KMK -->
-        private val sourceManager: SourceManager = Injekt.get(),
-        // KMK <--
     ) : StateScreenModel<Model.State>(State()) {
-        // KMK -->
-        private val getMangaById: GetManga by injectLazy()
-        private val getMergedReferencesById: GetMergedReferencesById by injectLazy()
-        // KMK <--
 
         init {
             screenModelScope.launch {
-                // AM -->
-                if (!isSeason) {
-                    // <-- AM
-                    refreshTrackers()
-                }
+                refreshTrackers()
             }
 
             screenModelScope.launch {
@@ -252,34 +214,14 @@ data class TrackInfoDialogHomeScreen(
             }
         }
 
-        // KMK -->
-        private suspend fun getMangaForTracking(item: TrackItem): Manga? {
-            if (sourceId != MERGED_SOURCE_ID) {
-                return getMangaById.await(mangaId)
-            }
-            item.tracker as EnhancedTracker
-            val references = getMergedReferencesById.await(mangaId)
-            return references.distinctBy { it.mangaSourceId }.firstNotNullOfOrNull { ref ->
-                sourceManager.get(ref.mangaSourceId)
-                    ?.takeIf(item.tracker::accept)
-                    ?.let { ref.mangaId?.let { mangaId -> getMangaById.await(mangaId) } }
-            }
-        }
-        // KMK <--
-
         fun registerEnhancedTracking(item: TrackItem) {
             item.tracker as EnhancedTracker
             screenModelScope.launchNonCancellable {
-                val anime = getMangaForTracking(item) ?: return@launchNonCancellable
+                val manga = Injekt.get<GetManga>().await(mangaId) ?: return@launchNonCancellable
                 try {
-                    // AM -->
-                    val matchResult = when (anime.fetchType) {
-                        FetchType.Episodes -> item.tracker.match(anime) ?: throw Exception()
-                        FetchType.Seasons -> item.tracker.matchSeason(anime) ?: throw Exception()
-                    }
-                    item.tracker.register(matchResult, anime)
-                    // <-- AM
-                } catch (_: Exception) {
+                    val matchResult = item.tracker.match(manga) ?: throw Exception()
+                    item.tracker.register(matchResult, mangaId)
+                } catch (e: Exception) {
                     withUIContext { Injekt.get<Application>().toast(MR.strings.error_no_match) }
                 }
             }
@@ -290,18 +232,16 @@ data class TrackInfoDialogHomeScreen(
             val context = Injekt.get<Application>()
 
             refreshTracks.await(mangaId)
-                // AM -->
-                .filterIsInstance<RefreshResult.Failure>()
-                // <-- AM
+                .filter { it.first != null }
                 .forEach { (track, e) ->
                     logcat(LogPriority.ERROR, e) {
-                        "Failed to refresh track data animeId=$mangaId for service ${track.id}"
+                        "Failed to refresh track data animeId=$mangaId for service ${track!!.id}"
                     }
                     withUIContext {
                         context.toast(
                             context.stringResource(
                                 MR.strings.track_error,
-                                track.name,
+                                track!!.name,
                                 e.message ?: "",
                             ),
                         )
@@ -315,27 +255,14 @@ data class TrackInfoDialogHomeScreen(
             }
         }
 
-        private suspend fun List<Track>.mapToTrackItem(): List<TrackItem> {
-            val loggedInTrackers = trackerManager.loggedInTrackers()
-            val source = sourceManager.getOrStub(sourceId)
+        private fun List<Track>.mapToTrackItem(): List<TrackItem> {
+            val loggedInTrackers = Injekt.get<TrackerManager>().loggedInTrackers()
+            val source = Injekt.get<SourceManager>().getOrStub(sourceId)
             return loggedInTrackers
                 // Map to TrackItem
                 .map { service -> TrackItem(find { it.trackerId == service.id }, service) }
                 // Show only if the service supports this manga's source
-                // KMK -->
-                .let { trackers ->
-                    val sources = if (source is MergedSource) {
-                        sourceManager.getMergedSources(mangaId)
-                    } else {
-                        listOf(source)
-                    }
-                    trackers.filter { (it.tracker as? EnhancedTracker)?.accept(sources) ?: true }
-                }
-                // KMK <--
-                // AM -->
-                // Only show enhanced trackers for seasons for now
-                .filter { !isSeason || it.tracker is EnhancedTracker }
-            // <-- AM
+                .filter { (it.tracker as? EnhancedTracker)?.accept(source) ?: true }
         }
 
         @Immutable
@@ -520,46 +447,56 @@ private data class TrackDateSelectorScreen(
     @Transient
     private val selectableDates = object : SelectableDates {
         override fun isSelectableDate(utcTimeMillis: Long): Boolean {
-            val targetDate = Instant.ofEpochMilli(utcTimeMillis).toLocalDate(ZoneOffset.UTC)
+            val dateToCheck = Instant.ofEpochMilli(utcTimeMillis)
+                .atZone(ZoneOffset.systemDefault())
+                .toLocalDate()
 
-            // Disallow future dates
-            if (targetDate > LocalDate.now(ZoneOffset.UTC)) return false
+            if (dateToCheck > LocalDate.now()) {
+                // Disallow future dates
+                return false
+            }
 
-            return when {
-                // Disallow setting start date after finish date
-                start && track.finishDate > 0 -> {
-                    val finishDate = Instant.ofEpochMilli(track.finishDate).toLocalDate(ZoneOffset.UTC)
-                    targetDate <= finishDate
-                }
-                // Disallow setting finish date before start date
-                !start && track.startDate > 0 -> {
-                    val startDate = Instant.ofEpochMilli(track.startDate).toLocalDate(ZoneOffset.UTC)
-                    startDate <= targetDate
-                }
-                else -> {
-                    true
-                }
+            return if (start && track.finishDate > 0) {
+                // Disallow start date to be set later than finish date
+                val dateFinished = Instant.ofEpochMilli(track.finishDate)
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDate()
+                dateToCheck <= dateFinished
+            } else if (!start && track.startDate > 0) {
+                // Disallow end date to be set earlier than start date
+                val dateStarted = Instant.ofEpochMilli(track.startDate)
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDate()
+                dateToCheck >= dateStarted
+            } else {
+                // Nothing set before
+                true
             }
         }
 
         override fun isSelectableYear(year: Int): Boolean {
-            // Disallow future years
-            if (year > LocalDate.now(ZoneOffset.UTC).year) return false
+            if (year > LocalDate.now().year) {
+                // Disallow future dates
+                return false
+            }
 
-            return when {
-                // Disallow setting start year after finish year
-                start && track.finishDate > 0 -> {
-                    val finishDate = Instant.ofEpochMilli(track.finishDate).toLocalDate(ZoneOffset.UTC)
-                    year <= finishDate.year
-                }
-                // Disallow setting finish year before start year
-                !start && track.startDate > 0 -> {
-                    val startDate = Instant.ofEpochMilli(track.startDate).toLocalDate(ZoneOffset.UTC)
-                    startDate.year <= year
-                }
-                else -> {
-                    true
-                }
+            return if (start && track.finishDate > 0) {
+                // Disallow start date to be set later than finish date
+                val dateFinished = Instant.ofEpochMilli(track.finishDate)
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDate()
+                    .year
+                year <= dateFinished
+            } else if (!start && track.startDate > 0) {
+                // Disallow end date to be set earlier than start date
+                val dateStarted = Instant.ofEpochMilli(track.startDate)
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDate()
+                    .year
+                year >= dateStarted
+            } else {
+                // Nothing set before
+                true
             }
         }
     }
@@ -794,12 +731,7 @@ data class TrackerSearchScreen(
         }
 
         fun registerTracking(item: TrackSearch) {
-            screenModelScope.launchNonCancellable {
-                // AM -->
-                val anime = Injekt.get<GetManga>().await(mangaId) ?: return@launchNonCancellable
-                tracker.register(item, anime)
-                // <-- AM
-            }
+            screenModelScope.launchNonCancellable { tracker.register(item, mangaId) }
         }
 
         fun updateSelection(selected: TrackSearch) {

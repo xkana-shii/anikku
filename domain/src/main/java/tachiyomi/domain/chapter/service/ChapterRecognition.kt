@@ -18,18 +18,16 @@ object ChapterRecognition {
      */
     private val number = Regex(NUMBER_PATTERN)
 
-    // ANK -->
     /**
      * Regex to remove tags
      * Example: [flugel] kaguya-sama wa kokurasetai - s01e01v2 (bd 1080p hevc) [multi audio] [80ac7b2e]
      * -> kaguya-sama wa kokurasetai - s01e01v2
      */
-    internal val tagRegex = Regex("""^\s*(\[[^]]+]\s*|\([^)]+\)\s*)+|\s*(\[[^]]+]\s*|\([^)]+\)\s*)+$""")
-    // ANK <--
+    private val tagRegex = Regex("""^\[[^]]+]|\[[^]]+]\s*${'$'}|^\([^)]+\)|\([^)]+\)\s*${'$'}""")
 
     /**
      * Regex used to remove unwanted tags
-     * Example kaguya-sama wa kokurasetai - s01e01v2 1080p -R> kaguya-sama wa kokurasetai - e01v2
+     * Example kaguya-sama wa kokurasetai - s01e01v2 1080p ->
      */
     private val unwanted = Regex("""\b(?:v|ver|version|season|s)[^a-z]?[0-9]+|\b\d+p\b|hi10""")
 
@@ -38,12 +36,6 @@ object ChapterRecognition {
      * Example One Piece 12 special -R> One Piece 12special
      */
     private val unwantedWhiteSpace = Regex("""\s(?=extra|special|omake)""")
-
-    fun parseEpisodeNumber(
-        animeTitle: String,
-        episodeName: String,
-        episodeNumber: Double? = null,
-    ) = parseChapterNumber(animeTitle, episodeName, episodeNumber)
 
     fun parseChapterNumber(
         mangaTitle: String,
@@ -56,7 +48,7 @@ object ChapterRecognition {
         }
 
         // Get chapter title with lower case
-        val cleanChapterName = chapterName.lowercase()
+        var cleanChapterName = chapterName.lowercase()
             // Remove manga title from chapter title.
             .replace(mangaTitle.lowercase(), "").trim()
             // Remove comma's or hyphens.
@@ -64,9 +56,11 @@ object ChapterRecognition {
             .replace('-', '.')
             // Remove unwanted white spaces.
             .replace(unwantedWhiteSpace, "")
-            // ANK -->
-            .replace(tagRegex, "").trim()
-        // ANK <--
+
+        // Remove all tags while they exist
+        while (tagRegex.containsMatchIn(cleanChapterName)) {
+            cleanChapterName = tagRegex.replace(cleanChapterName, "").trim()
+        }
 
         val numberMatch = number.findAll(cleanChapterName)
 

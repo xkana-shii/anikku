@@ -1,21 +1,14 @@
 package tachiyomi.domain.source.interactor
 
 import kotlinx.coroutines.flow.Flow
-import tachiyomi.domain.anime.model.Anime
-import tachiyomi.domain.manga.repository.MangaRepository
-import tachiyomi.domain.source.model.DeletableAnime
+import tachiyomi.domain.source.model.SourceWithCount
+import tachiyomi.domain.source.repository.SourceRepository
 
 class GetSourcesWithNonLibraryManga(
-    private val repository: MangaRepository,
+    private val repository: SourceRepository,
 ) {
 
-    // AY -->
-    fun subscribe(): Flow<List<DeletableAnime>> {
-        return repository.getDeletableParentAnime()
+    fun subscribe(): Flow<List<SourceWithCount>> {
+        return repository.getSourcesWithNonLibraryManga()
     }
-
-    suspend fun getDeletableChildren(parentId: Long): List<Anime> {
-        return repository.getChildrenByParentId(parentId)
-    }
-    // <-- AY
 }

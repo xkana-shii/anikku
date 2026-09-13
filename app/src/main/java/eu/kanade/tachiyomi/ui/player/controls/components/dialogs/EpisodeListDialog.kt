@@ -13,15 +13,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Label
 import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.outlined.Bookmark
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -34,11 +33,9 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.manga.components.DotSeparatorText
 import eu.kanade.tachiyomi.data.database.models.Episode
 import eu.kanade.tachiyomi.util.lang.toRelativeString
-import kotlinx.collections.immutable.ImmutableList
 import tachiyomi.domain.anime.model.Anime
 import tachiyomi.i18n.aniyomi.AYMR
 import tachiyomi.presentation.core.components.VerticalFastScroller
@@ -48,24 +45,23 @@ import tachiyomi.presentation.core.i18n.stringResource
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import eu.kanade.presentation.util.formatChapterNumber as formatEpisodeNumber
 
 @Composable
 fun EpisodeListDialog(
     displayMode: Long?,
     currentEpisodeIndex: Int,
-    episodeList: ImmutableList<Episode>,
+    episodeList: List<Episode>,
     dateRelativeTime: Boolean,
-    dateFormat: String,
+    dateFormat: DateTimeFormatter,
     onBookmarkClicked: (Long?, Boolean) -> Unit,
-    onFillermarkClicked: (Long?, Boolean) -> Unit,
     onEpisodeClicked: (Long?) -> Unit,
     onDismissRequest: () -> Unit,
 ) {
     val context = LocalContext.current
     val itemScrollIndex = (episodeList.size - currentEpisodeIndex) - 1
     val episodeListState = rememberLazyListState(initialFirstVisibleItemIndex = itemScrollIndex)
-    val dateFormatter = remember(dateFormat) { UiPreferences.dateFormat(dateFormat) }
 
     PlayerDialog(
         title = stringResource(AYMR.strings.episodes),
@@ -105,7 +101,7 @@ fun EpisodeListDialog(
                             ).toRelativeString(
                                 context = context,
                                 relative = dateRelativeTime,
-                                dateFormat = dateFormatter,
+                                dateFormat = dateFormat,
                             )
                         } ?: ""
 
@@ -115,7 +111,6 @@ fun EpisodeListDialog(
                         title = title,
                         date = date,
                         onBookmarkClicked = onBookmarkClicked,
-                        onFillermarkClicked = onFillermarkClicked,
                         onEpisodeClicked = onEpisodeClicked,
                     )
                 }
@@ -131,25 +126,14 @@ private fun EpisodeListItem(
     title: String,
     date: String?,
     onBookmarkClicked: (Long?, Boolean) -> Unit,
-    onFillermarkClicked: (Long?, Boolean) -> Unit,
     onEpisodeClicked: (Long?) -> Unit,
 ) {
     var isBookmarked by remember { mutableStateOf(episode.bookmark) }
-    var isFillermarked by remember { mutableStateOf(episode.fillermark) }
-    var textHeight by remember { mutableIntStateOf(0) }
+    var textHeight by remember { mutableStateOf(0) }
 
-    val defaultColor = MaterialTheme.colorScheme.onSurface
+    val bookmarkIcon = if (isBookmarked) Icons.Filled.Bookmark else Icons.Outlined.Bookmark
     val bookmarkAlpha = if (isBookmarked) 1f else DISABLED_ALPHA
-    val bookmarkColor = if (isBookmarked) MaterialTheme.colorScheme.primary else defaultColor
-    val fillermarkAlpha = if (isFillermarked) 1f else DISABLED_ALPHA
-    val fillermarkColor = if (isFillermarked) MaterialTheme.colorScheme.tertiary else defaultColor
-    val episodeColor = if (isBookmarked) {
-        bookmarkColor
-    } else if (isFillermarked) {
-        fillermarkColor
-    } else {
-        defaultColor
-    }
+    val episodeColor = if (isBookmarked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
     val textAlpha = if (episode.seen) DISABLED_ALPHA else 1f
     val textWeight = if (isCurrentEpisode) FontWeight.Bold else FontWeight.Normal
     val textStyle = if (isCurrentEpisode) FontStyle.Italic else FontStyle.Normal
@@ -160,37 +144,20 @@ private fun EpisodeListItem(
         onBookmarkClicked(episode.id, bookmarked)
     }
 
-    val clickFillermark: (Boolean) -> Unit = { fillermarked ->
-        episode.fillermark = fillermarked
-        isFillermarked = fillermarked
-        onFillermarkClicked(episode.id, fillermarked)
-    }
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = { onEpisodeClicked(episode.id) })
-            .padding(vertical = MaterialTheme.padding.extraSmall),
+            .padding(vertical = MaterialTheme.padding.small),
     ) {
         IconButton(onClick = { clickBookmark(!isBookmarked) }) {
             Icon(
-                imageVector = Icons.Filled.Bookmark,
+                imageVector = bookmarkIcon,
                 contentDescription = null,
-                tint = bookmarkColor,
+                tint = episodeColor,
                 modifier = Modifier
                     .sizeIn(maxHeight = with(LocalDensity.current) { textHeight.toDp() - 2.dp })
                     .alpha(bookmarkAlpha),
-            )
-        }
-
-        IconButton(onClick = { clickFillermark(!isFillermarked) }) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.Label,
-                contentDescription = null,
-                tint = fillermarkColor,
-                modifier = Modifier
-                    .sizeIn(maxHeight = with(LocalDensity.current) { textHeight.toDp() - 2.dp })
-                    .alpha(fillermarkAlpha),
             )
         }
 

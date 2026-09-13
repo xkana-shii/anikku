@@ -20,14 +20,10 @@ package eu.kanade.tachiyomi.ui.player.controls.components.sheets
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.MoreTime
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
@@ -38,9 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import eu.kanade.tachiyomi.ui.player.TrackState
-import eu.kanade.tachiyomi.ui.player.VideoTrack
+import eu.kanade.tachiyomi.ui.player.PlayerViewModel.VideoTrack
 import kotlinx.collections.immutable.ImmutableList
 import tachiyomi.i18n.aniyomi.AYMR
 import tachiyomi.presentation.core.components.material.padding
@@ -49,7 +43,8 @@ import tachiyomi.presentation.core.i18n.stringResource
 @Composable
 fun AudioTracksSheet(
     tracks: ImmutableList<VideoTrack>,
-    onSelect: (VideoTrack) -> Unit,
+    selectedId: Int,
+    onSelect: (Int) -> Unit,
     onAddAudioTrack: () -> Unit,
     onOpenDelayPanel: () -> Unit,
     onDismissRequest: () -> Unit,
@@ -81,9 +76,9 @@ fun AudioTracksSheet(
         },
         track = {
             AudioTrackRow(
-                track = it,
-                isSelected = it.selection > -1,
-                onClick = { onSelect(it) },
+                title = getTrackTitle(it),
+                isSelected = selectedId == it.id,
+                onClick = { onSelect(it.id) },
             )
         },
         modifier = modifier,
@@ -92,7 +87,7 @@ fun AudioTracksSheet(
 
 @Composable
 fun AudioTrackRow(
-    track: VideoTrack,
+    title: String,
     isSelected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -110,15 +105,9 @@ fun AudioTrackRow(
             onClick = onClick,
         )
         Text(
-            text = getTrackTitle(track),
+            title,
             fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Normal,
             fontStyle = if (isSelected) FontStyle.Italic else FontStyle.Normal,
         )
-        Spacer(modifier = Modifier.weight(1f))
-        if (track is VideoTrack.External && track.state == TrackState.Loading) {
-            CircularProgressIndicator(modifier = Modifier.then(Modifier.size(24.dp)))
-        } else if (track is VideoTrack.External && track.state == TrackState.Error) {
-            Icon(Icons.Default.ErrorOutline, null, tint = MaterialTheme.colorScheme.error)
-        }
     }
 }

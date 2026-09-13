@@ -2,9 +2,7 @@ package eu.kanade.tachiyomi.data.sync.service
 
 import android.content.Context
 import eu.kanade.domain.sync.SyncPreferences
-import eu.kanade.tachiyomi.data.backup.BackupDetector
 import eu.kanade.tachiyomi.data.backup.models.Backup
-import eu.kanade.tachiyomi.data.backup.models.LegacyBackup
 import eu.kanade.tachiyomi.data.sync.SyncNotifier
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.PUT
@@ -104,14 +102,7 @@ class SyncYomiSyncService(
             }
 
             return try {
-                // ANK -->
-                val backup = if (BackupDetector.isLegacyBackup(byteArray)) {
-                    protoBuf.decodeFromByteArray(LegacyBackup.serializer(), byteArray)
-                        .toBackup()
-                } else {
-                    protoBuf.decodeFromByteArray(Backup.serializer(), byteArray)
-                }
-                // ANK <--
+                val backup = protoBuf.decodeFromByteArray(Backup.serializer(), byteArray)
                 return Pair(SyncData(backup = backup), newETag)
             } catch (_: SerializationException) {
                 logcat(LogPriority.INFO) {

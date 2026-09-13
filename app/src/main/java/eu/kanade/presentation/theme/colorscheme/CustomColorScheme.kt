@@ -1,5 +1,7 @@
 package eu.kanade.presentation.theme.colorscheme
 
+import android.app.UiModeManager
+import android.content.Context
 import android.content.res.ColorStateList
 import android.os.Build
 import android.widget.EditText
@@ -9,31 +11,55 @@ import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
+import androidx.core.content.getSystemService
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
+import com.materialkolor.Contrast
 import com.materialkolor.PaletteStyle
 import com.materialkolor.dynamicColorScheme
-import com.materialkolor.dynamiccolor.ColorSpec
 
 internal class CustomColorScheme(
-    seed: Color,
+    context: Context,
+    seed: Int,
     style: PaletteStyle,
 ) : BaseColorScheme() {
-    override val lightScheme = generateColorSchemeFromSeed(seed = seed, style = style, dark = false)
-    override val darkScheme = generateColorSchemeFromSeed(seed = seed, style = style, dark = true)
+    private val custom = CustomCompatColorScheme(context, seed, style)
 
-    companion object {
-        fun generateColorSchemeFromSeed(seed: Color, style: PaletteStyle, dark: Boolean): ColorScheme {
-            return dynamicColorScheme(
-                seedColor = seed,
-                isDark = dark,
-                isAmoled = false,
-                style = style,
-                specVersion = ColorSpec.SpecVersion.SPEC_2025,
-            )
-        }
-    }
+    override val darkScheme
+        get() = custom.darkScheme
+
+    override val lightScheme
+        get() = custom.lightScheme
+}
+
+private class CustomCompatColorScheme(
+    context: Context,
+    seed: Int,
+    style: PaletteStyle,
+) : BaseColorScheme() {
+    override val lightScheme = dynamicColorScheme(
+        seedColor = Color(seed),
+        isDark = false,
+        isAmoled = false,
+        style = style,
+        contrastLevel = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            context.getSystemService<UiModeManager>()?.contrast?.toDouble() ?: Contrast.Default.value
+        } else {
+            Contrast.Default.value
+        },
+    )
+    override val darkScheme = dynamicColorScheme(
+        seedColor = Color(seed),
+        isDark = true,
+        isAmoled = false,
+        style = style,
+        contrastLevel = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            context.getSystemService<UiModeManager>()?.contrast?.toDouble() ?: Contrast.Default.value
+        } else {
+            Contrast.Default.value
+        },
+    )
 }
 
 class AndroidViewColorScheme(

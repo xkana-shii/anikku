@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.data.track.anilist
 
+import android.graphics.Color
 import dev.icerock.moko.resources.StringResource
 import eu.kanade.domain.track.model.toDbTrack
 import eu.kanade.tachiyomi.R
@@ -12,6 +13,7 @@ import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.aniyomi.AYMR
@@ -51,13 +53,15 @@ class Anilist(id: Long) : BaseTracker(id, "AniList"), DeletableTracker {
         // If the preference is an int from APIv1, logout user to force using APIv2
         try {
             scorePreference.get()
-        } catch (_: ClassCastException) {
+        } catch (e: ClassCastException) {
             logout()
             scorePreference.delete()
         }
     }
 
-    override fun getLogo() = R.drawable.brand_anilist
+    override fun getLogo() = R.drawable.ic_tracker_anilist
+
+    override fun getLogoColor() = Color.rgb(18, 25, 35)
 
     override fun getStatusList(): List<Long> {
         return listOf(WATCHING, COMPLETED, ON_HOLD, DROPPED, PLAN_TO_WATCH, REWATCHING)
@@ -221,7 +225,7 @@ class Anilist(id: Long) : BaseTracker(id, "AniList"), DeletableTracker {
             val (username, scoreType) = api.getCurrentUser()
             scorePreference.set(scoreType)
             saveCredentials(username.toString(), oauth.accessToken)
-        } catch (_: Throwable) {
+        } catch (e: Throwable) {
             logout()
         }
     }
@@ -236,6 +240,10 @@ class Anilist(id: Long) : BaseTracker(id, "AniList"), DeletableTracker {
         return api.getAnimeMetadata(track)
     }
 
+    override suspend fun getPaginatedMangaList(page: Int, statusId: Long): List<TrackMangaMetadata> {
+        return api.getPaginatedMangaList(page, statusId, getUsername().toInt())
+    }
+
     fun saveOAuth(alOAuth: ALOAuth?) {
         trackPreferences.trackToken(this).set(json.encodeToString(alOAuth))
     }
@@ -243,7 +251,7 @@ class Anilist(id: Long) : BaseTracker(id, "AniList"), DeletableTracker {
     fun loadOAuth(): ALOAuth? {
         return try {
             json.decodeFromString<ALOAuth>(trackPreferences.trackToken(this).get())
-        } catch (_: Exception) {
+        } catch (e: Exception) {
             null
         }
     }

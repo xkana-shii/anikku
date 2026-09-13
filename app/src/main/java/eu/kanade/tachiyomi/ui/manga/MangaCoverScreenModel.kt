@@ -2,7 +2,6 @@ package eu.kanade.tachiyomi.ui.manga
 
 import android.content.Context
 import android.net.Uri
-import androidx.compose.foundation.pager.PagerState
 import androidx.compose.material3.SnackbarHostState
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
@@ -11,12 +10,10 @@ import coil3.imageLoader
 import coil3.request.ImageRequest
 import coil3.size.Size
 import eu.kanade.domain.manga.interactor.UpdateManga
-import eu.kanade.tachiyomi.data.cache.BackgroundCache
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.saver.Image
 import eu.kanade.tachiyomi.data.saver.ImageSaver
 import eu.kanade.tachiyomi.data.saver.Location
-import eu.kanade.tachiyomi.util.editBackground
 import eu.kanade.tachiyomi.util.editCover
 import eu.kanade.tachiyomi.util.system.getBitmapOrNull
 import eu.kanade.tachiyomi.util.system.toShareIntent
@@ -31,7 +28,6 @@ import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.MR
-import tachiyomi.i18n.aniyomi.AYMR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -40,21 +36,10 @@ class MangaCoverScreenModel(
     private val getManga: GetManga = Injekt.get(),
     private val imageSaver: ImageSaver = Injekt.get(),
     private val coverCache: CoverCache = Injekt.get(),
-    // AY -->
-    private val backgroundCache: BackgroundCache = Injekt.get(),
-    // <-- AY
     private val updateManga: UpdateManga = Injekt.get(),
 
     val snackbarHostState: SnackbarHostState = SnackbarHostState(),
-    // AY -->
-    val pagerState: PagerState = PagerState(pageCount = { 2 }),
-    // <-- AY
 ) : StateScreenModel<Manga?>(null) {
-
-    // AY -->
-    private val isCover: Boolean
-        get() = pagerState.currentPage != 1
-    // <-- AY
 
     init {
         screenModelScope.launchIO {
@@ -64,29 +49,17 @@ class MangaCoverScreenModel(
     }
 
     fun saveCover(context: Context) {
-        // AY -->
-        val savedStringResource = if (isCover) {
-            MR.strings.cover_saved
-        } else {
-            AYMR.strings.background_saved
-        }
-        val errorSavingStringResource = if (isCover) {
-            MR.strings.error_saving_cover
-        } else {
-            AYMR.strings.error_saving_background
-        }
-        // <-- AY
         screenModelScope.launch {
             try {
                 saveCoverInternal(context, temp = false)
                 snackbarHostState.showSnackbar(
-                    context.stringResource(savedStringResource),
+                    context.stringResource(MR.strings.cover_saved),
                     withDismissAction = true,
                 )
             } catch (e: Throwable) {
                 logcat(LogPriority.ERROR, e)
                 snackbarHostState.showSnackbar(
-                    context.stringResource(errorSavingStringResource),
+                    context.stringResource(MR.strings.error_saving_cover),
                     withDismissAction = true,
                 )
             }
@@ -94,13 +67,6 @@ class MangaCoverScreenModel(
     }
 
     fun shareCover(context: Context) {
-        // AY -->
-        val errorSharingStringResource = if (isCover) {
-            MR.strings.error_sharing_cover
-        } else {
-            AYMR.strings.error_sharing_background
-        }
-        // <-- AY
         screenModelScope.launch {
             try {
                 val uri = saveCoverInternal(context, temp = true) ?: return@launch
@@ -110,7 +76,7 @@ class MangaCoverScreenModel(
             } catch (e: Throwable) {
                 logcat(LogPriority.ERROR, e)
                 snackbarHostState.showSnackbar(
-                    context.stringResource(errorSharingStringResource),
+                    context.stringResource(MR.strings.error_sharing_cover),
                     withDismissAction = true,
                 )
             }
@@ -138,9 +104,7 @@ class MangaCoverScreenModel(
             imageSaver.save(
                 Image.Cover(
                     bitmap = bitmap,
-                    // AY -->
-                    name = if (isCover) "${manga.title}-cover" else "${manga.title}-background",
-                    // <-- AY
+                    name = manga.title,
                     location = if (temp) Location.Cache else Location.Pictures.create(),
                 ),
             )
@@ -158,16 +122,10 @@ class MangaCoverScreenModel(
         screenModelScope.launchIO {
             context.contentResolver.openInputStream(data)?.use {
                 try {
-                    // AY -->
-                    if (isCover) {
-                        manga.editCover(Injekt.get(), it, updateManga, coverCache)
-                    } else {
-                        manga.editBackground(Injekt.get(), it, updateManga, backgroundCache)
-                    }
-                    // <-- AY
+                    manga.editCover(Injekt.get(), it, updateManga, coverCache)
                     notifyCoverUpdated(context)
                 } catch (e: Exception) {
-                    notifyFailedImageUpdate(context, e)
+                    notifyFailedCoverUpdate(context, e)
                 }
             }
         }
@@ -177,49 +135,28 @@ class MangaCoverScreenModel(
         val mangaId = state.value?.id ?: return
         screenModelScope.launchIO {
             try {
-                // AY -->
-                if (isCover) {
-                    coverCache.deleteCustomCover(mangaId)
-                    updateManga.awaitUpdateCoverLastModified(mangaId)
-                } else {
-                    backgroundCache.deleteCustomBackground(mangaId)
-                    updateManga.awaitUpdateBackgroundLastModified(mangaId)
-                }
-                // <-- AY
+                coverCache.deleteCustomCover(mangaId)
+                updateManga.awaitUpdateCoverLastModified(mangaId)
                 notifyCoverUpdated(context)
             } catch (e: Exception) {
-                notifyFailedImageUpdate(context, e)
+                notifyFailedCoverUpdate(context, e)
             }
         }
     }
 
     private fun notifyCoverUpdated(context: Context) {
-        // AY -->
-        val updatedStringResource = if (isCover) {
-            MR.strings.cover_updated
-        } else {
-            AYMR.strings.background_updated
-        }
-        // <-- AY
         screenModelScope.launch {
             snackbarHostState.showSnackbar(
-                context.stringResource(updatedStringResource),
+                context.stringResource(MR.strings.cover_updated),
                 withDismissAction = true,
             )
         }
     }
 
-    private fun notifyFailedImageUpdate(context: Context, e: Throwable) {
-        // AY -->
-        val updateFailedStringResource = if (isCover) {
-            MR.strings.notification_cover_update_failed
-        } else {
-            AYMR.strings.notification_background_update_failed
-        }
-        // <-- AY
+    private fun notifyFailedCoverUpdate(context: Context, e: Throwable) {
         screenModelScope.launch {
             snackbarHostState.showSnackbar(
-                context.stringResource(updateFailedStringResource),
+                context.stringResource(MR.strings.notification_cover_update_failed),
                 withDismissAction = true,
             )
             logcat(LogPriority.ERROR, e)

@@ -10,11 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.PagerState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowLeft
-import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Save
@@ -32,7 +28,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,7 +38,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import androidx.core.graphics.drawable.toDrawable
 import androidx.core.view.updatePadding
 import coil3.asDrawable
 import coil3.imageLoader
@@ -54,13 +48,10 @@ import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.DropdownMenu
 import eu.kanade.presentation.manga.EditCoverAction
-import eu.kanade.tachiyomi.data.coil.useBackground
 import eu.kanade.tachiyomi.ui.reader.viewer.ReaderPageImageView
 import kotlinx.collections.immutable.persistentListOf
-import tachiyomi.core.common.util.lang.launchUI
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.MR
-import tachiyomi.i18n.aniyomi.AYMR
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.clickableNoIndication
@@ -69,13 +60,7 @@ import tachiyomi.presentation.core.util.clickableNoIndication
 fun MangaCoverDialog(
     manga: Manga,
     isCustomCover: Boolean,
-    // AY -->
-    isCustomBackground: Boolean,
-    // <-- AY
     snackbarHostState: SnackbarHostState,
-    // AY -->
-    pagerState: PagerState,
-    // <-- AY
     onShareClick: () -> Unit,
     onSaveClick: () -> Unit,
     onEditClick: ((EditCoverAction) -> Unit)?,
@@ -88,30 +73,6 @@ fun MangaCoverDialog(
     val iconColor = contentColorFor(MaterialTheme.colorScheme.secondaryContainer)
     val dropdownBgColor = MaterialTheme.colorScheme.surfaceVariant
     // KMK <--
-
-    // AY -->
-    val scope = rememberCoroutineScope()
-    val isCover = pagerState.currentPage != 1
-
-    val arrowIcon = if (isCover) {
-        Icons.AutoMirrored.Outlined.KeyboardArrowRight
-    } else {
-        Icons.AutoMirrored.Outlined.KeyboardArrowLeft
-    }
-
-    val (editImageStringResource, alternateImageStringResource) = if (isCover) {
-        MR.strings.action_edit_cover to AYMR.strings.action_edit_background
-    } else {
-        AYMR.strings.action_edit_background to MR.strings.action_edit_cover
-    }
-
-    val onImageSwitchClicked: () -> Unit = {
-        scope.launchUI {
-            pagerState.animateScrollToPage(1 - pagerState.currentPage)
-        }
-    }
-    // <-- AY
-
     Dialog(
         onDismissRequest = onDismissRequest,
         properties = DialogProperties(
@@ -142,14 +103,6 @@ fun MangaCoverDialog(
                                 // KMK <--
                             )
                         }
-                        // AY -->
-                        IconButton(onClick = onImageSwitchClicked) {
-                            Icon(
-                                imageVector = arrowIcon,
-                                contentDescription = stringResource(alternateImageStringResource),
-                            )
-                        }
-                        // <-- AY
                     }
                     Spacer(modifier = Modifier.weight(1f))
                     ActionsPill {
@@ -178,9 +131,7 @@ fun MangaCoverDialog(
                                 var expanded by remember { mutableStateOf(false) }
                                 IconButton(
                                     onClick = {
-                                        // AY -->
-                                        if ((isCover && isCustomCover) || (!isCover && isCustomBackground)) {
-                                            // <-- AY
+                                        if (isCustomCover) {
                                             expanded = true
                                         } else {
                                             onEditClick(EditCoverAction.EDIT)
@@ -189,7 +140,7 @@ fun MangaCoverDialog(
                                 ) {
                                     Icon(
                                         imageVector = Icons.Outlined.Edit,
-                                        contentDescription = stringResource(editImageStringResource),
+                                        contentDescription = stringResource(MR.strings.action_edit_cover),
                                         // KMK -->
                                         tint = iconColor,
                                         // KMK <--
@@ -242,49 +193,39 @@ fun MangaCoverDialog(
                     .fillMaxSize()
                     .clickableNoIndication(onClick = onDismissRequest),
             ) {
-                // AY -->
-                HorizontalPager(
-                    state = pagerState,
-                ) { page ->
-                    // <-- AY
-                    AndroidView(
-                        factory = {
-                            ReaderPageImageView(it).apply {
-                                onViewClicked = onDismissRequest
-                                clipToPadding = false
-                                clipChildren = false
-                            }
-                        },
-                        update = { view ->
-                            val context = view.context
-                            val request = ImageRequest.Builder(context)
-                                .data(manga)
-                                // AY -->
-                                .useBackground(page == 1)
-                                // <-- AY
-                                .size(Size.ORIGINAL)
-                                .memoryCachePolicy(CachePolicy.DISABLED)
-                                .target { image ->
-                                    val drawable = image.asDrawable(context.resources)
+                AndroidView(
+                    factory = {
+                        ReaderPageImageView(it).apply {
+                            onViewClicked = onDismissRequest
+                            clipToPadding = false
+                            clipChildren = false
+                        }
+                    },
+                    update = { view ->
+                        val request = ImageRequest.Builder(view.context)
+                            .data(manga)
+                            .size(Size.ORIGINAL)
+                            .memoryCachePolicy(CachePolicy.DISABLED)
+                            .target { image ->
+                                val drawable = image.asDrawable(view.context.resources)
 
-                                    // Copy bitmap in case it came from memory cache
-                                    // Because SSIV needs to thoroughly read the image
-                                    // KMK -->
-                                    val src = (drawable as? BitmapDrawable)?.bitmap
-                                    val config = src?.config?.takeIf { it != Bitmap.Config.HARDWARE } ?: Bitmap.Config.ARGB_8888
-                                    // KMK <--
-                                    val copy = src?.copy(config, false)
-                                        ?.toDrawable(context.resources)
-                                        ?: drawable
-                                    view.setImage(copy, ReaderPageImageView.Config(zoomDuration = 500))
-                                }
-                                .build()
-                            context.imageLoader.enqueue(request)
-                            view.updatePadding(top = statusBarPaddingPx, bottom = bottomPaddingPx)
-                        },
-                        modifier = Modifier.fillMaxSize(),
-                    )
-                }
+                                // Copy bitmap in case it came from memory cache
+                                // Because SSIV needs to thoroughly read the image
+                                val copy = (drawable as? BitmapDrawable)?.let {
+                                    BitmapDrawable(
+                                        view.context.resources,
+                                        it.bitmap.copy(Bitmap.Config.HARDWARE, false),
+                                    )
+                                } ?: drawable
+                                view.setImage(copy, ReaderPageImageView.Config(zoomDuration = 500))
+                            }
+                            .build()
+                        view.context.imageLoader.enqueue(request)
+
+                        view.updatePadding(top = statusBarPaddingPx, bottom = bottomPaddingPx)
+                    },
+                    modifier = Modifier.fillMaxSize(),
+                )
             }
         }
     }

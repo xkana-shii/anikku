@@ -17,12 +17,9 @@ fun MangaInfoButtons(
     showMergeWithAnotherButton: Boolean,
     onRecommendClicked: () -> Unit,
     onMergeWithAnotherClicked: () -> Unit,
-    // ANK -->
-    modifier: Modifier = Modifier,
-    // ANK <--
 ) {
     if (showRecommendsButton || showMergeWithAnotherButton) {
-        Column(modifier.fillMaxWidth()) {
+        Column(Modifier.fillMaxWidth()) {
             if (showMergeWithAnotherButton) {
                 Button(
                     onClick = onMergeWithAnotherClicked,

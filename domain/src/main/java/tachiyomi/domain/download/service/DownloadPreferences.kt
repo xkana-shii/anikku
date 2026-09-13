@@ -29,9 +29,9 @@ class DownloadPreferences(
 
     fun removeBookmarkedChapters() = preferenceStore.getBoolean("pref_remove_bookmarked", false)
 
-    // AY -->
-    fun downloadFillermarkedEpisodes() = preferenceStore.getBoolean("pref_allow_download_fillermarked", false)
-    // <-- AY
+    // AM (FILLERMARK) -->
+    fun notDownloadFillermarkedItems() = preferenceStore.getBoolean("pref_no_download_fillermarked", false)
+    // <-- AM (FILLERMARK)
 
     fun removeExcludeCategories() = preferenceStore.getStringSet(REMOVE_EXCLUDE_CATEGORIES_PREF_KEY, emptySet())
 
@@ -43,8 +43,6 @@ class DownloadPreferences(
         preferenceStore.getStringSet(DOWNLOAD_NEW_CATEGORIES_EXCLUDE_PREF_KEY, emptySet())
 
     fun downloadNewUnreadChaptersOnly() = preferenceStore.getBoolean("download_new_unread_episodes_only", false)
-
-    fun parallelSourceLimit() = preferenceStore.getInt("download_parallel_source_limit", 5)
 
     // KMK -->
     fun downloadCacheRenewInterval() = preferenceStore.getInt("download_cache_renew_interval", 1)

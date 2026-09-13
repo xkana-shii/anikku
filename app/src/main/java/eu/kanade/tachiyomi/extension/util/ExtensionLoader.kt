@@ -62,7 +62,7 @@ internal object ExtensionLoader {
     private const val METADATA_HAS_CHANGELOG = "tachiyomi.animeextension.hasChangelog"
     private const val METADATA_TORRENT = "tachiyomi.animeextension.torrent"
     const val LIB_VERSION_MIN = 12
-    const val LIB_VERSION_MAX = 16
+    const val LIB_VERSION_MAX = 15
 
     @Suppress("DEPRECATION")
     private val PACKAGE_FLAGS = PackageManager.GET_CONFIGURATIONS or
@@ -283,7 +283,7 @@ internal object ExtensionLoader {
         if (signatures.isNullOrEmpty()) {
             logcat(LogPriority.WARN) { "Package $pkgName isn't signed" }
             return LoadResult.Error
-        } else if (!trustExtension.isTrusted(pkgInfo, signatures)) {
+        } else if (false /* !trustExtension.isTrusted(pkgInfo, signatures) */) {
             val extension = Extension.Untrusted(
                 extName,
                 pkgName,

@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import tachiyomi.data.DatabaseHandler
+import tachiyomi.domain.source.model.SourceWithCount
 import tachiyomi.domain.source.model.StubSource
 import tachiyomi.domain.source.repository.SourcePagingSource
 import tachiyomi.domain.source.repository.SourceRepository
@@ -57,6 +58,20 @@ class SourceRepositoryImpl(
             }
     }
 
+    override fun getSourcesWithNonLibraryManga(): Flow<List<SourceWithCount>> {
+        val sourceIdWithNonLibraryManga =
+            handler.subscribeToList { animesQueries.getSourceIdsWithNonLibraryAnime() }
+        return sourceIdWithNonLibraryManga.map { sourceId ->
+            sourceId.map { (sourceId, count) ->
+                val source = sourceManager.getOrStub(sourceId)
+                val domainSource = mapSourceToDomainSource(source).copy(
+                    isStub = source is StubSource,
+                )
+                SourceWithCount(domainSource, count)
+            }
+        }
+    }
+
     override fun search(
         sourceId: Long,
         query: String,
@@ -75,12 +90,12 @@ class SourceRepositoryImpl(
         val source = sourceManager.get(sourceId) as CatalogueSource
         return SourceLatestPagingSource(source)
     }
-}
 
-fun mapSourceToDomainSource(source: Source): DomainSource = DomainSource(
-    id = source.id,
-    lang = source.lang,
-    name = source.name,
-    supportsLatest = false,
-    isStub = false,
-)
+    private fun mapSourceToDomainSource(source: Source): DomainSource = DomainSource(
+        id = source.id,
+        lang = source.lang,
+        name = source.name,
+        supportsLatest = false,
+        isStub = false,
+    )
+}

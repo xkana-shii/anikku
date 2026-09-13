@@ -79,7 +79,7 @@ class KitsuApi(private val client: OkHttpClient, interceptor: KitsuInterceptor) 
                     .awaitSuccess()
                     .parseAs<KitsuAddAnimeResult>()
                     .let {
-                        track.library_id = it.data.id
+                        track.remote_id = it.data.id
                         track
                     }
             }
@@ -91,7 +91,7 @@ class KitsuApi(private val client: OkHttpClient, interceptor: KitsuInterceptor) 
             val data = buildJsonObject {
                 putJsonObject("data") {
                     put("type", "libraryEntries")
-                    put("id", track.library_id)
+                    put("id", track.remote_id)
                     putJsonObject("attributes") {
                         put("status", track.toApiStatus())
                         put("progress", track.last_episode_seen.toInt())
@@ -105,7 +105,7 @@ class KitsuApi(private val client: OkHttpClient, interceptor: KitsuInterceptor) 
 
             authClient.newCall(
                 Request.Builder()
-                    .url("${BASE_URL}library-entries/${track.library_id}")
+                    .url("${BASE_URL}library-entries/${track.remote_id}")
                     .headers(
                         headersOf("Content-Type", VND_API_JSON),
                     )
@@ -122,7 +122,7 @@ class KitsuApi(private val client: OkHttpClient, interceptor: KitsuInterceptor) 
         withIOContext {
             authClient.newCall(
                 DELETE(
-                    "${BASE_URL}library-entries/${track.libraryId}",
+                    "${BASE_URL}library-entries/${track.remoteId}",
                     headers = headersOf("Content-Type", VND_API_JSON),
                 ),
             )
@@ -195,7 +195,7 @@ class KitsuApi(private val client: OkHttpClient, interceptor: KitsuInterceptor) 
     suspend fun getLibAnime(track: Track): Track {
         return withIOContext {
             val url = "${BASE_URL}library-entries".toUri().buildUpon()
-                .encodedQuery("filter[id]=${track.library_id}")
+                .encodedQuery("filter[id]=${track.remote_id}")
                 .appendQueryParameter("include", "anime")
                 .build()
             with(json) {
@@ -245,12 +245,11 @@ class KitsuApi(private val client: OkHttpClient, interceptor: KitsuInterceptor) 
         }
     }
 
-    // KMK: Got CloudFlare blocked, possible reason is using old API
     suspend fun getAnimeMetadata(track: DomainTrack): TrackMangaMetadata {
         return withIOContext {
-            val query = $$"""
-            |query($libraryId: ID!, $staffCount: Int) {
-                |findLibraryEntryById(id: $libraryId) {
+            val query = """
+            |query(${'$'}libraryId: ID!, ${'$'}staffCount: Int) {
+                |findLibraryEntryById(id: ${'$'}libraryId) {
                     |media {
                         |id
                         |titles {
@@ -262,7 +261,7 @@ class KitsuApi(private val client: OkHttpClient, interceptor: KitsuInterceptor) 
                             |}
                         |}
                         |description
-                        |staff(first: $staffCount) {
+                        |staff(first: ${'$'}staffCount) {
                             |nodes {
                                 |role
                                 |person {

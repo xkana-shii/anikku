@@ -6,7 +6,6 @@ import eu.kanade.tachiyomi.animesource.model.Hoster
 import eu.kanade.tachiyomi.animesource.model.Hoster.Companion.toHosterList
 import eu.kanade.tachiyomi.animesource.model.Video
 import eu.kanade.tachiyomi.animesource.online.AnimeHttpSource
-import eu.kanade.tachiyomi.animesource.online.ParsedAnimeHttpSource
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.all.MergedSource
@@ -91,26 +90,6 @@ class EpisodeLoader {
             )
         }
 
-        private fun checkHasHosters(source: AnimeHttpSource): Boolean {
-            var current: Class<in AnimeHttpSource> = source.javaClass
-            while (true) {
-                if (current == ParsedAnimeHttpSource::class.java ||
-                    current == AnimeHttpSource::class.java ||
-                    current == AnimeSource::class.java
-                ) {
-                    return false
-                }
-                if (current.declaredMethods.any {
-                        it.name in
-                            listOf("getHosterList", "hosterListRequest", "hosterListParse")
-                    }
-                ) {
-                    return true
-                }
-                current = current.superclass ?: return false
-            }
-        }
-
         /**
          * Returns a list of hosters when the [episode] is online.
          *
@@ -118,8 +97,8 @@ class EpisodeLoader {
          * @param source the online source of the episode.
          */
         private suspend fun getHostersOnHttp(episode: Episode, source: HttpSource): List<Hoster> {
-            // TODO(16): Remove else block when dropping support for ext lib <1.6
-            return if (checkHasHosters(source)) {
+            // TODO(1.6): Remove else block when dropping support for ext lib <1.6
+            return if (source.javaClass.declaredMethods.any { it.name == "getHosterList" }) {
                 source.getHosterList(episode.toSEpisode())
                     .let { source.run { it.sortHosters() } }
             } else {
@@ -145,7 +124,7 @@ class EpisodeLoader {
             return try {
                 val video = downloadManager.buildVideo(source, anime, episode)
                 listOf(video).toHosterList()
-            } catch (_: Throwable) {
+            } catch (e: Throwable) {
                 emptyList()
             }
         }
@@ -171,7 +150,7 @@ class EpisodeLoader {
                     "Local source: ${episode.url}",
                 )
                 listOf(video).toHosterList()
-            } catch (_: Exception) {
+            } catch (e: Exception) {
                 emptyList()
             }
         }
@@ -185,17 +164,11 @@ class EpisodeLoader {
          * @param hoster the hoster.
          */
         private suspend fun getVideos(source: AnimeSource, hoster: Hoster): List<Video> {
-            val videos = when {
+            return when {
                 hoster.videoList != null && source is AnimeHttpSource -> hoster.videoList!!.parseVideoUrls(source)
                 hoster.videoList != null -> hoster.videoList!!
                 source is AnimeHttpSource -> getVideosOnHttp(source, hoster)
                 else -> error("source not supported")
-            }
-
-            return if (source is AnimeHttpSource) {
-                source.run { videos.sortVideos() }
-            } else {
-                videos
             }
         }
 
@@ -207,10 +180,11 @@ class EpisodeLoader {
          */
         private suspend fun getVideosOnHttp(source: AnimeHttpSource, hoster: Hoster): List<Video> {
             return source.getVideoList(hoster)
+                .let { source.run { it.sortVideos() } }
                 .parseVideoUrls(source)
         }
 
-        // TODO(16): Remove after ext lib bump
+        // TODO(1.6): Remove after ext lib bump
         private suspend fun List<Video>.parseVideoUrls(source: AnimeHttpSource): List<Video> {
             return this.map { video ->
                 if (video.videoUrl != "null") return@map video
@@ -220,11 +194,7 @@ class EpisodeLoader {
             }
         }
 
-        suspend fun loadHosterVideos(source: AnimeSource, hoster: Hoster, force: Boolean = false): HosterState {
-            if (!force && hoster.lazy) {
-                return HosterState.Idle(hoster.hosterName)
-            }
-
+        suspend fun loadHosterVideos(source: AnimeSource, hoster: Hoster): HosterState {
             return try {
                 val videos = getVideos(source, hoster)
                 HosterState.Ready(hoster.hosterName, videos, List(videos.size) { Video.State.Queue })

@@ -3,7 +3,6 @@
 package eu.kanade.tachiyomi.source
 
 import android.content.Context
-import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.extension.ExtensionManager
 import eu.kanade.tachiyomi.source.online.HttpSource
@@ -21,7 +20,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import tachiyomi.domain.manga.interactor.GetMergedReferencesById
+import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.source.model.StubSource
 import tachiyomi.domain.source.repository.StubSourceRepository
 import tachiyomi.domain.source.service.SourceManager
@@ -53,11 +52,8 @@ class AndroidSourceManager(
     }
 
     // SY -->
-    private val sourcePreferences: SourcePreferences by injectLazy()
+    private val preferences: UnsortedPreferences by injectLazy()
     // SY <--
-    // KMK -->
-    private val getMergedReferencesById: GetMergedReferencesById by injectLazy()
-    // KMK <--
 
     init {
         scope.launch {
@@ -70,13 +66,8 @@ class AndroidSourceManager(
                                 Injekt.get(),
                                 Injekt.get(),
                                 // SY -->
-                                sourcePreferences.allowLocalSourceHiddenFolders()::get,
+                                preferences.allowLocalSourceHiddenFolders()::get,
                                 // SY <--
-                                // AY -->
-                                Injekt.get(),
-                                Injekt.get(),
-                                Injekt.get(),
-                                // <-- AY
                             ),
                         ),
                     ).apply {
@@ -138,14 +129,6 @@ class AndroidSourceManager(
             it.id !in BlacklistedSources.HIDDEN_SOURCES
         }
     // SY <--
-
-    // KMK -->
-    override suspend fun getMergedSources(mangaId: Long): List<Source> {
-        val sources = getMergedReferencesById.await(mangaId)
-        return sources.distinctBy { it.mangaSourceId }
-            .map { getOrStub(it.mangaSourceId) }
-    }
-    // KMK <--
 
     private fun registerStubSource(source: StubSource) {
         scope.launch {

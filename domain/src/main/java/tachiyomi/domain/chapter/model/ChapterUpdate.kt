@@ -5,9 +5,9 @@ data class ChapterUpdate(
     val mangaId: Long? = null,
     val read: Boolean? = null,
     val bookmark: Boolean? = null,
-    // AY -->
+    // AM (FILLERMARK) -->
     val fillermark: Boolean? = null,
-    // <-- AY
+    // AM (FILLERMARK) <--
     val lastPageRead: Long? = null,
     val totalPages: Long? = null,
     val dateFetch: Long? = null,
@@ -17,10 +17,6 @@ data class ChapterUpdate(
     val dateUpload: Long? = null,
     val chapterNumber: Double? = null,
     val scanlator: String? = null,
-    // AY -->
-    val summary: String? = null,
-    val previewUrl: String? = null,
-    // <-- AY
     val version: Long? = null,
 )
 
@@ -30,9 +26,9 @@ fun Chapter.toChapterUpdate(): ChapterUpdate {
         mangaId,
         read,
         bookmark,
-        // AY -->
+        // AM (FILLERMARK) -->
         fillermark,
-        // <-- AY
+        // AM (FILLERMARK) <--
         lastPageRead,
         totalPages,
         dateFetch,
@@ -42,10 +38,6 @@ fun Chapter.toChapterUpdate(): ChapterUpdate {
         dateUpload,
         chapterNumber,
         scanlator,
-        // AY -->
-        summary,
-        previewUrl,
-        // <-- AY
         version,
     )
 }

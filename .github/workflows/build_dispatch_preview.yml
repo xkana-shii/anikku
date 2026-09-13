@@ -30,7 +30,7 @@ jobs:
 
     steps:
       - name: Clone repo
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
           fetch-depth: 0
 
@@ -50,13 +50,13 @@ jobs:
 
       - name: Get branch names
         id: branch_names
-        uses: tj-actions/branch-names@5250492686b253f06fa55861556d1027b067aeb5 # v9.0.2
+        uses: tj-actions/branch-names@dde14ac574a8b9b1cedc59a1cf312788af43d8d8 # v8.2.1
 
       - name: Invoke workflow in preview repo
-        uses: benc-uk/workflow-dispatch@d004979be141727c7a17c28f603e2facc40d0855 # v1.3.3
+        uses: benc-uk/workflow-dispatch@e2e5e9a103e331dad343f381a29e654aea3cf8fc # v1.2.4
         with:
           workflow: build_app.yml
-          repo: komikku-app/anikku-preview
+          repo: kana-shii/anikku-preview
           ref: "refs/heads/main"
-          token: "${{ secrets.BOT_PAT }}"
+          token: "${{ secrets.BOT_PATT }}"
           inputs: '{ "git-ref": "${{ steps.branch_names.outputs.current_branch }}" }'

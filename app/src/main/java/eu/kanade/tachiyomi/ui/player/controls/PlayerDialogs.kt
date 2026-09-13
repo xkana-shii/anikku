@@ -5,7 +5,8 @@ import eu.kanade.tachiyomi.data.database.models.Episode
 import eu.kanade.tachiyomi.ui.player.Dialogs
 import eu.kanade.tachiyomi.ui.player.controls.components.dialogs.EpisodeListDialog
 import eu.kanade.tachiyomi.ui.player.controls.components.dialogs.IntegerPickerDialog
-import kotlinx.collections.immutable.ImmutableList
+import eu.kanade.tachiyomi.ui.player.controls.components.dialogs.RereadPromptDialog
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun PlayerDialogs(
@@ -14,12 +15,15 @@ fun PlayerDialogs(
     // Episode list
     episodeDisplayMode: Long?,
     currentEpisodeIndex: Int,
-    episodeList: ImmutableList<Episode>,
+    episodeList: List<Episode>,
     dateRelativeTime: Boolean,
-    dateFormat: String,
+    dateFormat: DateTimeFormatter,
     onBookmarkClicked: (Long?, Boolean) -> Unit,
-    onFillermarkClicked: (Long?, Boolean) -> Unit,
     onEpisodeClicked: (Long?) -> Unit,
+
+    // Reread prompt
+    currentEpisodeNumber: Float?, // Pass the episode/chapter number
+    onConfirmReread: () -> Unit, // Callback for confirming reread
 
     onDismissRequest: () -> Unit,
 ) {
@@ -33,7 +37,6 @@ fun PlayerDialogs(
                 dateRelativeTime = dateRelativeTime,
                 dateFormat = dateFormat,
                 onBookmarkClicked = onBookmarkClicked,
-                onFillermarkClicked = onFillermarkClicked,
                 onEpisodeClicked = onEpisodeClicked,
                 onDismissRequest = onDismissRequest,
             )
@@ -48,6 +51,13 @@ fun PlayerDialogs(
                 title = dialogShown.title,
                 onChange = dialogShown.onChange,
                 onDismissRequest = dialogShown.onDismissRequest,
+            )
+        }
+        Dialogs.RereadPrompt -> {
+            RereadPromptDialog(
+                currentEpisodeNumber = currentEpisodeNumber,
+                onConfirm = onConfirmReread,
+                onDismissRequest = onDismissRequest,
             )
         }
     }

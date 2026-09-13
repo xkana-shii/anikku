@@ -13,7 +13,7 @@ jobs:
 
     steps:
       - name: Update website on release
-        uses: benc-uk/workflow-dispatch@d004979be141727c7a17c28f603e2facc40d0855 # v1.3.3
+        uses: benc-uk/workflow-dispatch@e2e5e9a103e331dad343f381a29e654aea3cf8fc # v1.2.4
         with:
           workflow: Deploy
           repo: anikku-app/anikku-app.github.io

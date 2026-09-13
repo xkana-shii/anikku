@@ -24,9 +24,9 @@ import eu.kanade.presentation.components.NavigatorAdaptiveSheet
 import eu.kanade.presentation.manga.EpisodeOptionsDialogScreen
 import eu.kanade.presentation.updates.UpdateScreen
 import eu.kanade.presentation.updates.UpdatesDeleteConfirmationDialog
-import eu.kanade.presentation.updates.UpdatesFilterDialog
 import eu.kanade.presentation.util.Tab
 import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.data.LibraryUpdateStatus
 import eu.kanade.tachiyomi.data.connections.discord.DiscordRPCService
 import eu.kanade.tachiyomi.data.connections.discord.DiscordScreen
 import eu.kanade.tachiyomi.ui.download.DownloadQueueScreen
@@ -42,13 +42,11 @@ import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.domain.updates.model.UpdatesWithRelations
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.i18n.stringResource
-import tachiyomi.presentation.core.util.collectAsState
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 
 data object UpdatesTab : Tab {
-    @Suppress("unused")
     private fun readResolve(): Any = UpdatesTab
 
     override val options: TabOptions
@@ -82,27 +80,26 @@ data object UpdatesTab : Tab {
         val context = LocalContext.current
         val navigator = LocalNavigator.currentOrThrow
         val screenModel = rememberScreenModel { UpdatesScreenModel() }
-        val settingsScreenModel = rememberScreenModel { UpdatesSettingsScreenModel() }
         val state by screenModel.state.collectAsState()
         val scope = rememberCoroutineScope()
-
-        // KMK -->
-        val usePanoramaCover by settingsScreenModel.updatesPreferences.usePanoramaCover().collectAsState()
-        // KMK <--
+        val libraryUpdateStatus = Injekt.get<LibraryUpdateStatus>()
+        val libraryUpdateInProgress by libraryUpdateStatus.isRunning.collectAsState(initial = false)
 
         UpdateScreen(
             state = state,
             snackbarHostState = screenModel.snackbarHostState,
             lastUpdated = screenModel.lastUpdated,
+            libraryUpdateInProgress = libraryUpdateInProgress,
             onClickCover = { item -> navigator.push(MangaScreen(item.update.mangaId)) },
             onSelectAll = screenModel::toggleAllSelection,
             onInvertSelection = screenModel::invertSelection,
             onUpdateLibrary = screenModel::updateLibrary,
+            onCancelUpdateLibrary = { screenModel.cancelLibraryUpdate(context) },
             onDownloadChapter = screenModel::downloadChapters,
             onMultiBookmarkClicked = screenModel::bookmarkUpdates,
-            // AY -->
+            // AM (FILLERMARK) -->
             onMultiFillermarkClicked = screenModel::fillermarkUpdates,
-            // <-- AY
+            // <-- AM (FILLERMARK)
             onMultiMarkAsReadClicked = screenModel::markUpdatesRead,
             onMultiDeleteClicked = screenModel::showConfirmDeleteChapters,
             // KMK -->
@@ -117,10 +114,7 @@ data object UpdatesTab : Tab {
                 }
             },
             onCalendarClicked = { navigator.push(UpcomingScreen()) },
-            onFilterClicked = screenModel::showFilterDialog,
-            hasActiveFilters = state.hasActiveFilters,
             // KMK -->
-            usePanoramaCover = usePanoramaCover,
             collapseToggle = screenModel::toggleExpandedState,
             // KMK <--
         )
@@ -133,12 +127,7 @@ data object UpdatesTab : Tab {
                     onConfirm = { screenModel.deleteChapters(dialog.toDelete) },
                 )
             }
-            is UpdatesScreenModel.Dialog.FilterSheet -> {
-                UpdatesFilterDialog(
-                    onDismissRequest = onDismissDialog,
-                    screenModel = settingsScreenModel,
-                )
-            }
+
             is UpdatesScreenModel.Dialog.ShowQualities -> {
                 EpisodeOptionsDialogScreen.onDismissDialog = onDismissDialog
                 NavigatorAdaptiveSheet(

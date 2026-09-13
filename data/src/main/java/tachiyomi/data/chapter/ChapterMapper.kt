@@ -11,9 +11,9 @@ object ChapterMapper {
         scanlator: String?,
         read: Boolean,
         bookmark: Boolean,
-        // AY -->
+        // AM (FILLERMARK) -->
         fillermark: Boolean,
-        // <-- AY
+        // <-- AM (FILLERMARK)
         lastPageRead: Long,
         totalSeconds: Long,
         chapterNumber: Double,
@@ -24,18 +24,14 @@ object ChapterMapper {
         version: Long,
         @Suppress("UNUSED_PARAMETER")
         isSyncing: Long,
-        // AY -->
-        summary: String?,
-        previewUrl: String?,
-        // <-- AY
     ): Chapter = Chapter(
         id = id,
         mangaId = mangaId,
         read = read,
         bookmark = bookmark,
-        // AY -->
+        // AM (FILLERMARK) -->
         fillermark = fillermark,
-        // <-- AY
+        // <-- AM (FILLERMARK)
         lastPageRead = lastPageRead,
         totalPages = totalSeconds,
         dateFetch = dateFetch,
@@ -45,10 +41,6 @@ object ChapterMapper {
         dateUpload = dateUpload,
         chapterNumber = chapterNumber,
         scanlator = scanlator,
-        // AY -->
-        summary = summary,
-        previewUrl = previewUrl,
-        // <-- AY
         lastModifiedAt = lastModifiedAt,
         version = version,
     )

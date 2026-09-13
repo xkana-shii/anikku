@@ -46,7 +46,7 @@ class SyncSettingsSelector : Screen() {
             LazyColumnWithAction(
                 contentPadding = contentPadding,
                 actionLabel = stringResource(MR.strings.action_save),
-                actionEnabled = state.options.canCreate(),
+                actionEnabled = true,
                 onClickAction = {
                     navigator.pop()
                 },
@@ -123,10 +123,6 @@ private class SyncSettingsSelectorModel(
                 readEntries = syncSettings.seenEntries,
                 savedSearchesFeeds = syncSettings.savedSearchesFeeds,
                 // SY <--
-
-                // ANK -->
-                seasons = syncSettings.seasons,
-                // ANK <--
             )
         }
 
@@ -147,10 +143,6 @@ private class SyncSettingsSelectorModel(
                 seenEntries = backupOptions.readEntries,
                 savedSearchesFeeds = backupOptions.savedSearchesFeeds,
                 // SY <--
-
-                // ANK -->
-                seasons = backupOptions.seasons,
-                // ANK <--
             )
         }
     }

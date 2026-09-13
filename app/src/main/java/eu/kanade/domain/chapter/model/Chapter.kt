@@ -12,14 +12,7 @@ fun Chapter.toSChapter(): SChapter {
         it.name = name
         it.date_upload = dateUpload
         it.chapter_number = chapterNumber.toFloat()
-        // AY -->
-        it.fillermark = fillermark
-        // <-- AY
         it.scanlator = scanlator
-        // AY -->
-        it.summary = summary
-        it.preview_url = previewUrl
-        // <-- AY
     }
 }
 
@@ -29,14 +22,7 @@ fun Chapter.copyFromSChapter(sChapter: SChapter): Chapter {
         url = sChapter.url,
         dateUpload = sChapter.date_upload,
         chapterNumber = sChapter.chapter_number.toDouble(),
-        // AY -->
-        fillermark = sChapter.fillermark,
-        // <-- AY
         scanlator = sChapter.scanlator?.ifBlank { null }?.trim(),
-        // AY -->
-        summary = sChapter.summary?.ifBlank { null },
-        previewUrl = sChapter.preview_url?.ifBlank { null },
-        // <-- AY
     )
 }
 
@@ -46,15 +32,11 @@ fun Chapter.toDbChapter(): DbChapter = ChapterImpl().also {
     it.url = url
     it.name = name
     it.scanlator = scanlator
-    // AY -->
-    it.summary = summary
-    it.preview_url = previewUrl
-    // <-- AY
     it.read = read
     it.bookmark = bookmark
-    // AY -->
+    // AM (FILLERMARK) -->
     it.fillermark = fillermark
-    // <-- AY
+    // <-- AM (FILLERMARK)
     it.last_page_read = lastPageRead
     it.total_pages = totalPages
     it.date_fetch = dateFetch

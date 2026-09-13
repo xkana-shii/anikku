@@ -33,12 +33,10 @@ import eu.kanade.presentation.components.TabbedDialog
 import eu.kanade.presentation.components.TabbedDialogPaddings
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.core.common.preference.TriState
-import tachiyomi.domain.anime.model.Anime
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.aniyomi.AYMR
 import tachiyomi.i18n.ank.AMR
-import tachiyomi.presentation.core.components.CheckboxItem
 import tachiyomi.presentation.core.components.LabeledCheckbox
 import tachiyomi.presentation.core.components.RadioItem
 import tachiyomi.presentation.core.components.SortItem
@@ -56,16 +54,12 @@ fun ChapterSettingsDialog(
     onUnreadFilterChanged: (TriState) -> Unit,
     onBookmarkedFilterChanged: (TriState) -> Unit,
     scanlatorFilterActive: Boolean,
-    onScanlatorFilterClicked: () -> Unit,
-    // AY -->
+    onScanlatorFilterClicked: (() -> Unit),
+    // AM (FILLERMARK) -->
     onFillermarkedFilterChanged: (TriState) -> Unit,
-    // <-- AY
+    // <-- AM (FILLERMARK)
     onSortModeChanged: (Long) -> Unit,
     onDisplayModeChanged: (Long) -> Unit,
-    // AY -->
-    onShowPreviewsEnabled: (Long) -> Unit,
-    onShowSummariesEnabled: (Long) -> Unit,
-    // <-- AY
     onSetAsDefault: (applyToExistingManga: Boolean) -> Unit,
     onResetToDefault: () -> Unit,
 ) {
@@ -120,10 +114,10 @@ fun ChapterSettingsDialog(
                         onBookmarkedFilterChanged = onBookmarkedFilterChanged,
                         scanlatorFilterActive = scanlatorFilterActive,
                         onScanlatorFilterClicked = onScanlatorFilterClicked,
-                        // AY -->
+                        // AM (FILLERMARK) -->
                         fillermarkedFilter = manga?.fillermarkedFilter ?: TriState.DISABLED,
                         onFillermarkedFilterChanged = onFillermarkedFilterChanged,
-                        // <-- AY
+                        // <-- AM (FILLERMARK)
                     )
                 }
                 1 -> {
@@ -136,13 +130,7 @@ fun ChapterSettingsDialog(
                 2 -> {
                     DisplayPage(
                         displayMode = manga?.displayMode ?: 0,
-                        // AY -->
-                        onDisplayModeChanged = onDisplayModeChanged,
-                        showPreviews = manga?.showPreviews() ?: true,
-                        onShowPreviewsEnabled = onShowPreviewsEnabled,
-                        showSummaries = manga?.showSummaries() ?: true,
-                        onShowSummariesEnabled = onShowSummariesEnabled,
-                        // <-- AY
+                        onItemSelected = onDisplayModeChanged,
                     )
                 }
             }
@@ -159,11 +147,11 @@ private fun ColumnScope.FilterPage(
     bookmarkedFilter: TriState,
     onBookmarkedFilterChanged: (TriState) -> Unit,
     scanlatorFilterActive: Boolean,
-    onScanlatorFilterClicked: () -> Unit,
-    // AY -->
+    onScanlatorFilterClicked: (() -> Unit),
+    // AM (FILLERMARK) -->
     fillermarkedFilter: TriState,
     onFillermarkedFilterChanged: (TriState) -> Unit,
-    // <-- AY
+    // <-- AM (FILLERMARK)
 ) {
     TriStateItem(
         label = stringResource(MR.strings.label_downloaded),
@@ -180,13 +168,13 @@ private fun ColumnScope.FilterPage(
         state = bookmarkedFilter,
         onClick = onBookmarkedFilterChanged,
     )
-    // AY -->
+    // AM (FILLERMARK) -->
     TriStateItem(
         label = stringResource(AMR.strings.action_filter_fillermarked),
         state = fillermarkedFilter,
         onClick = onFillermarkedFilterChanged,
     )
-    // <-- AY
+    // <-- AM (FILLERMARK)
     ScanlatorFilterItem(
         active = scanlatorFilterActive,
         onClick = onScanlatorFilterClicked,
@@ -233,7 +221,7 @@ private fun ColumnScope.SortPage(
         AYMR.strings.sort_by_episode_number to Manga.EPISODE_SORTING_NUMBER,
         MR.strings.sort_by_upload_date to Manga.EPISODE_SORTING_UPLOAD_DATE,
         MR.strings.action_sort_alpha to Manga.EPISODE_SORTING_ALPHABET,
-    ).forEach { (titleRes, mode) ->
+    ).map { (titleRes, mode) ->
         SortItem(
             label = stringResource(titleRes),
             sortDescending = sortDescending.takeIf { sortingMode == mode },
@@ -245,45 +233,22 @@ private fun ColumnScope.SortPage(
 @Composable
 private fun ColumnScope.DisplayPage(
     displayMode: Long,
-    // AY -->
-    onDisplayModeChanged: (Long) -> Unit,
-    showPreviews: Boolean,
-    onShowPreviewsEnabled: (Long) -> Unit,
-    showSummaries: Boolean,
-    onShowSummariesEnabled: (Long) -> Unit,
-    // <-- AY
+    onItemSelected: (Long) -> Unit,
 ) {
     listOf(
         MR.strings.show_title to Manga.EPISODE_DISPLAY_NAME,
         AYMR.strings.show_episode_number to Manga.EPISODE_DISPLAY_NUMBER,
-    ).forEach { (titleRes, mode) ->
+    ).map { (titleRes, mode) ->
         RadioItem(
             label = stringResource(titleRes),
             selected = displayMode == mode,
-            onClick = { onDisplayModeChanged(mode) },
+            onClick = { onItemSelected(mode) },
         )
     }
-    // AY -->
-    val showPreviewsFlag = if (showPreviews) Anime.EPISODE_SHOW_NOT_PREVIEWS else Anime.EPISODE_SHOW_PREVIEWS
-    CheckboxItem(
-        label = stringResource(AYMR.strings.show_episode_previews),
-        checked = showPreviews,
-        onClick = { onShowPreviewsEnabled(showPreviewsFlag) },
-    )
-    val showSummariesFlag = if (showSummaries) Anime.EPISODE_SHOW_NOT_SUMMARIES else Anime.EPISODE_SHOW_SUMMARIES
-    CheckboxItem(
-        label = stringResource(AYMR.strings.show_episode_summaries),
-        checked = showSummaries,
-        onClick = { onShowSummariesEnabled(showSummariesFlag) },
-    )
-    // <-- AY
 }
 
 @Composable
-internal fun SetAsDefaultDialog(
-    // AY -->
-    isEpisode: Boolean = true,
-    // <-- AY
+private fun SetAsDefaultDialog(
     onDismissRequest: () -> Unit,
     onConfirmed: (optionalChecked: Boolean) -> Unit,
 ) {
@@ -291,17 +256,7 @@ internal fun SetAsDefaultDialog(
 
     AlertDialog(
         onDismissRequest = onDismissRequest,
-        title = {
-            Text(
-                // AY -->
-                text = if (isEpisode) {
-                    stringResource(AYMR.strings.episode_settings)
-                } else {
-                    stringResource(AYMR.strings.season_settings)
-                },
-                // <-- AY
-            )
-        },
+        title = { Text(text = stringResource(AYMR.strings.episode_settings)) },
         text = {
             Column(
                 verticalArrangement = Arrangement.spacedBy(12.dp),

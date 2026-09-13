@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.ui.manga
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.BackHandler
@@ -41,10 +42,8 @@ import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.hazeEffect
 import dev.icerock.moko.resources.StringResource
 import eu.kanade.core.util.ifSourcesLoaded
-import eu.kanade.domain.manga.model.hasCustomBackground
 import eu.kanade.domain.manga.model.hasCustomCover
 import eu.kanade.domain.manga.model.toSManga
-import eu.kanade.presentation.anime.SeasonSettingsDialog
 import eu.kanade.presentation.browse.components.BulkFavoriteDialogs
 import eu.kanade.presentation.category.components.ChangeCategoryDialog
 import eu.kanade.presentation.components.NavigatorAdaptiveSheet
@@ -64,7 +63,6 @@ import eu.kanade.presentation.util.AssistContentScreen
 import eu.kanade.presentation.util.Screen
 import eu.kanade.presentation.util.formatChapterNumber
 import eu.kanade.presentation.util.isTabletUi
-import eu.kanade.tachiyomi.animesource.model.FetchType
 import eu.kanade.tachiyomi.data.torrentServer.service.TorrentServerService
 import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.source.Source
@@ -77,7 +75,9 @@ import eu.kanade.tachiyomi.torrentServer.TorrentServerUtils
 import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import eu.kanade.tachiyomi.ui.browse.extension.ExtensionsScreen
 import eu.kanade.tachiyomi.ui.browse.extension.details.SourcePreferencesScreen
-import eu.kanade.tachiyomi.ui.browse.migration.season.MigrateSeasonSelectScreen
+import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationScreen
+import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateDialog
+import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateDialogScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.SourcesScreen
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.ui.browse.source.feed.SourceFeedScreen
@@ -102,14 +102,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.launch
 import logcat.LogPriority
-import mihon.feature.migration.config.MigrationConfigScreen
-import mihon.feature.migration.dialog.MigrateMangaDialog
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.launchUI
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.core.common.util.lang.withNonCancellableContext
 import tachiyomi.core.common.util.system.logcat
+import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.episode.model.Episode
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.interactor.GetRemoteManga
@@ -271,12 +270,10 @@ class MangaScreen(
             navigateUp = navigator::pop,
             onChapterClicked = { chapter, alt ->
                 scope.launchIO {
-                    if ((
-                            successState.source is MergedSource &&
-                                successState.source.getMergedReferenceSources(screenModel.manga).any {
-                                    it.isSourceForTorrents()
-                                }
-                            ) ||
+                    if (successState.source is MergedSource &&
+                        successState.source.getMergedReferenceSources(screenModel.manga).any {
+                            it.isSourceForTorrents()
+                        } ||
                         successState.source.isSourceForTorrents()
                     ) {
                         TorrentServerService.start()
@@ -287,9 +284,7 @@ class MangaScreen(
                     openEpisode(context, chapter, extPlayer)
                 }
             },
-            onDownloadChapter = screenModel::runChapterDownloadActions.takeIf {
-                !successState.source.isLocalOrStub() /* AY --> */ && successState.manga.fetchType == FetchType.Episodes /* <-- AY */
-            },
+            onDownloadChapter = screenModel::runChapterDownloadActions.takeIf { !successState.source.isLocalOrStub() },
             onAddToLibraryClicked = {
                 screenModel.toggleFavorite()
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -376,19 +371,21 @@ class MangaScreen(
                     // KMK <--
                 }
             }.takeIf { isHttpSource },
-            onDownloadActionClicked = screenModel::runDownloadAction.takeIf {
-                !successState.source.isLocalOrStub() /* AY --> */ && successState.manga.fetchType == FetchType.Episodes /* <-- AY */
-            },
+            onDownloadActionClicked = screenModel::runDownloadAction.takeIf { !successState.source.isLocalOrStub() },
             onEditCategoryClicked = screenModel::showChangeCategoryDialog.takeIf { successState.manga.favorite },
             onEditFetchIntervalClicked = screenModel::showSetFetchIntervalDialog.takeIf {
                 successState.manga.favorite
             },
             onMigrateClicked = {
-                navigator.push(MigrationConfigScreen(successState.manga.id))
+                // SY -->
+                PreMigrationScreen.navigateToMigration(
+                    Injekt.get<UnsortedPreferences>().skipPreMigration().get(),
+                    navigator,
+                    listOfNotNull(successState.manga.id),
+                )
+                // SY <--
             }.takeIf { successState.manga.favorite },
-            onSkipIntroClicked = screenModel::showAnimeSkipIntroDialog.takeIf {
-                successState.manga.favorite /* AY --> */ && successState.manga.fetchType == FetchType.Episodes /* <-- AY */
-            },
+            changeAnimeSkipIntro = screenModel::showAnimeSkipIntroDialog.takeIf { successState.manga.favorite },
             // SY -->
             onEditInfoClicked = screenModel::showEditMangaInfoDialog,
             onRecommendClicked = {
@@ -402,9 +399,9 @@ class MangaScreen(
             // SY <--
             onEditNotesClicked = { navigator.push(MangaNotesScreen(manga = successState.manga)) },
             onMultiBookmarkClicked = screenModel::bookmarkChapters,
-            // AY -->
+            // AM (FILLERMARK) -->
             onMultiFillermarkClicked = screenModel::fillermarkChapters,
-            // <-- AY
+            // <-- AM (FILLERMARK)
             onMultiMarkAsReadClicked = screenModel::markChaptersRead,
             onMarkPreviousAsReadClicked = screenModel::markPreviousChapterRead,
             onMultiDeleteClicked = screenModel::showDeleteChapterDialog,
@@ -426,7 +423,7 @@ class MangaScreen(
                         context,
                         navigator,
                         successState.mergedData,
-                        action = { _, _, manga, source -> screenModel.openMangaFolder(source, manga) },
+                        action = { _, nav, manga, source -> screenModel.openMangaFolder(source, manga) },
                         titleRes = KMR.strings.action_open_folder,
                     )
                 }
@@ -467,35 +464,16 @@ class MangaScreen(
             coverRatio = coverRatio,
             hazeState = hazeState,
             // KMK <--
-            // AY -->
-            onSeasonClicked = {
-                navigator.push(MangaScreen(it.id))
-            },
-            onContinueWatchingClicked = {
-                scope.launchIO {
-                    val episode = screenModel.getNextUnseenEpisode(it.anime)
-                    episode?.let { ep ->
-                        openEpisode(context, ep, screenModel.alwaysUseExternalPlayer)
-                    }
-                }
-            },
-            // <-- AY
         )
 
         var showScanlatorsDialog by remember { mutableStateOf(false) }
 
         val onDismissRequest = {
             screenModel.dismissDialog()
-            // KMK -->
-            if (screenModel.autoOpenTrack && screenModel.showTrackDialogAfterCategorySelection &&
-                // AY -->
-                successState.manga.fetchType == FetchType.Episodes
-                // <-- AY
-            ) {
+            if (screenModel.autoOpenTrack && screenModel.showTrackDialogAfterCategorySelection) {
                 screenModel.showTrackDialogAfterCategorySelection = false
-                if (successState.manga.favorite) screenModel.showTrackDialog()
+                screenModel.showTrackDialog()
             }
-            // KMK <--
         }
         when (val dialog = successState.dialog) {
             null -> {}
@@ -533,67 +511,36 @@ class MangaScreen(
             }
 
             is MangaScreenModel.Dialog.Migrate -> {
-                MigrateMangaDialog(
-                    current = dialog.current,
-                    target = dialog.target,
-                    // Initiated from the context of [dialog.target] so we show [dialog.current].
-                    onClickTitle = { navigator.push(MangaScreen(dialog.current.id)) },
-                    // AY -->
-                    onClickSeasons = { navigator.push(MigrateSeasonSelectScreen(dialog.current, dialog.target)) },
-                    // <-- AY
+                MigrateDialog(
+                    oldManga = dialog.oldManga,
+                    newManga = dialog.newManga,
+                    screenModel = rememberScreenModel { MigrateDialogScreenModel() },
                     onDismissRequest = onDismissRequest,
+                    onClickTitle = { navigator.push(MangaScreen(dialog.oldManga.id)) },
+                    onPopScreen = onDismissRequest,
                 )
             }
-            MangaScreenModel.Dialog.EpisodeSettingsSheet -> ChapterSettingsDialog(
+            MangaScreenModel.Dialog.SettingsSheet -> ChapterSettingsDialog(
                 onDismissRequest = onDismissRequest,
                 manga = successState.manga,
                 onDownloadFilterChanged = screenModel::setDownloadedFilter,
                 onUnreadFilterChanged = screenModel::setUnreadFilter,
                 onBookmarkedFilterChanged = screenModel::setBookmarkedFilter,
-                // AY -->
+                // AM (FILLERMARK) -->
                 onFillermarkedFilterChanged = screenModel::setFillermarkedFilter,
-                // <-- AY
+                // <-- AM (FILLERMARK)
                 onSortModeChanged = screenModel::setSorting,
                 onDisplayModeChanged = screenModel::setDisplayMode,
-                // AY -->
-                onShowPreviewsEnabled = screenModel::showEpisodePreviews,
-                onShowSummariesEnabled = screenModel::showEpisodeSummaries,
-                // <-- AY
                 onSetAsDefault = screenModel::setCurrentSettingsAsDefault,
                 onResetToDefault = screenModel::resetToDefaultSettings,
                 scanlatorFilterActive = successState.scanlatorFilterActive,
                 onScanlatorFilterClicked = { showScanlatorsDialog = true },
             )
-            // AY -->
-            MangaScreenModel.Dialog.SeasonSettingsSheet -> SeasonSettingsDialog(
-                onDismissRequest = onDismissRequest,
-                anime = successState.manga,
-                onDownloadFilterChanged = screenModel::setSeasonDownloadedFilter,
-                onUnseenFilterChanged = screenModel::setSeasonUnseenFilter,
-                onStartedFilterChanged = screenModel::setSeasonStartedFilter,
-                onCompletedFilterChanged = screenModel::setSeasonCompletedFilter,
-                onBookmarkedFilterChanged = screenModel::setSeasonBookmarkedFilter,
-                onFillermarkedFilterChanged = screenModel::setSeasonFillermarkedFilter,
-                onSortModeChanged = screenModel::setSeasonSorting,
-                onDisplayGridModeChanged = screenModel::setSeasonDisplayGridMode,
-                onDisplayGridSizeChanged = screenModel::setSeasonDisplayGridSize,
-                onOverlayDownloadedChanged = screenModel::setSeasonDownloadOverlay,
-                onOverlayUnseenChanged = screenModel::setSeasonUnseenOverlay,
-                onOverlayLocalChanged = screenModel::setSeasonLocalOverlay,
-                onOverlayLangChanged = screenModel::setSeasonLangOverlay,
-                onOverlayContinueChanged = screenModel::setSeasonContinueOverlay,
-                onDisplayModeChanged = screenModel::setSeasonDisplayMode,
-                onSetAsDefault = screenModel::setSeasonCurrentSettingsAsDefault,
-            )
-            // <-- AY
             MangaScreenModel.Dialog.TrackSheet -> {
                 NavigatorAdaptiveSheet(
                     screen = TrackInfoDialogHomeScreen(
                         mangaId = successState.manga.id,
                         mangaTitle = successState.manga.title,
-                        // AM -->
-                        isSeason = successState.manga.fetchType == FetchType.Seasons,
-                        // <-- AM
                         sourceId = successState.source.id,
                     ),
                     enableSwipeDismiss = { it.lastItem is TrackInfoDialogHomeScreen },
@@ -622,13 +569,7 @@ class MangaScreen(
                     MangaCoverDialog(
                         manga = manga!!,
                         snackbarHostState = sm.snackbarHostState,
-                        // AY -->
-                        pagerState = sm.pagerState,
-                        // <-- AY
                         isCustomCover = remember(manga) { manga!!.hasCustomCover() },
-                        // AY -->
-                        isCustomBackground = remember(manga) { manga!!.hasCustomBackground() },
-                        // <-- AY
                         onShareClick = { sm.shareCover(context) },
                         onSaveClick = {
                             // KMK -->
@@ -806,7 +747,12 @@ class MangaScreen(
         try {
             getMangaUrl(manga, source)?.let { url ->
                 val intent = url.toUri().toShareIntent(context, type = "text/plain")
-                context.startActivity(intent)
+                context.startActivity(
+                    Intent.createChooser(
+                        intent,
+                        context.stringResource(MR.strings.action_share),
+                    ),
+                )
             }
         } catch (e: Exception) {
             context.toast(e.message)
@@ -838,7 +784,8 @@ class MangaScreen(
         // KMK -->
         navigator.popUntil { screen ->
             screen is HomeScreen ||
-                (!library && (screen is BrowseSourceScreen || screen is SourceFeedScreen))
+                !library &&
+                (screen is BrowseSourceScreen || screen is SourceFeedScreen)
         }
         // KMK <--
 

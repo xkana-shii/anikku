@@ -4,7 +4,6 @@ import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.parallel.Execution
 import org.junit.jupiter.api.parallel.ExecutionMode
-import tachiyomi.domain.chapter.service.ChapterRecognition.tagRegex
 
 @Execution(ExecutionMode.CONCURRENT)
 class ChapterRecognitionTest {
@@ -185,10 +184,10 @@ class ChapterRecognitionTest {
      * But follow by episode number.
      */
     @Test
-    fun `Clean episode title with tag`() {
-        val episodeTitle = "[flugel] kaguya-sama wa kokurasetai - s01e01v2 (bd 1080p hevc) [multi audio] [80ac7b2e]"
-        val cleanedEpisodeTitle = "kaguya-sama wa kokurasetai - s01e01v2"
-        tagRegex.replace(episodeTitle, "").trim() shouldBe cleanedEpisodeTitle
+    fun `Number after unwanted tag`() {
+        val animeTitle = "One-punch Man"
+
+        assertEpisode(animeTitle, "Mag Version 195.5", 195.5)
     }
 
     @Test

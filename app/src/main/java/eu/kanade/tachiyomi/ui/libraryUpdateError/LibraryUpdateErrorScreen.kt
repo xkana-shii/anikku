@@ -8,8 +8,11 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.libraryUpdateError.LibraryUpdateErrorScreen
 import eu.kanade.presentation.util.Screen
+import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
-import mihon.feature.migration.config.MigrationConfigScreen
+import tachiyomi.domain.UnsortedPreferences
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 
 class LibraryUpdateErrorScreen : Screen() {
 
@@ -22,11 +25,19 @@ class LibraryUpdateErrorScreen : Screen() {
         LibraryUpdateErrorScreen(
             state = state,
             onClick = { item ->
-                navigator.push(MigrationConfigScreen(item.error.mangaId))
+                PreMigrationScreen.navigateToMigration(
+                    Injekt.get<UnsortedPreferences>().skipPreMigration().get(),
+                    navigator,
+                    listOf(item.error.mangaId),
+                )
             },
             onClickCover = { item -> navigator.push(MangaScreen(item.error.mangaId)) },
             onMultiMigrateClicked = {
-                navigator.push(MigrationConfigScreen(state.selected.map { it.error.mangaId }))
+                PreMigrationScreen.navigateToMigration(
+                    Injekt.get<UnsortedPreferences>().skipPreMigration().get(),
+                    navigator,
+                    state.selected.map { it.error.mangaId },
+                )
             },
             onSelectAll = screenModel::toggleAllSelection,
             onInvertSelection = screenModel::invertSelection,

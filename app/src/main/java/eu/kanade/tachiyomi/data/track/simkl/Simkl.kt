@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.data.track.simkl
 
+import android.graphics.Color
 import dev.icerock.moko.resources.StringResource
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Track
@@ -9,6 +10,7 @@ import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import eu.kanade.tachiyomi.data.track.simkl.dto.SimklOAuth
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.aniyomi.AYMR
@@ -92,7 +94,9 @@ class Simkl(id: Long) : BaseTracker(id, "Simkl") {
         return track
     }
 
-    override fun getLogo() = R.drawable.brand_simkl
+    override fun getLogo() = R.drawable.ic_tracker_simkl
+
+    override fun getLogoColor() = Color.rgb(0, 0, 0)
 
     override fun getStatusList(): List<Long> {
         return listOf(WATCHING, COMPLETED, ON_HOLD, NOT_INTERESTING, PLAN_TO_WATCH)
@@ -121,7 +125,7 @@ class Simkl(id: Long) : BaseTracker(id, "Simkl") {
             interceptor.newAuth(oauth)
             val user = api.getCurrentUser()
             saveCredentials(user.toString(), oauth.accessToken)
-        } catch (_: Throwable) {
+        } catch (e: Throwable) {
             logout()
         }
     }
@@ -137,7 +141,7 @@ class Simkl(id: Long) : BaseTracker(id, "Simkl") {
     fun restoreToken(): SimklOAuth? {
         return try {
             json.decodeFromString<SimklOAuth>(trackPreferences.trackToken(this).get())
-        } catch (_: Exception) {
+        } catch (e: Exception) {
             null
         }
     }

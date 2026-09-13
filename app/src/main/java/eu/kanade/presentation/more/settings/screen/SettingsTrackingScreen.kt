@@ -42,6 +42,8 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.currentOrThrow
 import dev.icerock.moko.resources.StringResource
 import eu.kanade.domain.track.model.AutoTrackState
 import eu.kanade.domain.track.service.TrackPreferences
@@ -63,7 +65,6 @@ import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.MR
-import tachiyomi.i18n.animiru.AMMR
 import tachiyomi.i18n.aniyomi.AYMR
 import tachiyomi.i18n.ank.AMR
 import tachiyomi.i18n.kmk.KMR
@@ -93,6 +94,7 @@ object SettingsTrackingScreen : SearchableSettings {
     @Composable
     override fun getPreferences(): List<Preference> {
         val context = LocalContext.current
+        val navigator = LocalNavigator.currentOrThrow
         val trackPreferences = remember { Injekt.get<TrackPreferences>() }
         val trackerManager = remember { Injekt.get<TrackerManager>() }
         val sourceManager = remember { Injekt.get<SourceManager>() }
@@ -145,19 +147,16 @@ object SettingsTrackingScreen : SearchableSettings {
                 preference = trackPreferences.autoUpdateTrack(),
                 title = stringResource(AMR.strings.pref_auto_update_anime_sync),
             ),
-            // AM -->
-            Preference.PreferenceItem.SwitchPreference(
-                preference = trackPreferences.smartTrackerSync(),
-                title = stringResource(AMMR.strings.pref_smart_sync_tracker),
-                subtitle = stringResource(AMMR.strings.pref_smart_sync_tracker_summary),
-            ),
-            // <-- AM
             Preference.PreferenceItem.ListPreference(
                 preference = trackPreferences.autoUpdateTrackOnMarkRead(),
                 entries = AutoTrackState.entries
                     .associateWith { stringResource(it.titleRes) }
                     .toPersistentMap(),
                 title = stringResource(AMR.strings.pref_auto_update_anime_on_mark_seen),
+            ),
+            Preference.PreferenceItem.TextPreference(
+                title = stringResource(KMR.strings.pref_auto_reread_behavior),
+                onClick = { navigator.push(AutoRereadSettingsScreen) },
             ),
             // KMK -->
             Preference.PreferenceItem.SwitchPreference(

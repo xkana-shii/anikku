@@ -12,7 +12,6 @@ import eu.kanade.tachiyomi.core.security.SecurityPreferences
 import eu.kanade.tachiyomi.data.BackupRestoreStatus
 import eu.kanade.tachiyomi.data.LibraryUpdateStatus
 import eu.kanade.tachiyomi.data.SyncStatus
-import eu.kanade.tachiyomi.data.cache.BackgroundCache
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.connections.ConnectionsManager
 import eu.kanade.tachiyomi.data.download.DownloadCache
@@ -26,8 +25,6 @@ import eu.kanade.tachiyomi.network.JavaScriptEngine
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.source.AndroidSourceManager
 import eu.kanade.tachiyomi.ui.player.ExternalIntents
-import eu.kanade.tachiyomi.ui.player.domain.AudioManager
-import eu.kanade.tachiyomi.ui.player.domain.BrightnessManager
 import eu.kanade.tachiyomi.util.system.isDebugBuildType
 import io.requery.android.database.sqlite.RequerySQLiteOpenHelperFactory
 import kotlinx.serialization.json.Json
@@ -43,17 +40,13 @@ import tachiyomi.data.Animes
 import tachiyomi.data.Database
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.data.DateColumnAdapter
-import tachiyomi.data.FetchTypeColumnAdapter
 import tachiyomi.data.History
 import tachiyomi.data.StringListColumnAdapter
 import tachiyomi.data.UpdateStrategyColumnAdapter
 import tachiyomi.domain.manga.interactor.GetCustomMangaInfo
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.domain.storage.service.StorageManager
-import tachiyomi.source.local.LocalFetchTypeManager
-import tachiyomi.source.local.image.LocalBackgroundManager
 import tachiyomi.source.local.image.LocalCoverManager
-import tachiyomi.source.local.image.LocalEpisodeThumbnailManager
 import tachiyomi.source.local.io.LocalSourceFileSystem
 import uy.kohesive.injekt.api.InjektModule
 import uy.kohesive.injekt.api.InjektRegistrar
@@ -123,9 +116,6 @@ class AppModule(val app: Application) : InjektModule {
                 animesAdapter = Animes.Adapter(
                     genreAdapter = StringListColumnAdapter,
                     update_strategyAdapter = UpdateStrategyColumnAdapter,
-                    // AY -->
-                    fetch_typeAdapter = FetchTypeColumnAdapter,
-                    // <-- AY
                 ),
             )
         }
@@ -153,9 +143,6 @@ class AppModule(val app: Application) : InjektModule {
         }
 
         addSingletonFactory { CoverCache(app) }
-        // AY -->
-        addSingletonFactory { BackgroundCache(app) }
-        // <-- AY
 
         addSingletonFactory { NetworkHelper(app, get(), isDebugBuildType) }
         addSingletonFactory { JavaScriptEngine(app) }
@@ -175,11 +162,6 @@ class AppModule(val app: Application) : InjektModule {
         addSingletonFactory { AndroidStorageFolderProvider(app) }
         addSingletonFactory { LocalSourceFileSystem(get()) }
         addSingletonFactory { LocalCoverManager(app, get()) }
-        // AY -->
-        addSingletonFactory { LocalFetchTypeManager(app, get()) }
-        addSingletonFactory { LocalBackgroundManager(app, get()) }
-        addSingletonFactory { LocalEpisodeThumbnailManager(app, get()) }
-        // <-- AY
         addSingletonFactory { StorageManager(app, get()) }
 
         addSingletonFactory { ExternalIntents() }
@@ -192,11 +174,6 @@ class AppModule(val app: Application) : InjektModule {
         addSingletonFactory { SyncStatus() }
         addSingletonFactory { LibraryUpdateStatus() }
         // KMK <--
-
-        // AM -->
-        addSingletonFactory { AudioManager(app) }
-        addSingletonFactory { BrightnessManager(app) }
-        // <-- AM
 
         // Asynchronously init expensive components for a faster cold start
         ContextCompat.getMainExecutor(app).execute {

@@ -14,6 +14,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.FirstBaseline
 import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.PlaceholderVerticalAlign
@@ -101,9 +102,13 @@ private fun getMarkdownColors(): MarkdownColors {
     val codeBackground = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
     return DefaultMarkdownColors(
         text = MaterialTheme.colorScheme.onSurface,
+        codeText = Color.Unspecified,
+        inlineCodeText = Color.Unspecified,
+        linkText = Color.Unspecified,
         codeBackground = codeBackground,
         inlineCodeBackground = codeBackground,
         dividerColor = MaterialTheme.colorScheme.outlineVariant,
+        tableText = Color.Unspecified,
         tableBackground = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f),
     )
 }
@@ -134,6 +139,7 @@ private fun getMarkdownTypography(): MarkdownTypography {
         ordered = MaterialTheme.typography.bodyMedium,
         bullet = MaterialTheme.typography.bodyMedium,
         list = MaterialTheme.typography.bodyMedium,
+        link = link,
         textLink = TextLinkStyles(style = link.toSpanStyle()),
         table = MaterialTheme.typography.bodyMedium,
     )

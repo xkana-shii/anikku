@@ -49,8 +49,8 @@ object HistoryMapper {
         read = read,
         lastPageRead = lastPageRead,
         totalPages = totalPages,
-        totalCountCalculated = totalCount.toLong(),
-        readCountCalculated = readCount.toLong(),
+        totalChapters = totalCount.toLong(),
+        readCount = readCount.toLong(),
         // KMK <--
         readAt = readAt,
         readDuration = readDuration,

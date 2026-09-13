@@ -9,6 +9,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
@@ -17,10 +18,10 @@ import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.manga.DuplicateMangaDialog
 import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel.Dialog
-import eu.kanade.tachiyomi.ui.browse.migration.season.MigrateSeasonSelectScreen
+import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateDialog
+import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateDialogScreenModel
 import eu.kanade.tachiyomi.ui.category.CategoryScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
-import mihon.feature.migration.dialog.MigrateMangaDialog
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.i18n.stringResource
@@ -88,6 +89,7 @@ fun Screen.BulkFavoriteDialogs(
                 dialog = dialog,
                 navigator = navigator,
                 state = bulkFavoriteState,
+                migrateScreenModel = rememberScreenModel { MigrateDialogScreenModel() },
                 onDismiss = bulkFavoriteScreenModel::dismissDialog,
                 stopRunning = bulkFavoriteScreenModel::stopRunning,
                 toggleSelection = bulkFavoriteScreenModel::toggleSelection,
@@ -99,10 +101,11 @@ fun Screen.BulkFavoriteDialogs(
 }
 
 @Composable
-private fun Screen.ShowMigrateDialog(
+private fun ShowMigrateDialog(
     dialog: Dialog.Migrate,
     navigator: Navigator?,
     state: BulkFavoriteScreenModel.State,
+    migrateScreenModel: MigrateDialogScreenModel,
     onDismiss: () -> Unit,
     stopRunning: () -> Unit,
     toggleSelection: (Manga, toSelectedState: Boolean) -> Unit,
@@ -110,17 +113,14 @@ private fun Screen.ShowMigrateDialog(
 ) {
     stopRunning()
 
-    MigrateMangaDialog(
-        current = dialog.current,
-        target = dialog.target,
-        // Initiated from the context of [dialog.target] so we show [dialog.current].
-        onClickTitle = { navigator?.push(MangaScreen(dialog.current.id)) },
-        // ANK -->
-        onClickSeasons = { navigator?.push(MigrateSeasonSelectScreen(dialog.current, dialog.target)) },
-        // ANK <--
+    MigrateDialog(
+        oldManga = dialog.oldManga,
+        newManga = dialog.newManga,
+        screenModel = migrateScreenModel,
         onDismissRequest = onDismiss,
-        onComplete = {
-            toggleSelection(dialog.target, false)
+        onClickTitle = { navigator?.push(MangaScreen(dialog.oldManga.id)) },
+        onPopScreen = {
+            toggleSelection(dialog.newManga, false)
             onDismiss()
             // `selection.size` is at current value before calling above `toggleSelection`
             if (state.selection.size > 1) {

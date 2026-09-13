@@ -43,18 +43,11 @@ object SettingsDownloadScreen : SearchableSettings {
         val allCategories by getCategories.subscribe().collectAsState(initial = emptyList())
 
         val downloadPreferences = remember { Injekt.get<DownloadPreferences>() }
-        val parallelSourceLimit by downloadPreferences.parallelSourceLimit().collectAsState()
         val basePreferences = remember { Injekt.get<BasePreferences>() }
         return listOf(
             Preference.PreferenceItem.SwitchPreference(
                 preference = downloadPreferences.downloadOnlyOverWifi(),
                 title = stringResource(MR.strings.connected_to_wifi),
-            ),
-            Preference.PreferenceItem.SliderPreference(
-                value = parallelSourceLimit,
-                valueRange = 1..10,
-                title = stringResource(MR.strings.pref_download_concurrent_sources),
-                onValueChanged = { downloadPreferences.parallelSourceLimit().set(it) },
             ),
             getDeleteChaptersGroup(
                 downloadPreferences = downloadPreferences,
@@ -103,12 +96,6 @@ object SettingsDownloadScreen : SearchableSettings {
                     preference = downloadPreferences.removeBookmarkedChapters(),
                     title = stringResource(AMR.strings.pref_remove_bookmarked_episodes),
                 ),
-                // AY -->
-                Preference.PreferenceItem.SwitchPreference(
-                    preference = downloadPreferences.downloadFillermarkedEpisodes(),
-                    title = stringResource(AYMR.strings.pref_download_fillermarked_items),
-                ),
-                // <-- AY
                 getExcludedCategoriesPreference(
                     downloadPreferences = downloadPreferences,
                     categories = { categories },

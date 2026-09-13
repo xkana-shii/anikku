@@ -41,16 +41,16 @@ fun SourceCategoryListItem(
                 ),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(imageVector = Icons.AutoMirrored.Outlined.Label, contentDescription = null)
+            Icon(imageVector = Icons.AutoMirrored.Outlined.Label, contentDescription = "")
             Text(text = category, modifier = Modifier.padding(start = MaterialTheme.padding.medium))
         }
         Row {
             Spacer(modifier = Modifier.weight(1f))
             IconButton(onClick = onRename) {
-                Icon(imageVector = Icons.Outlined.Edit, contentDescription = null)
+                Icon(imageVector = Icons.Outlined.Edit, contentDescription = "")
             }
             IconButton(onClick = onDelete) {
-                Icon(imageVector = Icons.Outlined.Delete, contentDescription = null)
+                Icon(imageVector = Icons.Outlined.Delete, contentDescription = "")
             }
         }
     }

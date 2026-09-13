@@ -30,7 +30,7 @@ import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.domain.storage.service.StorageManager
 import tachiyomi.i18n.aniyomi.AYMR
 import tachiyomi.source.local.LocalSource
-import tachiyomi.source.local.io.Format
+import tachiyomi.source.local.io.Archive
 import tachiyomi.source.local.io.LocalSourceFileSystem
 import tachiyomi.source.local.isLocal
 import uy.kohesive.injekt.Injekt
@@ -146,23 +146,21 @@ class DownloadManager(
         manga: Manga,
         chapters: List<Chapter>,
         autoStart: Boolean = true,
-        // AY -->
         altDownloader: Boolean = false,
         video: Video? = null,
-        // <-- AY
-    ) = downloadEpisodes(manga, chapters, autoStart, altDownloader, video)
+    ) {
+        // AM (FILLERMARK) -->
+        val filteredChapters = getChaptersToDownload(chapters)
+        downloader.queueEpisodes(manga, filteredChapters, autoStart, altDownloader, video)
+        // <-- AM (FILLERMARK)
+    }
     fun downloadEpisodes(
         anime: Anime,
         episodes: List<Episode>,
         autoStart: Boolean = true,
         altDownloader: Boolean = false,
         video: Video? = null,
-    ) {
-        // AY -->
-        val filteredEpisodes = getEpisodesToDownload(episodes)
-        downloader.queueEpisodes(anime, filteredEpisodes, autoStart, altDownloader, video)
-        // <-- AY
-    }
+    ) = downloadChapters(anime, episodes, autoStart, altDownloader, video)
 
     /**
      * Tells the downloader to enqueue the given list of downloads at the start of the queue.
@@ -206,9 +204,10 @@ class DownloadManager(
         val file = files[0]
 
         return Video(
-            videoUrl = file.uri.toString(),
-            videoTitle = "download: " + file.uri.toString(),
-            initialized = true,
+            file.uri.toString(),
+            "download: " + file.uri.toString(),
+            file.uri.toString(),
+            file.uri,
         ).apply { status = Video.State.Ready }
     }
 
@@ -253,7 +252,7 @@ class DownloadManager(
     fun getDownloadCount(manga: Manga): Int {
         return if (manga.source == LocalSource.ID) {
             LocalSourceFileSystem(storageManager).getFilesInMangaDirectory(manga.url)
-                .count { Format.isSupported(it) }
+                .count { Archive.isSupported(it) }
         } else {
             cache.getDownloadCount(manga)
         }
@@ -529,7 +528,9 @@ class DownloadManager(
         }
 
         // Assume there's only 1 version of the chapter name formats present
-        val oldDownload = oldNames.firstNotNullOfOrNull { mangaDir.findFile(it) } ?: return
+        val oldDownload = oldNames.asSequence()
+            .mapNotNull { mangaDir.findFile(it) }
+            .firstOrNull() ?: return
 
         val newName = provider.getChapterDirName(newChapter.name, newChapter.scanlator)
 
@@ -581,15 +582,15 @@ class DownloadManager(
         }
     }
 
-    // AY -->
-    private fun getEpisodesToDownload(episodes: List<Episode>): List<Episode> {
-        return if (!downloadPreferences.downloadFillermarkedEpisodes().get()) {
-            episodes.filterNot { it.fillermark }
+    // AM (FILLERMARK) -->
+    private fun getChaptersToDownload(chapters: List<Chapter>): List<Chapter> {
+        return if (!downloadPreferences.notDownloadFillermarkedItems().get()) {
+            chapters.filterNot { it.fillermark }
         } else {
-            episodes
+            chapters
         }
     }
-    // <-- AY
+    // <-- AM (FILLERMARK)
 
     fun statusFlow(): Flow<Download> = queueState
         .flatMapLatest { downloads ->

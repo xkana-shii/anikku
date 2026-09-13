@@ -46,10 +46,6 @@ enum class MangaCover(val ratio: Float) {
     // KMK -->
     Panorama(3f / 2f),
     // KMK <--
-
-    // AY -->
-    Thumb(16f / 9f),
-    // <-- AY
     ;
 
     enum class Size {

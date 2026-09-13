@@ -22,9 +22,7 @@ import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.domain.sync.SyncPreferences
-import eu.kanade.tachiyomi.animesource.model.FetchType
 import eu.kanade.tachiyomi.data.LibraryUpdateStatus
-import eu.kanade.tachiyomi.data.cache.BackgroundCache
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.notification.Notifications
@@ -42,7 +40,6 @@ import eu.kanade.tachiyomi.util.system.isRunning
 import eu.kanade.tachiyomi.util.system.setForegroundSafely
 import eu.kanade.tachiyomi.util.system.workManager
 import exh.source.MERGED_SOURCE_ID
-import exh.util.WorkerUtil
 import exh.util.nullIfBlank
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
@@ -82,7 +79,6 @@ import tachiyomi.domain.manga.interactor.GetLibraryManga
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.interactor.GetMergedMangaForDownloading
 import tachiyomi.domain.manga.model.Manga
-import tachiyomi.domain.season.interactor.GetAnimeSeasonsByParentId
 import tachiyomi.domain.source.model.SourceNotInstalledException
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.domain.track.interactor.GetTracks
@@ -91,8 +87,8 @@ import tachiyomi.i18n.aniyomi.AYMR
 import tachiyomi.i18n.ank.AMR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import java.time.Instant
 import java.time.ZonedDateTime
+import java.util.Date
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.atomics.AtomicBoolean
@@ -108,21 +104,12 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
     private val libraryPreferences: LibraryPreferences = Injekt.get()
     private val downloadManager: DownloadManager = Injekt.get()
     private val coverCache: CoverCache = Injekt.get()
-
-    // AY -->
-    private val backgroundCache: BackgroundCache = Injekt.get()
-    // <-- AY
-
     private val getLibraryManga: GetLibraryManga = Injekt.get()
     private val getManga: GetManga = Injekt.get()
     private val updateManga: UpdateManga = Injekt.get()
     private val syncChaptersWithSource: SyncChaptersWithSource = Injekt.get()
     private val fetchInterval: FetchInterval = Injekt.get()
     private val filterChaptersForDownload: FilterChaptersForDownload = Injekt.get()
-
-    // AY -->
-    private val getAnimeSeasonsByParentId: GetAnimeSeasonsByParentId = Injekt.get()
-    // <-- AY
 
     // SY -->
     private val getMergedMangaForDownloading: GetMergedMangaForDownloading = Injekt.get()
@@ -170,8 +157,6 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
 
         setForegroundSafely()
 
-        libraryPreferences.lastUpdatedTimestamp().set(Instant.now().toEpochMilli())
-
         val categoryId = inputData.getLong(KEY_CATEGORY, -1L)
         // SY -->
         val group = inputData.getInt(KEY_GROUP, LibraryGroup.BY_DEFAULT)
@@ -192,6 +177,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                     Result.failure()
                 }
             } finally {
+                libraryPreferences.lastUpdatedTimestamp().set(Date().time)
                 notifier.cancelProgressNotification()
                 // KMK -->
                 libraryUpdateStatus.stop()
@@ -309,32 +295,11 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
             // SY <--
         }
 
-        // AY -->
-        val includeSeasons = libraryPreferences.updateSeasonOnLibraryUpdate().get()
-        val listToUpdateWithSeasons = listToUpdate.flatMap { libAnime ->
-            when (libAnime.manga.fetchType) {
-                FetchType.Seasons -> {
-                    if (includeSeasons) {
-                        val seasons = getAnimeSeasonsByParentId.await(libAnime.manga.id)
-                        seasons
-                            .filter { s ->
-                                s.anime.fetchType == FetchType.Episodes && !s.anime.favorite
-                            }
-                            .map { it.toLibraryAnime() }
-                    } else {
-                        emptyList()
-                    }
-                }
-                FetchType.Episodes -> listOf(libAnime)
-            }
-        }
-        // <-- AY
-
         val restrictions = libraryPreferences.autoUpdateMangaRestrictions().get()
         val skippedUpdates = mutableListOf<Pair<Manga, String?>>()
         val (_, fetchWindowUpperBound) = fetchInterval.getWindow(ZonedDateTime.now())
 
-        mangaToUpdate = listToUpdateWithSeasons
+        mangaToUpdate = listToUpdate
             // SY -->
             .distinctBy { it.manga.id }
             // SY <--
@@ -434,7 +399,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                                 ensureActive()
 
                                 // Don't continue to update if manga is not in library
-                                if (/* AY --> */manga.parentId == null && /* <-- AY */ getManga.await(manga.id)?.favorite != true) {
+                                if (getManga.await(manga.id)?.favorite != true) {
                                     return@forEach
                                 }
 
@@ -534,9 +499,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
         // Update manga metadata if needed
         if (libraryPreferences.autoUpdateMetadata().get()) {
             val networkManga = source.getMangaDetails(manga.toSManga())
-            // AY -->
-            updateManga.awaitUpdateFromSource(manga, networkManga, manualFetch = false, coverCache, backgroundCache)
-            // <-- AY
+            updateManga.awaitUpdateFromSource(manga, networkManga, manualFetch = false, coverCache)
         }
 
         if (source is MergedSource) {
@@ -547,9 +510,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
 
         // Get manga from database to account for if it was removed during the update and
         // to get latest data so it doesn't get overwritten later on
-        val dbManga = getManga.await(manga.id)?.takeIf {
-            /* AY --> */ it.parentId != null || /* <-- AY */ it.favorite
-        } ?: return emptyList()
+        val dbManga = getManga.await(manga.id)?.takeIf { it.favorite } ?: return emptyList()
 
         return syncChaptersWithSource.await(chapters, dbManga, source, false, fetchWindow)
     }
@@ -785,17 +746,5 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                     }
                 }
         }
-
-        // KMK -->
-        /**
-         * Returns true if a periodic job is currently scheduled.
-         * @param context The application context.
-         * @return True if a periodic job is scheduled, false otherwise.
-         * @throws Exception If there is an error retrieving the work info.
-         */
-        suspend fun isPeriodicUpdateScheduled(context: Context): Boolean {
-            return WorkerUtil.isPeriodicJobScheduled(context, WORK_NAME_AUTO)
-        }
-        // KMK <--
     }
 }

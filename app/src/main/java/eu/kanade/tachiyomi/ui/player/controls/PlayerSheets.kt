@@ -22,11 +22,10 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import dev.vivvvek.seeker.Segment
-import eu.kanade.tachiyomi.ui.player.ArtType
 import eu.kanade.tachiyomi.ui.player.Decoder
 import eu.kanade.tachiyomi.ui.player.Panels
+import eu.kanade.tachiyomi.ui.player.PlayerViewModel.VideoTrack
 import eu.kanade.tachiyomi.ui.player.Sheets
-import eu.kanade.tachiyomi.ui.player.VideoTrack
 import eu.kanade.tachiyomi.ui.player.controls.components.sheets.AudioTracksSheet
 import eu.kanade.tachiyomi.ui.player.controls.components.sheets.ChaptersSheet
 import eu.kanade.tachiyomi.ui.player.controls.components.sheets.HosterState
@@ -35,7 +34,6 @@ import eu.kanade.tachiyomi.ui.player.controls.components.sheets.PlaybackSpeedShe
 import eu.kanade.tachiyomi.ui.player.controls.components.sheets.QualitySheet
 import eu.kanade.tachiyomi.ui.player.controls.components.sheets.ScreenshotSheet
 import eu.kanade.tachiyomi.ui.player.controls.components.sheets.SubtitlesSheet
-import eu.kanade.tachiyomi.ui.player.settings.AudioChannels
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import tachiyomi.domain.custombuttons.model.CustomButton
@@ -47,18 +45,20 @@ fun PlayerSheets(
 
     // subtitles sheet
     subtitles: ImmutableList<VideoTrack>,
+    selectedSubtitles: ImmutableList<Int>,
     onAddSubtitle: (Uri) -> Unit,
-    onSelectSubtitle: (VideoTrack) -> Unit,
+    onSelectSubtitle: (Int) -> Unit,
 
     // audio sheet
     audioTracks: ImmutableList<VideoTrack>,
+    selectedAudio: Int,
     onAddAudio: (Uri) -> Unit,
-    onSelectAudio: (VideoTrack) -> Unit,
+    onSelectAudio: (Int) -> Unit,
 
     // video sheet
     isLoadingHosters: Boolean,
-    hosterState: ImmutableList<HosterState>,
-    expandedState: ImmutableList<Boolean>,
+    hosterState: List<HosterState>,
+    expandedState: List<Boolean>,
     selectedVideoIndex: Pair<Int, Int>,
     onClickHoster: (Int) -> Unit,
     onClickVideo: (Int, Int) -> Unit,
@@ -74,34 +74,19 @@ fun PlayerSheets(
     onUpdateDecoder: (Decoder) -> Unit,
 
     // Speed sheet
-    pitchCorrection: Boolean,
-    onPitchCorrectionChange: (Boolean) -> Unit,
     speed: Float,
-    speedPresets: ImmutableList<Float>,
     onSpeedChange: (Float) -> Unit,
-    onAddSpeedPreset: (Float) -> Unit,
-    onRemoveSpeedPreset: (Float) -> Unit,
-    onResetSpeedPresets: () -> Unit,
-    onMakeDefaultSpeed: (Float) -> Unit,
-    onResetDefaultSpeed: () -> Unit,
 
     // More sheet
-    statisticsPage: Int,
-    audioChannels: AudioChannels,
     sleepTimerTimeRemaining: Int,
     onStartSleepTimer: (Int) -> Unit,
-    onStatisticsPageChange: (Int) -> Unit,
-    onAudioChannelsChange: (AudioChannels) -> Unit,
-    onCustomButtonClick: (CustomButton) -> Unit,
-    onCustomButtonLongClick: (CustomButton) -> Unit,
     buttons: ImmutableList<CustomButton>,
 
     // Screenshot sheet
-    isLocalSource: Boolean,
     showSubtitles: Boolean,
     onToggleShowSubtitles: (Boolean) -> Unit,
     cachePath: String,
-    onSetAsArt: (ArtType, (() -> InputStream)) -> Unit,
+    onSetAsCover: (() -> InputStream) -> Unit,
     onShare: (() -> InputStream) -> Unit,
     onSave: (() -> InputStream) -> Unit,
     takeScreenshot: (String, Boolean) -> InputStream?,
@@ -122,6 +107,7 @@ fun PlayerSheets(
             }
             SubtitlesSheet(
                 tracks = subtitles.toImmutableList(),
+                selectedTracks = selectedSubtitles,
                 onSelect = onSelectSubtitle,
                 onAddSubtitle = { subtitlesPicker.launch(arrayOf("*/*")) },
                 onOpenSubtitleSettings = { onOpenPanel(Panels.SubtitleSettings) },
@@ -139,6 +125,7 @@ fun PlayerSheets(
             }
             AudioTracksSheet(
                 tracks = audioTracks,
+                selectedId = selectedAudio,
                 onSelect = onSelectAudio,
                 onAddAudioTrack = { audioPicker.launch(arrayOf("*/*")) },
                 onOpenDelayPanel = { onOpenPanel(Panels.AudioDelay) },
@@ -173,16 +160,10 @@ fun PlayerSheets(
 
         Sheets.More -> {
             MoreSheet(
-                statisticsPage = statisticsPage,
-                audioChannels = audioChannels,
                 selectedDecoder = decoder,
                 onSelectDecoder = onUpdateDecoder,
                 remainingTime = sleepTimerTimeRemaining,
                 onStartTimer = onStartSleepTimer,
-                onStatisticsPageChange = onStatisticsPageChange,
-                onCustomButtonClick = onCustomButtonClick,
-                onCustomButtonLongClick = onCustomButtonLongClick,
-                onAudioChannelsChange = onAudioChannelsChange,
                 onDismissRequest = onDismissRequest,
                 onEnterFiltersPanel = { onOpenPanel(Panels.VideoFilters) },
                 customButtons = buttons,
@@ -191,28 +172,19 @@ fun PlayerSheets(
 
         Sheets.PlaybackSpeed -> {
             PlaybackSpeedSheet(
-                pitchCorrection = pitchCorrection,
-                onPitchCorrectionChange = onPitchCorrectionChange,
-                speed = speed,
+                speed,
                 onSpeedChange = onSpeedChange,
-                speedPresets = speedPresets,
-                onAddSpeedPreset = onAddSpeedPreset,
-                onRemoveSpeedPreset = onRemoveSpeedPreset,
-                onResetPresets = onResetSpeedPresets,
-                onMakeDefault = onMakeDefaultSpeed,
-                onResetDefault = onResetDefaultSpeed,
                 onDismissRequest = onDismissRequest,
             )
         }
 
         Sheets.Screenshot -> {
             ScreenshotSheet(
-                isLocalSource = isLocalSource,
                 hasSubTracks = subtitles.isNotEmpty(),
                 showSubtitles = showSubtitles,
                 onToggleShowSubtitles = onToggleShowSubtitles,
                 cachePath = cachePath,
-                onSetAsArt = onSetAsArt,
+                onSetAsCover = onSetAsCover,
                 onShare = onShare,
                 onSave = onSave,
                 takeScreenshot = takeScreenshot,

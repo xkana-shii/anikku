@@ -1,14 +1,16 @@
 package eu.kanade.presentation.browse.components
 
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastAny
 import androidx.paging.LoadState
@@ -26,10 +28,8 @@ import tachiyomi.presentation.core.util.plus
 @Composable
 fun BrowseSourceList(
     mangaList: LazyPagingItems<StateFlow</* SY --> */Pair<Manga, RaisedSearchMetadata?>/* SY <-- */>>,
-    // AY -->
     entries: Int,
     topBarHeight: Int,
-    // <-- AY
     contentPadding: PaddingValues,
     onMangaClick: (Manga) -> Unit,
     onMangaLongClick: (Manga) -> Unit,
@@ -37,52 +37,45 @@ fun BrowseSourceList(
     selection: List<Manga>,
     // KMK <--
 ) {
-    // AY -->
-    val sourceListState = rememberLazyListState()
-    BoxWithConstraints {
-        val density = LocalDensity.current
-        val containerHeightPx = with(density) { this@BoxWithConstraints.maxHeight.roundToPx() }
-        // <-- AY
-
-        LazyColumn(
-            // AY -->
-            state = sourceListState,
-            // <-- AY
-            contentPadding = contentPadding + PaddingValues(vertical = 8.dp),
-        ) {
-            item {
-                if (mangaList.loadState.prepend is LoadState.Loading) {
-                    BrowseSourceLoadingItem()
-                }
+    var containerHeight by remember { mutableIntStateOf(0) }
+    LazyColumn(
+        contentPadding = contentPadding + PaddingValues(vertical = 8.dp),
+        modifier = Modifier
+            .onGloballyPositioned { layoutCoordinates ->
+                containerHeight = layoutCoordinates.size.height - topBarHeight
+            },
+    ) {
+        item {
+            if (mangaList.loadState.prepend is LoadState.Loading) {
+                BrowseSourceLoadingItem()
             }
+        }
 
-            items(count = mangaList.itemCount) { index ->
+        items(count = mangaList.itemCount) { index ->
+            // SY -->
+            val pair by mangaList[index]?.collectAsState() ?: return@items
+            val manga = pair.first
+            val metadata = pair.second
+            // SY <--
+
+            BrowseSourceListItem(
+                manga = manga,
                 // SY -->
-                val pair by mangaList[index]?.collectAsState() ?: return@items
-                val manga = pair.first
-                val metadata = pair.second
+                metadata = metadata,
                 // SY <--
-                BrowseSourceListItem(
-                    manga = manga,
-                    // SY -->
-                    metadata = metadata,
-                    // SY <--
-                    onClick = { onMangaClick(manga) },
-                    onLongClick = { onMangaLongClick(manga) },
-                    // AY -->
-                    entries = entries,
-                    containerHeight = containerHeightPx - topBarHeight,
-                    // <-- AY
-                    // KMK -->
-                    isSelected = selection.fastAny { selected -> selected.id == manga.id },
-                    // KMK <--
-                )
-            }
+                onClick = { onMangaClick(manga) },
+                onLongClick = { onMangaLongClick(manga) },
+                entries = entries,
+                containerHeight = containerHeight,
+                // KMK -->
+                isSelected = selection.fastAny { selected -> selected.id == manga.id },
+                // KMK <--
+            )
+        }
 
-            item {
-                if (mangaList.loadState.refresh is LoadState.Loading || mangaList.loadState.append is LoadState.Loading) {
-                    BrowseSourceLoadingItem()
-                }
+        item {
+            if (mangaList.loadState.refresh is LoadState.Loading || mangaList.loadState.append is LoadState.Loading) {
+                BrowseSourceLoadingItem()
             }
         }
     }
@@ -96,10 +89,8 @@ internal fun BrowseSourceListItem(
     // SY <--
     onClick: () -> Unit = {},
     onLongClick: () -> Unit = onClick,
-    // AY -->
     entries: Int,
     containerHeight: Int,
-    // <-- AY
     // KMK -->
     isSelected: Boolean = false,
     // KMK <--
@@ -133,9 +124,7 @@ internal fun BrowseSourceListItem(
         },
         onLongClick = onLongClick,
         onClick = onClick,
-        // AY -->
         entries = entries,
         containerHeight = containerHeight,
-        // <-- AY
     )
 }

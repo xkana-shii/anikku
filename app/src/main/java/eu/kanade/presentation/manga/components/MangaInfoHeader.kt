@@ -92,7 +92,6 @@ import com.mikepenz.markdown.utils.getUnescapedTextInNode
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.components.DropdownMenu
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.coil.useBackground
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import org.intellij.markdown.MarkdownElementTypes
@@ -153,9 +152,6 @@ fun MangaInfoBox(
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
                 .data(manga)
-                // AY -->
-                .useBackground(true)
-                // <-- AY
                 .crossfade(true)
                 .build(),
             contentDescription = null,
@@ -859,47 +855,44 @@ private fun ColumnScope.MangaContentInfo(
     }
 }
 
-@Composable
-private fun descriptionAnnotator(loadImages: Boolean, linkStyle: SpanStyle) = remember(loadImages, linkStyle) {
-    markdownAnnotator(
-        annotate = { content, child ->
-            if (!loadImages && child.type == MarkdownElementTypes.IMAGE) {
-                val inlineLink = child.findChildOfType(MarkdownElementTypes.INLINE_LINK)
+private fun descriptionAnnotator(loadImages: Boolean, linkStyle: SpanStyle) = markdownAnnotator(
+    annotate = { content, child ->
+        if (!loadImages && child.type == MarkdownElementTypes.IMAGE) {
+            val inlineLink = child.findChildOfType(MarkdownElementTypes.INLINE_LINK)
 
-                val url = inlineLink?.findChildOfType(MarkdownElementTypes.LINK_DESTINATION)
+            val url = inlineLink?.findChildOfType(MarkdownElementTypes.LINK_DESTINATION)
+                ?.getUnescapedTextInNode(content)
+                ?: inlineLink?.findChildOfType(MarkdownElementTypes.AUTOLINK)
+                    ?.findChildOfType(MarkdownTokenTypes.AUTOLINK)
                     ?.getUnescapedTextInNode(content)
-                    ?: inlineLink?.findChildOfType(MarkdownElementTypes.AUTOLINK)
-                        ?.findChildOfType(MarkdownTokenTypes.AUTOLINK)
-                        ?.getUnescapedTextInNode(content)
-                    ?: return@markdownAnnotator false
+                ?: return@markdownAnnotator false
 
-                val textNode = inlineLink?.findChildOfType(MarkdownElementTypes.LINK_TITLE)
-                    ?: inlineLink?.findChildOfType(MarkdownElementTypes.LINK_TEXT)
-                val altText = textNode?.findChildOfType(MarkdownTokenTypes.TEXT)
-                    ?.getUnescapedTextInNode(content).orEmpty()
+            val textNode = inlineLink?.findChildOfType(MarkdownElementTypes.LINK_TITLE)
+                ?: inlineLink?.findChildOfType(MarkdownElementTypes.LINK_TEXT)
+            val altText = textNode?.findChildOfType(MarkdownTokenTypes.TEXT)
+                ?.getUnescapedTextInNode(content).orEmpty()
 
-                withLink(LinkAnnotation.Url(url = url)) {
-                    pushStyle(linkStyle)
-                    appendInlineContent(MARKDOWN_INLINE_IMAGE_TAG)
-                    append(altText)
-                    pop()
-                }
-
-                return@markdownAnnotator true
+            withLink(LinkAnnotation.Url(url = url)) {
+                pushStyle(linkStyle)
+                appendInlineContent(MARKDOWN_INLINE_IMAGE_TAG)
+                append(altText)
+                pop()
             }
 
-            if (child.type in DISALLOWED_MARKDOWN_TYPES) {
-                append(content.substring(child.startOffset, child.endOffset))
-                return@markdownAnnotator true
-            }
+            return@markdownAnnotator true
+        }
 
-            false
-        },
-        config = markdownAnnotatorConfig(
-            eolAsNewLine = true,
-        ),
-    )
-}
+        if (child.type in DISALLOWED_MARKDOWN_TYPES) {
+            append(content.substring(child.startOffset, child.endOffset))
+            return@markdownAnnotator true
+        }
+
+        false
+    },
+    config = markdownAnnotatorConfig(
+        eolAsNewLine = true,
+    ),
+)
 
 @Composable
 private fun MangaSummary(

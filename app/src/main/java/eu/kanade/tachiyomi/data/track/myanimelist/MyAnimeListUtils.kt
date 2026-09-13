@@ -2,6 +2,16 @@ package eu.kanade.tachiyomi.data.track.myanimelist
 
 import eu.kanade.tachiyomi.data.database.models.Track
 
+fun Long.toMyAnimeListStatus() = when (this) {
+    MyAnimeList.WATCHING -> "watching"
+    MyAnimeList.COMPLETED -> "completed"
+    MyAnimeList.ON_HOLD -> "on_hold"
+    MyAnimeList.DROPPED -> "dropped"
+    MyAnimeList.PLAN_TO_WATCH -> "plan_to_watch"
+    MyAnimeList.REWATCHING -> "watching"
+    else -> null
+}
+
 fun Track.toMyAnimeListStatus() = when (status) {
     MyAnimeList.WATCHING -> "watching"
     MyAnimeList.COMPLETED -> "completed"

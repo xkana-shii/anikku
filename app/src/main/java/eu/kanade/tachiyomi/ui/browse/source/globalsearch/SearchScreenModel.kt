@@ -28,8 +28,6 @@ import kotlinx.coroutines.withContext
 import mihon.domain.manga.model.toDomainManga
 import tachiyomi.core.common.preference.toggle
 import tachiyomi.core.common.util.QuerySanitizer.sanitize
-import tachiyomi.core.common.util.lang.launchIO
-import tachiyomi.domain.anime.model.Anime
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.interactor.NetworkToLocalManga
 import tachiyomi.domain.manga.model.Manga
@@ -60,7 +58,7 @@ abstract class SearchScreenModel(
 
     protected var extensionFilter: String? = null
 
-    open val sortComparator = { map: Map<CatalogueSource, SearchItemResult> ->
+    private val sortComparator = { map: Map<CatalogueSource, SearchItemResult> ->
         compareBy<CatalogueSource>(
             { (map[it] as? SearchItemResult.Success)?.isEmpty ?: true },
             { "${it.id}" !in pinnedSources },
@@ -226,44 +224,18 @@ abstract class SearchScreenModel(
         updateItems(newItems)
     }
 
-    fun setMigrateDialog(currentId: Long, target: Manga) {
-        screenModelScope.launchIO {
-            val current = getManga.await(currentId) ?: return@launchIO
-            mutableState.update { it.copy(dialog = Dialog.Migrate(target, current)) }
-        }
-    }
-
-    // AY -->
-    fun setSelectDialog(selected: Anime) {
-        mutableState.update { it.copy(dialog = Dialog.Select(selected)) }
-    }
-    // <-- AY
-
-    fun clearDialog() {
-        mutableState.update { it.copy(dialog = null) }
-    }
-
     @Immutable
     data class State(
-        val from: Manga? = null,
+        val fromSourceId: Long? = null,
         val searchQuery: String? = null,
         val sourceFilter: SourceFilter = SourceFilter.PinnedOnly,
         val onlyShowHasResults: Boolean = false,
         val items: PersistentMap<CatalogueSource, SearchItemResult> = persistentMapOf(),
-        val dialog: Dialog? = null,
     ) {
         val progress: Int = items.count { it.value !is SearchItemResult.Loading }
         val total: Int = items.size
         val filteredItems = items.filter { (_, result) -> result.isVisible(onlyShowHasResults) }
             .toImmutableMap()
-    }
-
-    sealed interface Dialog {
-        // AY -->
-        data class Select(val anime: Anime) : Dialog
-        // <-- AY
-
-        data class Migrate(val target: Manga, val current: Manga) : Dialog
     }
 }
 

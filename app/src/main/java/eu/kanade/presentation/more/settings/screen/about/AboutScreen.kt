@@ -63,7 +63,6 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 
 class AboutScreen : Screen() {
-    @Suppress("unused")
     private fun readResolve(): Any = AboutScreen
 
     @Composable
@@ -285,7 +284,7 @@ class AboutScreen : Screen() {
                         LinkIcon(
                             label = "GitHub",
                             icon = CustomIcons.Github,
-                            url = "https://github.com/komikku-app/anikku",
+                            url = "https://github.com/xkana-shii/anikku",
                         )
                     }
                 }
@@ -321,6 +320,7 @@ class AboutScreen : Screen() {
                     is GetApplicationRelease.Result.OsTooOld -> {
                         context.toast(MR.strings.update_check_eol)
                     }
+                    else -> {}
                 }
             } catch (e: Exception) {
                 context.toast(e.message)
@@ -402,7 +402,7 @@ class AboutScreen : Screen() {
                             Injekt.get<UiPreferences>().dateFormat().get(),
                         ),
                     )
-            } catch (_: Exception) {
+            } catch (e: Exception) {
                 BuildConfig.BUILD_TIME
             }
         }

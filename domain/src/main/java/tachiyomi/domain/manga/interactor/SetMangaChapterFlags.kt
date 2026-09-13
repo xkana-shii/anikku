@@ -1,6 +1,5 @@
 package tachiyomi.domain.manga.interactor
 
-import tachiyomi.domain.anime.model.Anime
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangaUpdate
 import tachiyomi.domain.manga.repository.MangaRepository
@@ -36,7 +35,7 @@ class SetMangaChapterFlags(
         )
     }
 
-    // AY -->
+    // AM (FILLERMARK) -->
     suspend fun awaitSetFillermarkFilter(manga: Manga, flag: Long): Boolean {
         return mangaRepository.update(
             MangaUpdate(
@@ -45,7 +44,7 @@ class SetMangaChapterFlags(
             ),
         )
     }
-    // <-- AY
+    // <-- AM (FILLERMARK)
 
     suspend fun awaitSetDisplayMode(manga: Manga, flag: Long): Boolean {
         return mangaRepository.update(
@@ -81,41 +80,17 @@ class SetMangaChapterFlags(
         )
     }
 
-    // AY -->
-    suspend fun awaitShowEpisodePreviews(anime: Anime, flag: Long): Boolean {
-        return mangaRepository.update(
-            MangaUpdate(
-                id = anime.id,
-                chapterFlags = anime.chapterFlags.setFlag(flag, Anime.EPISODE_PREVIEWS_MASK),
-            ),
-        )
-    }
-
-    suspend fun awaitShowEpisodeSummaries(anime: Anime, flag: Long): Boolean {
-        return mangaRepository.update(
-            MangaUpdate(
-                id = anime.id,
-                chapterFlags = anime.chapterFlags.setFlag(flag, Anime.EPISODE_SUMMARIES_MASK),
-            ),
-        )
-    }
-    // <-- AY
-
     suspend fun awaitSetAllFlags(
         mangaId: Long,
         unreadFilter: Long,
         downloadedFilter: Long,
         bookmarkedFilter: Long,
-        // AY -->
+        // AM (FILLERMARK) -->
         fillermarkedFilter: Long,
-        // <-- AY
+        // <-- AM (FILLERMARK)
         sortingMode: Long,
         sortingDirection: Long,
         displayMode: Long,
-        // AY -->
-        showPreviews: Long,
-        showSummaries: Long,
-        // <-- AY
     ): Boolean {
         return mangaRepository.update(
             MangaUpdate(
@@ -123,16 +98,12 @@ class SetMangaChapterFlags(
                 chapterFlags = 0L.setFlag(unreadFilter, Manga.EPISODE_UNSEEN_MASK)
                     .setFlag(downloadedFilter, Manga.EPISODE_DOWNLOADED_MASK)
                     .setFlag(bookmarkedFilter, Manga.EPISODE_BOOKMARKED_MASK)
-                    // AY -->
+                    // AM (FILLERMARK) -->
                     .setFlag(fillermarkedFilter, Manga.EPISODE_FILLERMARKED_MASK)
-                    // <-- AY
+                    // <-- AM (FILLERMARK)
                     .setFlag(sortingMode, Manga.EPISODE_SORTING_MASK)
                     .setFlag(sortingDirection, Manga.EPISODE_SORT_DIR_MASK)
-                    .setFlag(displayMode, Manga.EPISODE_DISPLAY_MASK)
-                    // AY -->
-                    .setFlag(showPreviews, Anime.EPISODE_PREVIEWS_MASK)
-                    .setFlag(showSummaries, Anime.EPISODE_SUMMARIES_MASK),
-                // <-- AY
+                    .setFlag(displayMode, Manga.EPISODE_DISPLAY_MASK),
             ),
         )
     }

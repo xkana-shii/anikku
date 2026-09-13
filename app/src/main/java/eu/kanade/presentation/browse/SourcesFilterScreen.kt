@@ -86,7 +86,7 @@ private fun SourcesFilterContent(
             // KMK -->
             stickyHeader(
                 // KMK <--
-                key = "$STICKY_HEADER_KEY_PREFIX-$language",
+                key = language,
                 contentType = "source-filter-header",
             ) {
                 SourcesFilterHeader(

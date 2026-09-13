@@ -58,6 +58,13 @@ fun Screen.feedTab(
 
     val haptic = LocalHapticFeedback.current
 
+    BackHandler(enabled = bulkFavoriteState.selectionMode || showingFeedOrderScreen.value) {
+        when {
+            bulkFavoriteState.selectionMode -> bulkFavoriteScreenModel.backHandler()
+            showingFeedOrderScreen.value -> showingFeedOrderScreen.value = false
+        }
+    }
+
     LaunchedEffect(bulkFavoriteState.selectionMode) {
         HomeScreen.showBottomNav(!bulkFavoriteState.selectionMode)
     }
@@ -115,12 +122,6 @@ fun Screen.feedTab(
         },
         content = { contentPadding, snackbarHostState ->
             // KMK -->
-            BackHandler(enabled = bulkFavoriteState.selectionMode || showingFeedOrderScreen.value) {
-                when {
-                    bulkFavoriteState.selectionMode -> bulkFavoriteScreenModel.backHandler()
-                    showingFeedOrderScreen.value -> showingFeedOrderScreen.value = false
-                }
-            }
             Crossfade(
                 targetState = showingFeedOrderScreen.value,
                 label = "feed_order_crossfade",

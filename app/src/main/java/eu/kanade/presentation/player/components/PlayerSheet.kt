@@ -85,7 +85,7 @@ fun PlayerSheet(
     val density = LocalDensity.current
     val latestOnDismissRequest by rememberUpdatedState(onDismissRequest)
     val maxWidth = if (LocalConfiguration.current.orientation == ORIENTATION_LANDSCAPE) {
-        720.dp
+        640.dp
     } else {
         420.dp
     }
