@@ -12,8 +12,7 @@ fun isTvBox(context: Context): Boolean {
 
     // TV for sure
     if (
-        context.getSystemService(UiModeManager::class.java)
-            .getCurrentModeType() == Configuration.UI_MODE_TYPE_TELEVISION
+        context.isTelevision()
     ) {
         return true
     }
@@ -42,4 +41,21 @@ fun isTvBox(context: Context): Boolean {
 
     // Default: No TV - use SAF
     return false
+}
+
+/**
+ * Returns whether the device presents a television UI and should use remote-first navigation.
+ *
+ * Keep this stricter than [isTvBox]. Storage capability heuristics are not sufficient evidence
+ * that a device is controlled primarily through a D-pad.
+ */
+fun Context.isTelevision(): Boolean {
+    return isTelevision(
+        uiModeType = getSystemService(UiModeManager::class.java)?.currentModeType,
+        hasLeanbackFeature = packageManager.hasSystemFeature(PackageManager.FEATURE_LEANBACK),
+    )
+}
+
+internal fun isTelevision(uiModeType: Int?, hasLeanbackFeature: Boolean): Boolean {
+    return uiModeType == Configuration.UI_MODE_TYPE_TELEVISION || hasLeanbackFeature
 }

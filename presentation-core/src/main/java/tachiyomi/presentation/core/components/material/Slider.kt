@@ -9,6 +9,7 @@ import androidx.compose.material3.SliderState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import tachiyomi.presentation.core.util.tvFocusable
 import kotlin.math.roundToInt
 
 @Composable
@@ -36,7 +37,7 @@ fun Slider(
     Slider(
         value = value.toFloat(),
         onValueChange = { onValueChange(it.roundToInt()) },
-        modifier = modifier,
+        modifier = modifier.tvFocusable(interactionSource),
         enabled = enabled,
         valueRange = with(valueRange) { first.toFloat()..last.toFloat() },
         steps = steps,
@@ -73,7 +74,7 @@ fun Slider(
     Slider(
         value = value,
         onValueChange = { onValueChange(it) },
-        modifier = modifier,
+        modifier = modifier.tvFocusable(interactionSource),
         enabled = enabled,
         valueRange = valueRange,
         steps = steps,

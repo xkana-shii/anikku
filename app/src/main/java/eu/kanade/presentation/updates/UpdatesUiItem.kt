@@ -80,6 +80,7 @@ import tachiyomi.i18n.ank.AMR
 import tachiyomi.presentation.core.components.material.DISABLED_ALPHA
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.presentation.core.util.focusHighlight
 import tachiyomi.presentation.core.util.selectedBackground
 import uy.kohesive.injekt.injectLazy
 import java.util.concurrent.TimeUnit
@@ -312,6 +313,7 @@ private fun UpdatesUiItem(
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     },
                 )
+                .focusHighlight()
                 .padding(top = if (isLeader) MaterialTheme.padding.small else 0.dp)
                 .padding(
                     // KMK -->

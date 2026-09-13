@@ -28,6 +28,7 @@ import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import tachiyomi.presentation.core.util.tvFocusable
 import kotlin.math.ln
 
 /**
@@ -68,6 +69,7 @@ fun Surface(
                     border = border,
                     shadowElevation = shadowElevation,
                 )
+                .tvFocusable(interactionSource)
                 .combinedClickable(
                     interactionSource = interactionSource,
                     indication = ripple(),

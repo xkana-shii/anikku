@@ -1,6 +1,7 @@
 package eu.kanade.presentation.components
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -22,16 +23,21 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
+import eu.kanade.presentation.util.isTvUi
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.launch
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.TabText
 import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.presentation.core.util.focusHighlight
+import tachiyomi.presentation.core.util.tvFocusable
 
 object TabbedDialogPaddings {
     val Horizontal = 24.dp
@@ -52,21 +58,34 @@ fun TabbedDialog(
         onDismissRequest = onDismissRequest,
     ) {
         val scope = rememberCoroutineScope()
+        val isTvUi = isTvUi()
+        var tvPage by rememberSaveable { mutableStateOf(pagerState.currentPage) }
+        val selectedPage = if (isTvUi) tvPage else pagerState.currentPage
+        val tvPageStateHolder = rememberSaveableStateHolder()
 
         Column {
             Row {
                 PrimaryTabRow(
                     modifier = Modifier.weight(1f),
-                    selectedTabIndex = pagerState.currentPage,
+                    selectedTabIndex = selectedPage,
                     containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                     divider = {},
                 ) {
                     tabTitles.fastForEachIndexed { index, tab ->
+                        val interactionSource = remember(index) { MutableInteractionSource() }
                         Tab(
-                            selected = pagerState.currentPage == index,
-                            onClick = { scope.launch { pagerState.animateScrollToPage(index) } },
+                            modifier = Modifier.tvFocusable(interactionSource),
+                            selected = selectedPage == index,
+                            onClick = {
+                                if (isTvUi) {
+                                    tvPage = index
+                                } else {
+                                    scope.launch { pagerState.animateScrollToPage(index) }
+                                }
+                            },
                             text = { TabText(text = tab) },
                             unselectedContentColor = MaterialTheme.colorScheme.onSurface,
+                            interactionSource = interactionSource,
                         )
                     }
                 }
@@ -75,12 +94,20 @@ fun TabbedDialog(
             }
             HorizontalDivider()
 
-            HorizontalPager(
-                modifier = Modifier.animateContentSize(),
-                state = pagerState,
-                verticalAlignment = Alignment.Top,
-                pageContent = { page -> content(page) },
-            )
+            if (isTvUi) {
+                Box(modifier = Modifier.animateContentSize()) {
+                    tvPageStateHolder.SaveableStateProvider(selectedPage) {
+                        content(selectedPage)
+                    }
+                }
+            } else {
+                HorizontalPager(
+                    modifier = Modifier.animateContentSize(),
+                    state = pagerState,
+                    verticalAlignment = Alignment.Top,
+                    pageContent = { page -> content(page) },
+                )
+            }
         }
     }
 }
@@ -91,7 +118,7 @@ private fun MoreMenu(
 ) {
     var expanded by remember { mutableStateOf(false) }
     Box(modifier = Modifier.wrapContentSize(Alignment.TopStart)) {
-        IconButton(onClick = { expanded = true }) {
+        IconButton(modifier = Modifier.focusHighlight(), onClick = { expanded = true }) {
             Icon(
                 imageVector = Icons.Default.MoreVert,
                 contentDescription = stringResource(MR.strings.label_more),

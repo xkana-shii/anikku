@@ -45,6 +45,7 @@ import tachiyomi.i18n.ank.AMR
 import tachiyomi.presentation.core.components.material.DISABLED_ALPHA
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.presentation.core.util.focusHighlight
 import tachiyomi.presentation.core.util.selectedBackground
 
 private val HistoryItemHeight = 96.dp
@@ -83,6 +84,7 @@ fun HistoryItem(
                     onLongClick()
                 },
             )
+            .focusHighlight()
             // KMK <--
             .height(HistoryItemHeight)
             .padding(horizontal = MaterialTheme.padding.medium, vertical = MaterialTheme.padding.small),

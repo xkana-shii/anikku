@@ -9,6 +9,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastAny
 import androidx.paging.LoadState
@@ -34,6 +38,9 @@ fun BrowseSourceComfortableGrid(
     selection: List<Manga>,
     usePanoramaCover: Boolean = false,
     // KMK <--
+    initialItemFocusRequester: FocusRequester? = null,
+    initialItemIndex: Int = 0,
+    listingFocusRequester: FocusRequester? = null,
 ) {
     LazyVerticalGrid(
         columns = columns,
@@ -56,6 +63,15 @@ fun BrowseSourceComfortableGrid(
 
             BrowseSourceComfortableGridItem(
                 manga = manga,
+                modifier = if (index == initialItemIndex && initialItemFocusRequester != null) {
+                    Modifier
+                        .focusRequester(initialItemFocusRequester)
+                        .focusProperties {
+                            if (listingFocusRequester != null) up = listingFocusRequester
+                        }
+                } else {
+                    Modifier
+                },
                 // SY -->
                 metadata = metadata,
                 // SY <--
@@ -79,6 +95,7 @@ fun BrowseSourceComfortableGrid(
 @Composable
 internal fun BrowseSourceComfortableGridItem(
     manga: Manga,
+    modifier: Modifier = Modifier,
     // SY -->
     metadata: RaisedSearchMetadata?,
     // SY <--
@@ -90,6 +107,7 @@ internal fun BrowseSourceComfortableGridItem(
     // KMK <--
 ) {
     MangaComfortableGridItem(
+        modifier = modifier,
         title = manga.title,
         coverData = MangaCover(
             mangaId = manga.id,

@@ -1,9 +1,14 @@
 package tachiyomi.presentation.core.util
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.focusGroup
+import androidx.compose.foundation.interaction.InteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.isImeVisible
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -13,6 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.focus.FocusRequester
@@ -24,7 +30,52 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.unit.dp
 import tachiyomi.presentation.core.components.material.SECONDARY_ALPHA
+
+private val TvFocusBorderWidth = 3.dp
+private val TvFocusBorderShape = RoundedCornerShape(8.dp)
+
+/**
+ * Draws a TV-only focus indicator using the interaction source of the existing click target.
+ *
+ * This deliberately does not add another focusable node. Clickable, combinedClickable,
+ * selectable, and Material controls already own the focus target that emits focus interactions.
+ */
+@Composable
+fun Modifier.tvFocusable(
+    interactionSource: InteractionSource,
+    enabled: Boolean = LocalTvUiEnabled.current,
+): Modifier {
+    if (!enabled) return this
+    val isFocused by interactionSource.collectIsFocusedAsState()
+    return tvFocusIndicator(isFocused)
+}
+
+/** Groups related TV targets without changing phone/tablet keyboard focus traversal. */
+@Composable
+fun Modifier.tvFocusGroup(
+    enabled: Boolean = LocalTvUiEnabled.current,
+): Modifier = if (enabled) focusGroup() else this
+
+/** Adds TV focus feedback to an existing focus target when its interaction source is unavailable. */
+fun Modifier.focusHighlight(): Modifier = composed {
+    if (!LocalTvUiEnabled.current) return@composed this
+    var isFocused by remember { mutableStateOf(false) }
+    Modifier
+        .onFocusChanged { isFocused = it.isFocused }
+        .then(this)
+        .tvFocusIndicator(isFocused)
+}
+
+@Composable
+private fun Modifier.tvFocusIndicator(isFocused: Boolean): Modifier {
+    return if (isFocused) {
+        border(TvFocusBorderWidth, MaterialTheme.colorScheme.primary, TvFocusBorderShape)
+    } else {
+        this
+    }
+}
 
 @Composable
 fun Modifier.selectedBackground(isSelected: Boolean): Modifier {
@@ -39,12 +90,14 @@ fun Modifier.secondaryItemAlpha(): Modifier = this.alpha(SECONDARY_ALPHA)
 fun Modifier.clickableNoIndication(
     onLongClick: (() -> Unit)? = null,
     onClick: () -> Unit,
-) = this.combinedClickable(
-    interactionSource = null,
-    indication = null,
-    onLongClick = onLongClick,
-    onClick = onClick,
-)
+) = this
+    .focusHighlight()
+    .combinedClickable(
+        interactionSource = null,
+        indication = null,
+        onLongClick = onLongClick,
+        onClick = onClick,
+    )
 
 /**
  * For TextField, the provided [action] will be invoked when

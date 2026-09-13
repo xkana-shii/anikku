@@ -48,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import dev.vivvvek.seeker.Segment
 import `is`.xyz.mpv.Utils
 import tachiyomi.presentation.core.components.material.padding
+import tachiyomi.presentation.core.util.focusHighlight
 
 @Composable
 fun CurrentChapter(
@@ -60,6 +61,7 @@ fun CurrentChapter(
             .clip(RoundedCornerShape(25))
             .background(MaterialTheme.colorScheme.background.copy(alpha = 0.6F))
             .clickable(onClick = onClick)
+            .focusHighlight()
             .padding(horizontal = MaterialTheme.padding.mediumSmall, vertical = MaterialTheme.padding.small),
     ) {
         AnimatedContent(

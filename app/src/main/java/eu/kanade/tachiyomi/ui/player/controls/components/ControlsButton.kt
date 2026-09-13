@@ -43,6 +43,7 @@ import eu.kanade.tachiyomi.ui.player.controls.LocalPlayerButtonsClickEvent
 import tachiyomi.presentation.core.components.material.Button
 import tachiyomi.presentation.core.components.material.DISABLED_ALPHA
 import tachiyomi.presentation.core.components.material.padding
+import tachiyomi.presentation.core.util.tvFocusable
 
 @Composable
 fun ControlsButton(
@@ -77,6 +78,7 @@ fun ControlsButton(
                 interactionSource,
                 ripple(),
             )
+            .tvFocusable(interactionSource)
             .padding(
                 vertical = MaterialTheme.padding.medium,
                 horizontal = horizontalSpacing,
@@ -119,6 +121,7 @@ fun ControlsButton(
                 interactionSource,
                 ripple(),
             )
+            .tvFocusable(interactionSource)
             .padding(MaterialTheme.padding.medium),
     ) {
         Text(

@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import tachiyomi.presentation.core.util.tvFocusGroup
 
 /**
  * Center-aligned M3 Navigation rail
@@ -46,7 +47,8 @@ fun NavigationRail(
                 .windowInsetsPadding(windowInsets)
                 .widthIn(min = 80.dp)
                 .padding(vertical = MaterialTheme.padding.extraSmall)
-                .selectableGroup(),
+                .selectableGroup()
+                .tvFocusGroup(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(
                 MaterialTheme.padding.extraSmall,

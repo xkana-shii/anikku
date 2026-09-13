@@ -45,6 +45,8 @@ import tachiyomi.presentation.core.components.VerticalFastScroller
 import tachiyomi.presentation.core.components.material.DISABLED_ALPHA
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.presentation.core.util.focusHighlight
+import tachiyomi.presentation.core.util.tvFocusGroup
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -76,7 +78,9 @@ fun EpisodeListDialog(
             listState = episodeListState,
         ) {
             LazyColumn(
-                modifier = Modifier.fillMaxHeight(),
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .tvFocusGroup(),
                 state = episodeListState,
             ) {
                 items(
@@ -170,9 +174,10 @@ private fun EpisodeListItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = { onEpisodeClicked(episode.id) })
+            .focusHighlight()
             .padding(vertical = MaterialTheme.padding.extraSmall),
     ) {
-        IconButton(onClick = { clickBookmark(!isBookmarked) }) {
+        IconButton(modifier = Modifier.focusHighlight(), onClick = { clickBookmark(!isBookmarked) }) {
             Icon(
                 imageVector = Icons.Filled.Bookmark,
                 contentDescription = null,
@@ -183,7 +188,7 @@ private fun EpisodeListItem(
             )
         }
 
-        IconButton(onClick = { clickFillermark(!isFillermarked) }) {
+        IconButton(modifier = Modifier.focusHighlight(), onClick = { clickFillermark(!isFillermarked) }) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.Label,
                 contentDescription = null,

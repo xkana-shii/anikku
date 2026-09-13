@@ -30,9 +30,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
@@ -40,6 +42,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
@@ -47,6 +50,8 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
+import tachiyomi.presentation.core.util.LocalTvUiEnabled
+import tachiyomi.presentation.core.util.tvFocusGroup
 import kotlin.math.roundToInt
 
 private val sheetAnimationSpec = tween<Float>(durationMillis = 350)
@@ -61,10 +66,21 @@ fun AdaptiveSheet(
 ) {
     val density = LocalDensity.current
     val scope = rememberCoroutineScope()
+    val focusManager = LocalFocusManager.current
+    val isTvUi = LocalTvUiEnabled.current
     val maxWidth = if (LocalConfiguration.current.orientation == ORIENTATION_LANDSCAPE) {
         600.dp
     } else {
         460.dp
+    }
+
+    LaunchedEffect(isTvUi) {
+        if (isTvUi) {
+            repeat(3) {
+                withFrameNanos { }
+                if (focusManager.moveFocus(FocusDirection.Next)) return@LaunchedEffect
+            }
+        }
     }
 
     if (isTabletUi) {
@@ -101,6 +117,7 @@ fun AdaptiveSheet(
                     )
                     .systemBarsPadding()
                     .padding(vertical = 16.dp)
+                    .tvFocusGroup()
                     .then(modifier),
                 shape = MaterialTheme.shapes.extraLarge,
                 color = MaterialTheme.colorScheme.surfaceContainerHigh,

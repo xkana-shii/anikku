@@ -39,6 +39,7 @@ import tachiyomi.i18n.MR
 import tachiyomi.i18n.aniyomi.AYMR
 import tachiyomi.presentation.core.components.material.IconButtonTokens
 import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.presentation.core.util.focusHighlight
 import tachiyomi.presentation.core.util.secondaryItemAlpha
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -293,20 +294,22 @@ private fun Modifier.commonClickable(
     hapticFeedback: HapticFeedback,
     onLongClick: () -> Unit,
     onClick: () -> Unit,
-) = this.combinedClickable(
-    enabled = enabled,
-    onLongClick = {
-        onLongClick()
-        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-    },
-    onClick = onClick,
-    role = Role.Button,
-    interactionSource = null,
-    indication = ripple(
-        bounded = false,
-        radius = IconButtonTokens.StateLayerSize / 2,
-    ),
-)
+) = this
+    .focusHighlight()
+    .combinedClickable(
+        enabled = enabled,
+        onLongClick = {
+            onLongClick()
+            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+        },
+        onClick = onClick,
+        role = Role.Button,
+        interactionSource = null,
+        indication = ripple(
+            bounded = false,
+            radius = IconButtonTokens.StateLayerSize / 2,
+        ),
+    )
 
 internal val IndicatorSize = 26.dp
 private val IndicatorPadding = 2.dp

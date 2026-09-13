@@ -9,6 +9,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RippleConfiguration
 import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -37,6 +38,8 @@ import eu.kanade.presentation.theme.colorscheme.TealTurqoiseColorScheme
 import eu.kanade.presentation.theme.colorscheme.TidalWaveColorScheme
 import eu.kanade.presentation.theme.colorscheme.YinYangColorScheme
 import eu.kanade.presentation.theme.colorscheme.YotsubaColorScheme
+import eu.kanade.tachiyomi.util.system.isTelevision
+import tachiyomi.presentation.core.util.LocalTvUiEnabled
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -47,11 +50,13 @@ fun TachiyomiTheme(
     content: @Composable () -> Unit,
 ) {
     val uiPreferences = Injekt.get<UiPreferences>()
-    BaseTachiyomiTheme(
-        appTheme = appTheme ?: uiPreferences.appTheme().get(),
-        isAmoled = amoled ?: uiPreferences.themeDarkAmoled().get(),
-        content = content,
-    )
+    CompositionLocalProvider(LocalTvUiEnabled provides LocalContext.current.isTelevision()) {
+        BaseTachiyomiTheme(
+            appTheme = appTheme ?: uiPreferences.appTheme().get(),
+            isAmoled = amoled ?: uiPreferences.themeDarkAmoled().get(),
+            content = content,
+        )
+    }
 }
 
 // KMK -->
@@ -69,14 +74,16 @@ fun TachiyomiTheme(
     } else {
         val uiPreferences = Injekt.get<UiPreferences>()
         val isAmoled = amoled ?: uiPreferences.themeDarkAmoled().get()
-        DynamicMaterialExpressiveTheme(
-            seedColor = seedColor,
-            isAmoled = isAmoled,
-            style = uiPreferences.themeCoverBasedStyle().get(),
-            typography = typography,
-            animate = true,
-            content = content,
-        )
+        CompositionLocalProvider(LocalTvUiEnabled provides LocalContext.current.isTelevision()) {
+            DynamicMaterialExpressiveTheme(
+                seedColor = seedColor,
+                isAmoled = isAmoled,
+                style = uiPreferences.themeCoverBasedStyle().get(),
+                typography = typography,
+                animate = true,
+                content = content,
+            )
+        }
     }
 }
 // KMK <--

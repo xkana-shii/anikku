@@ -13,6 +13,7 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
@@ -60,6 +61,9 @@ fun BrowseSourceContent(
     // KMK -->
     selection: List<Manga>,
     // KMK <--
+    initialItemFocusRequester: FocusRequester? = null,
+    initialItemIndex: Int = 0,
+    listingFocusRequester: FocusRequester? = null,
 ) {
     val context = LocalContext.current
 
@@ -149,6 +153,9 @@ fun BrowseSourceContent(
                 // KMK -->
                 selection = selection,
                 // KMK <--
+                initialItemFocusRequester = initialItemFocusRequester,
+                initialItemIndex = initialItemIndex,
+                listingFocusRequester = listingFocusRequester,
             )
         }
         // KMK -->
@@ -163,6 +170,9 @@ fun BrowseSourceContent(
                 selection = selection,
                 usePanoramaCover = true,
                 // KMK <--
+                initialItemFocusRequester = initialItemFocusRequester,
+                initialItemIndex = initialItemIndex,
+                listingFocusRequester = listingFocusRequester,
             )
         }
         // KMK <--
@@ -179,6 +189,9 @@ fun BrowseSourceContent(
                 // KMK -->
                 selection = selection,
                 // KMK <--
+                initialItemFocusRequester = initialItemFocusRequester,
+                initialItemIndex = initialItemIndex,
+                listingFocusRequester = listingFocusRequester,
             )
         }
         LibraryDisplayMode.CompactGrid, LibraryDisplayMode.CoverOnlyGrid -> {
@@ -191,6 +204,9 @@ fun BrowseSourceContent(
                 // KMK -->
                 selection = selection,
                 // KMK <--
+                initialItemFocusRequester = initialItemFocusRequester,
+                initialItemIndex = initialItemIndex,
+                listingFocusRequester = listingFocusRequester,
             )
         }
     }

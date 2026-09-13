@@ -30,6 +30,7 @@ import tachiyomi.presentation.core.i18n.stringResource
 
 @Composable
 fun EditTextPreferenceWidget(
+    modifier: Modifier = Modifier,
     title: String,
     subtitle: String?,
     dialogSubtitle: String? = null,
@@ -46,6 +47,7 @@ fun EditTextPreferenceWidget(
     var isDialogShown by remember { mutableStateOf(false) }
 
     TextPreferenceWidget(
+        modifier = modifier,
         title = title,
         subtitle = if (formatSubtitle) subtitle?.format(value) else subtitle,
         icon = icon,

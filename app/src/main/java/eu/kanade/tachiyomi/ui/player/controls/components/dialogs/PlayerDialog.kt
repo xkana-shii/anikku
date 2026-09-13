@@ -10,12 +10,19 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.TextButton
 import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.presentation.core.util.LocalTvUiEnabled
+import tachiyomi.presentation.core.util.focusHighlight
+import tachiyomi.presentation.core.util.tvFocusGroup
 
 @Composable
 fun PlayerDialog(
@@ -25,6 +32,8 @@ fun PlayerDialog(
     onDismissRequest: () -> Unit,
     content: @Composable (() -> Unit)? = null,
 ) {
+    val isTvUi = LocalTvUiEnabled.current
+    val focusManager = LocalFocusManager.current
     val onConfirm = {
         onConfirmRequest?.invoke()
         onDismissRequest()
@@ -42,7 +51,9 @@ fun PlayerDialog(
     ) {
         Surface(
             shape = MaterialTheme.shapes.large,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .tvFocusGroup(),
             tonalElevation = 1.dp,
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
@@ -59,15 +70,21 @@ fun PlayerDialog(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
-                        TextButton(onClick = onDismissRequest) {
+                        TextButton(modifier = Modifier.focusHighlight(), onClick = onDismissRequest) {
                             Text(stringResource(MR.strings.action_cancel))
                         }
 
-                        TextButton(onClick = onConfirm) {
+                        TextButton(modifier = Modifier.focusHighlight(), onClick = onConfirm) {
                             Text(stringResource(MR.strings.action_ok))
                         }
                     }
                 }
+            }
+        }
+        LaunchedEffect(isTvUi) {
+            if (isTvUi) {
+                withFrameNanos { }
+                focusManager.moveFocus(FocusDirection.Next)
             }
         }
     }

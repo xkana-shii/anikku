@@ -61,6 +61,7 @@ import kotlinx.collections.immutable.ImmutableList
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.clearFocusOnSoftKeyboardHide
+import tachiyomi.presentation.core.util.focusHighlight
 import tachiyomi.presentation.core.util.runOnEnterKeyPressed
 import tachiyomi.presentation.core.util.secondaryItemAlpha
 import tachiyomi.presentation.core.util.showSoftKeyboard
@@ -144,7 +145,7 @@ fun AppBar(
         TopAppBar(
             navigationIcon = {
                 if (isActionMode) {
-                    IconButton(onClick = onCancelActionMode) {
+                    IconButton(modifier = Modifier.focusHighlight(), onClick = onCancelActionMode) {
                         Icon(
                             imageVector = Icons.Outlined.Close,
                             contentDescription = stringResource(MR.strings.action_cancel),
@@ -155,13 +156,13 @@ fun AppBar(
                     Row {
                         // KMK <--
                         navigateUp?.let {
-                            IconButton(onClick = it) {
+                            IconButton(modifier = Modifier.focusHighlight(), onClick = it) {
                                 UpIcon(navigationIcon = navigationIcon)
                             }
                         }
                         // KMK -->
                         goHome?.let {
-                            IconButton(onClick = { it.invoke() }) {
+                            IconButton(modifier = Modifier.focusHighlight(), onClick = { it.invoke() }) {
                                 UpIcon(navigationIcon = Icons.Filled.Home)
                             }
                         }
@@ -227,6 +228,7 @@ fun AppBarActions(
             focusable = false,
         ) {
             IconButton(
+                modifier = Modifier.focusHighlight(),
                 onClick = it.onClick,
                 enabled = it.enabled,
             ) {
@@ -275,6 +277,7 @@ fun AppBarActions(
             focusable = false,
         ) {
             IconButton(
+                modifier = Modifier.focusHighlight(),
                 onClick = { showMenu = !showMenu },
             ) {
                 Icon(
@@ -404,6 +407,7 @@ fun SearchToolbar(
                         focusable = false,
                     ) {
                         IconButton(
+                            modifier = Modifier.focusHighlight(),
                             onClick = onClick,
                         ) {
                             Icon(
@@ -424,6 +428,7 @@ fun SearchToolbar(
                         focusable = false,
                     ) {
                         IconButton(
+                            modifier = Modifier.focusHighlight(),
                             onClick = {
                                 onClick()
                                 focusRequester.requestFocus()

@@ -55,6 +55,7 @@ import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.EmptyScreen
 import tachiyomi.presentation.core.screens.LoadingScreen
 import tachiyomi.presentation.core.theme.header
+import tachiyomi.presentation.core.util.focusHighlight
 import tachiyomi.source.local.isLocal
 
 @Composable
@@ -238,7 +239,7 @@ private fun SourcePinButton(
         )
     }
     val description = if (isPinned) MR.strings.action_unpin else MR.strings.action_pin
-    IconButton(onClick = onClick) {
+    IconButton(modifier = Modifier.focusHighlight(), onClick = onClick) {
         Icon(
             imageVector = icon,
             tint = tint,
@@ -271,6 +272,7 @@ fun SourceOptionsDialog(
                     text = stringResource(textId),
                     modifier = Modifier
                         .clickable(onClick = onClickPin)
+                        .focusHighlight()
                         .fillMaxWidth()
                         .padding(vertical = 16.dp),
                 )
@@ -279,6 +281,7 @@ fun SourceOptionsDialog(
                         text = stringResource(MR.strings.action_disable),
                         modifier = Modifier
                             .clickable(onClick = onClickDisable)
+                            .focusHighlight()
                             .fillMaxWidth()
                             .padding(vertical = 16.dp),
                     )
@@ -289,6 +292,7 @@ fun SourceOptionsDialog(
                         text = stringResource(MR.strings.categories),
                         modifier = Modifier
                             .clickable(onClick = onClickSetCategories)
+                            .focusHighlight()
                             .fillMaxWidth()
                             .padding(vertical = 16.dp),
                     )
@@ -303,6 +307,7 @@ fun SourceOptionsDialog(
                         text = stringResource(MR.strings.label_extension_info),
                         modifier = Modifier
                             .clickable(onClick = onClickSettings)
+                            .focusHighlight()
                             .fillMaxWidth()
                             .padding(vertical = 16.dp),
                     )

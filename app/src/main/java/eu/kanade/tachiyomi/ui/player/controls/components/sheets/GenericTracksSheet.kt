@@ -44,6 +44,8 @@ import kotlinx.collections.immutable.ImmutableList
 import tachiyomi.i18n.aniyomi.AYMR
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.presentation.core.util.focusHighlight
+import tachiyomi.presentation.core.util.tvFocusGroup
 
 @Composable
 fun <T> GenericTracksSheet(
@@ -58,7 +60,7 @@ fun <T> GenericTracksSheet(
     PlayerSheet(onDismissRequest, dismissEvent = dismissEvent) {
         Column(modifier) {
             header()
-            LazyColumn {
+            LazyColumn(modifier = Modifier.tvFocusGroup()) {
                 items(tracks) {
                     track(it)
                 }
@@ -81,13 +83,13 @@ fun AddTrackRow(
         modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
+            .focusHighlight()
             .height(48.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
     ) {
         Row(
             modifier = Modifier
-                .clickable(onClick = onClick)
                 .fillMaxHeight()
                 .weight(1f)
                 .padding(start = MaterialTheme.padding.medium),

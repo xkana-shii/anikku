@@ -63,6 +63,9 @@ interface AssistContentScreen {
     fun onProvideAssistUrl(): String?
 }
 
+/** Screen that owns a concrete, actionable initial focus destination on TV. */
+interface TvInitialFocusScreen
+
 @Composable
 fun DefaultNavigatorScreenTransition(
     navigator: Navigator,

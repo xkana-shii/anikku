@@ -24,10 +24,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.text.font.FontWeight
@@ -39,10 +43,13 @@ import `is`.xyz.mpv.Utils
 import tachiyomi.i18n.aniyomi.AYMR
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.presentation.core.util.LocalTvUiEnabled
+import tachiyomi.presentation.core.util.tvFocusable
 import kotlin.math.abs
 
 @Composable
 fun MiddlePlayerControls(
+    playPauseFocusRequester: FocusRequester,
     // previous
     hasPrevious: Boolean,
     onSkipPrevious: () -> Unit,
@@ -88,6 +95,7 @@ fun MiddlePlayerControls(
 
         val icon = AnimatedImageVector.animatedVectorResource(R.drawable.anim_play_to_pause)
         val interaction = remember { MutableInteractionSource() }
+        val isTvUi = LocalTvUiEnabled.current
         when {
             isStopped -> {
                 Spacer(Modifier.width(96.dp))
@@ -110,6 +118,12 @@ fun MiddlePlayerControls(
 
             (isLoading || isLoadingEpisode) && showLoadingCircle -> CircularProgressIndicator(Modifier.size(96.dp))
             else -> {
+                LaunchedEffect(controlsShown, areControlsLocked, isLoading, isLoadingEpisode, isStopped) {
+                    if (isTvUi && controlsShown && !areControlsLocked && !isLoading && !isLoadingEpisode) {
+                        withFrameNanos { }
+                        playPauseFocusRequester.requestFocus()
+                    }
+                }
                 AnimatedVisibility(
                     visible = controlsShown && !areControlsLocked,
                     enter = enter,
@@ -119,12 +133,14 @@ fun MiddlePlayerControls(
                         painter = rememberAnimatedVectorPainter(icon, !paused),
                         modifier = Modifier
                             .size(96.dp)
+                            .focusRequester(playPauseFocusRequester)
                             .clip(CircleShape)
                             .clickable(
                                 interaction,
                                 ripple(),
                                 onClick = onPlayPauseClick,
                             )
+                            .tvFocusable(interaction)
                             .padding(MaterialTheme.padding.medium),
                         contentDescription = null,
                     )

@@ -42,6 +42,7 @@ import mihon.domain.extensionrepo.model.ExtensionRepo
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.presentation.core.util.focusHighlight
 
 @Composable
 fun ExtensionReposContent(
@@ -140,7 +141,7 @@ private fun ExtensionRepoListItem(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End,
                 ) {
-                    IconButton(onClick = onOpenWebsite) {
+                    IconButton(modifier = Modifier.focusHighlight(), onClick = onOpenWebsite) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
                             contentDescription = stringResource(MR.strings.action_open_in_browser),
@@ -148,6 +149,7 @@ private fun ExtensionRepoListItem(
                     }
 
                     IconButton(
+                        modifier = Modifier.focusHighlight(),
                         onClick = {
                             val url = "${repo.baseUrl}/index.min.json"
                             context.copyToClipboard(url, url)
@@ -160,7 +162,10 @@ private fun ExtensionRepoListItem(
                     }
 
                     // KMK -->
-                    IconButton(onClick = if (isDisabled) onEnable else onDisable) {
+                    IconButton(
+                        modifier = Modifier.focusHighlight(),
+                        onClick = if (isDisabled) onEnable else onDisable,
+                    ) {
                         Icon(
                             imageVector = if (isDisabled) Icons.Outlined.Visibility else Icons.Outlined.VisibilityOff,
                             contentDescription = stringResource(MR.strings.action_disable),
@@ -168,7 +173,7 @@ private fun ExtensionRepoListItem(
                     }
                     // KMK <--
 
-                    IconButton(onClick = onDelete) {
+                    IconButton(modifier = Modifier.focusHighlight(), onClick = onDelete) {
                         Icon(
                             imageVector = Icons.Outlined.Delete,
                             contentDescription = stringResource(MR.strings.action_delete),

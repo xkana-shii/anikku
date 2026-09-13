@@ -308,11 +308,7 @@ private fun ExtensionItem(
 ) {
     val (extension, installStep) = item
     BaseBrowseItem(
-        modifier = modifier
-            .combinedClickable(
-                onClick = { onClickItem(extension) },
-                onLongClick = { onLongClickItem(extension) },
-            ),
+        modifier = modifier,
         onClickItem = { onClickItem(extension) },
         onLongClickItem = { onLongClickItem(extension) },
         icon = {

@@ -22,6 +22,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.PreviewLightDark
@@ -30,7 +34,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.padding
+import tachiyomi.presentation.core.util.LocalTvUiEnabled
+import tachiyomi.presentation.core.util.focusHighlight
 import tachiyomi.presentation.core.util.secondaryItemAlpha
+import tachiyomi.presentation.core.util.tvFocusGroup
 
 @Composable
 fun InfoScreen(
@@ -44,6 +51,9 @@ fun InfoScreen(
     onRejectClick: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
+    val isTvUi = LocalTvUiEnabled.current
+    val acceptFocusRequester = androidx.compose.runtime.remember { FocusRequester() }
+    val contentFocusRequester = androidx.compose.runtime.remember { FocusRequester() }
     Scaffold(
         bottomBar = {
             val strokeWidth = Dp.Hairline
@@ -66,7 +76,13 @@ fun InfoScreen(
                     ),
             ) {
                 Button(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(acceptFocusRequester)
+                        .focusProperties {
+                            if (isTvUi) up = contentFocusRequester
+                        }
+                        .focusHighlight(),
                     enabled = canAccept,
                     onClick = onAcceptClick,
                 ) {
@@ -74,7 +90,9 @@ fun InfoScreen(
                 }
                 if (rejectText != null && onRejectClick != null) {
                     OutlinedButton(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .focusHighlight(),
                         onClick = onRejectClick,
                     ) {
                         Text(text = rejectText)
@@ -95,6 +113,13 @@ fun InfoScreen(
 
         Column(
             modifier = Modifier
+                .focusRequester(contentFocusRequester)
+                .focusProperties {
+                    exit = {
+                        if (isTvUi && it == FocusDirection.Down) acceptFocusRequester else FocusRequester.Default
+                    }
+                }
+                .tvFocusGroup()
                 .verticalScroll(rememberScrollState())
                 .fillMaxWidth()
                 .padding(paddingValues)

@@ -29,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import tachiyomi.presentation.core.components.material.padding
+import tachiyomi.presentation.core.util.focusHighlight
 
 @Composable
 fun SwitchPreference(
@@ -40,6 +41,7 @@ fun SwitchPreference(
     Row(
         modifier = modifier
             .toggleable(value, true, Role.Switch, null, onValueChange)
+            .focusHighlight()
             .padding(horizontal = MaterialTheme.padding.large, vertical = MaterialTheme.padding.small)
             .fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,

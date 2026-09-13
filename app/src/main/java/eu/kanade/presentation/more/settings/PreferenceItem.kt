@@ -59,6 +59,7 @@ fun StatusWrapper(
 internal fun PreferenceItem(
     item: Preference.PreferenceItem<*, *>,
     highlightKey: String?,
+    modifier: Modifier = Modifier,
 ) {
     val scope = rememberCoroutineScope()
     StatusWrapper(
@@ -69,6 +70,7 @@ internal fun PreferenceItem(
             is Preference.PreferenceItem.SwitchPreference -> {
                 val value by item.preference.collectAsState()
                 SwitchPreferenceWidget(
+                    modifier = modifier,
                     title = item.title,
                     subtitle = item.subtitle,
                     icon = item.icon,
@@ -96,7 +98,7 @@ internal fun PreferenceItem(
                         }
                     },
                     titleStyle = MaterialTheme.typography.titleLarge.copy(fontSize = TitleFontSize),
-                    modifier = Modifier.padding(
+                    modifier = modifier.padding(
                         horizontal = PrefsHorizontalPadding,
                         vertical = PrefsVerticalPadding,
                     ),
@@ -105,6 +107,7 @@ internal fun PreferenceItem(
             is Preference.PreferenceItem.ListPreference<*> -> {
                 val value by item.preference.collectAsState()
                 ListPreferenceWidget(
+                    modifier = modifier,
                     value = value,
                     title = item.title,
                     subtitle = item.internalSubtitleProvider(value, item.entries),
@@ -121,6 +124,7 @@ internal fun PreferenceItem(
             }
             is Preference.PreferenceItem.BasicListPreference -> {
                 ListPreferenceWidget(
+                    modifier = modifier,
                     value = item.value,
                     title = item.title,
                     subtitle = item.subtitleProvider(item.value, item.entries),
@@ -132,6 +136,7 @@ internal fun PreferenceItem(
             is Preference.PreferenceItem.MultiSelectListPreference -> {
                 val values by item.preference.collectAsState()
                 MultiSelectListPreferenceWidget(
+                    modifier = modifier,
                     preference = item,
                     values = values,
                     onValuesChange = { newValues ->
@@ -145,6 +150,7 @@ internal fun PreferenceItem(
             }
             is Preference.PreferenceItem.TextPreference -> {
                 TextPreferenceWidget(
+                    modifier = modifier,
                     title = item.title,
                     subtitle = item.subtitle,
                     icon = item.icon,
@@ -154,6 +160,7 @@ internal fun PreferenceItem(
             is Preference.PreferenceItem.EditTextPreference -> {
                 val values by item.preference.collectAsState()
                 EditTextPreferenceWidget(
+                    modifier = modifier,
                     title = item.title,
                     subtitle = item.subtitle,
                     icon = item.icon,
@@ -168,6 +175,7 @@ internal fun PreferenceItem(
             is Preference.PreferenceItem.MultiLineEditTextPreference -> {
                 val values by item.preference.collectAsState()
                 EditTextPreferenceWidget(
+                    modifier = modifier,
                     title = item.title,
                     subtitle = item.subtitle,
                     icon = item.icon,
@@ -184,6 +192,7 @@ internal fun PreferenceItem(
             is Preference.PreferenceItem.MPVConfPreference -> {
                 val values by item.preference.collectAsState()
                 EditTextPreferenceWidget(
+                    modifier = modifier,
                     title = item.title,
                     subtitle = item.subtitle,
                     icon = item.icon,
@@ -201,6 +210,7 @@ internal fun PreferenceItem(
             is Preference.PreferenceItem.EditTextInfoPreference -> {
                 val values by item.preference.collectAsState()
                 EditTextPreferenceWidget(
+                    modifier = modifier,
                     title = item.title,
                     subtitle = item.subtitle,
                     dialogSubtitle = item.dialogSubtitle,
@@ -222,6 +232,7 @@ internal fun PreferenceItem(
                     tracker.isLoggedInFlow.collectAsState(tracker.isLoggedIn)
                 }
                 TrackingPreferenceWidget(
+                    modifier = modifier,
                     tracker = item.tracker,
                     checked = isLoggedIn,
                     onClick = { if (isLoggedIn) item.logout() else item.login() },
@@ -231,6 +242,7 @@ internal fun PreferenceItem(
             is Preference.PreferenceItem.ConnectionPreference -> {
                 val isLoggedIn by item.service.isLoggedInFlow.collectAsState(item.service.isLogged)
                 ConnectionPreferenceWidget(
+                    modifier = modifier,
                     service = item.service,
                     checked = isLoggedIn,
                     onClick = { if (isLoggedIn) item.openSettings() else item.login() },

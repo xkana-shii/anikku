@@ -1,6 +1,8 @@
 package eu.kanade.presentation.manga.components
 
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -10,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -18,6 +21,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.presentation.core.components.material.padding
+import tachiyomi.presentation.core.util.tvFocusable
 
 @Composable
 fun BaseMangaListItem(
@@ -34,11 +38,14 @@ fun BaseMangaListItem(
 ) {
     // KMK -->
     val haptic = LocalHapticFeedback.current
+    val interactionSource = remember { MutableInteractionSource() }
     // KMK <--
     Row(
         modifier = modifier
             // KMK -->
             .combinedClickable(
+                interactionSource = interactionSource,
+                indication = LocalIndication.current,
                 // KMK <--
                 onClick = onClickItem,
                 // KMK -->
@@ -48,6 +55,7 @@ fun BaseMangaListItem(
                 },
                 // KMK <--
             )
+            .tvFocusable(interactionSource)
             .height(76.dp)
             .padding(horizontal = MaterialTheme.padding.medium, vertical = 3.dp),
         verticalAlignment = Alignment.CenterVertically,

@@ -1,7 +1,9 @@
 package eu.kanade.presentation.library.components
 
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
@@ -49,7 +51,9 @@ import exh.debug.DebugToggles
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.BadgeGroup
 import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.presentation.core.util.focusHighlight
 import tachiyomi.presentation.core.util.selectedBackground
+import tachiyomi.presentation.core.util.tvFocusable
 import tachiyomi.domain.manga.model.MangaCover as MangaCoverModel
 
 object CommonMangaItemDefaults {
@@ -77,6 +81,7 @@ private const val GRID_SELECTED_COVER_ALPHA = 0.76f
  */
 @Composable
 fun MangaCompactGridItem(
+    modifier: Modifier = Modifier,
     coverData: MangaCoverModel,
     onClick: () -> Unit,
     onLongClick: () -> Unit,
@@ -95,6 +100,7 @@ fun MangaCompactGridItem(
     val onBgColor = coverData.dominantCoverColors?.second.takeIf { libraryColored }
     // KMK <--
     GridItemSelectable(
+        modifier = modifier,
         isSelected = isSelected,
         onClick = onClick,
         onLongClick = onLongClick,
@@ -207,6 +213,7 @@ private fun BoxScope.CoverTextOverlay(
  */
 @Composable
 fun MangaComfortableGridItem(
+    modifier: Modifier = Modifier,
     coverData: MangaCoverModel,
     title: String,
     onClick: () -> Unit,
@@ -230,6 +237,7 @@ fun MangaComfortableGridItem(
     val onBgColor = coverData.dominantCoverColors?.second.takeIf { libraryColored }
     // KMK <--
     GridItemSelectable(
+        modifier = modifier,
         isSelected = isSelected,
         onClick = onClick,
         onLongClick = onLongClick,
@@ -396,13 +404,17 @@ private fun GridItemSelectable(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
     Box(
         modifier = modifier
             .clip(MaterialTheme.shapes.small)
             .combinedClickable(
+                interactionSource = interactionSource,
+                indication = LocalIndication.current,
                 onClick = onClick,
                 onLongClick = onLongClick,
             )
+            .tvFocusable(interactionSource)
             .selectedOutline(isSelected = isSelected, color = MaterialTheme.colorScheme.secondary)
             .padding(4.dp),
     ) {
@@ -453,6 +465,7 @@ fun MangaListItem(
     val bgColor = coverData.dominantCoverColors?.first?.let { Color(it) }.takeIf { libraryColored }
     val onBgColor = coverData.dominantCoverColors?.second.takeIf { libraryColored }
     // KMK <--
+    val interactionSource = remember { MutableInteractionSource() }
     Row(
         modifier = modifier
             .selectedBackground(isSelected)
@@ -468,9 +481,12 @@ fun MangaListItem(
                 // <-- AY
             )
             .combinedClickable(
+                interactionSource = interactionSource,
+                indication = LocalIndication.current,
                 onClick = onClick,
                 onLongClick = onLongClick,
             )
+            .tvFocusable(interactionSource)
             .padding(horizontal = 16.dp, vertical = 3.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -534,7 +550,9 @@ private fun ContinueReadingButton(
                 containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.9f),
                 contentColor = contentColorFor(MaterialTheme.colorScheme.primaryContainer),
             ),
-            modifier = Modifier.size(size),
+            modifier = Modifier
+                .size(size)
+                .focusHighlight(),
         ) {
             Icon(
                 imageVector = Icons.Filled.PlayArrow,

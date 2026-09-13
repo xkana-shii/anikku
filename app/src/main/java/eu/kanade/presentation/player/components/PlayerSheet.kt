@@ -51,6 +51,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -61,6 +62,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.Velocity
@@ -69,6 +71,8 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
+import tachiyomi.presentation.core.util.LocalTvUiEnabled
+import tachiyomi.presentation.core.util.tvFocusGroup
 import kotlin.math.roundToInt
 
 private val sheetAnimationSpec = tween<Float>(350)
@@ -82,6 +86,8 @@ fun PlayerSheet(
     content: @Composable () -> Unit,
 ) {
     val scope = rememberCoroutineScope()
+    val isTvUi = LocalTvUiEnabled.current
+    val focusManager = LocalFocusManager.current
     val density = LocalDensity.current
     val latestOnDismissRequest by rememberUpdatedState(onDismissRequest)
     val maxWidth = if (LocalConfiguration.current.orientation == ORIENTATION_LANDSCAPE) {
@@ -128,6 +134,7 @@ fun PlayerSheet(
     Box(
         modifier = Modifier
             .clickable(
+                enabled = !isTvUi,
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
                 onClick = internalOnDismissRequest,
@@ -147,6 +154,7 @@ fun PlayerSheet(
             modifier = Modifier
                 .sizeIn(maxWidth = maxWidth, maxHeight = maxHeight)
                 .clickable(
+                    enabled = !isTvUi,
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null,
                     onClick = {},
@@ -156,6 +164,7 @@ fun PlayerSheet(
                         anchoredDraggableState.preUpPostDownNestedScrollConnection()
                     },
                 )
+                .tvFocusGroup()
                 .then(modifier)
                 .offset {
                     IntOffset(
@@ -187,6 +196,10 @@ fun PlayerSheet(
 
         LaunchedEffect(true) {
             backgroundAlpha = 0.5f
+            if (isTvUi) {
+                withFrameNanos { }
+                focusManager.moveFocus(androidx.compose.ui.focus.FocusDirection.Next)
+            }
         }
 
         LaunchedEffect(anchoredDraggableState) {

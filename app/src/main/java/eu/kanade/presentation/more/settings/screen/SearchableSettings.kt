@@ -8,8 +8,9 @@ import dev.icerock.moko.resources.StringResource
 import eu.kanade.presentation.more.settings.Preference
 import eu.kanade.presentation.more.settings.PreferenceScaffold
 import eu.kanade.presentation.util.LocalBackPress
+import eu.kanade.presentation.util.TvInitialFocusScreen
 
-interface SearchableSettings : Screen {
+interface SearchableSettings : Screen, TvInitialFocusScreen {
 
     @Composable
     @ReadOnlyComposable

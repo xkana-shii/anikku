@@ -50,6 +50,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -132,6 +133,7 @@ fun PlayerControls(
     val audioPreferences = remember { Injekt.get<AudioPreferences>() }
     val subtitlePreferences = remember { Injekt.get<SubtitlePreferences>() }
     val interactionSource = remember { MutableInteractionSource() }
+    val playPauseFocusRequester = remember { FocusRequester() }
 
     val controlsShown by viewModel.controlsShown.collectAsState()
     val areControlsLocked by viewModel.areControlsLocked.collectAsState()
@@ -384,6 +386,7 @@ fun PlayerControls(
                 ) {
                     val showLoadingCircle by playerPreferences.showLoadingCircle().collectAsState()
                     MiddlePlayerControls(
+                        playPauseFocusRequester = playPauseFocusRequester,
                         hasPrevious = hasPreviousEpisode,
                         onSkipPrevious = { viewModel.changeEpisode(true) },
                         hasNext = hasNextEpisode,

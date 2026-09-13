@@ -50,6 +50,7 @@ import tachiyomi.core.common.preference.InMemoryPreferenceStore
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.presentation.core.util.focusHighlight
 import tachiyomi.presentation.core.util.secondaryItemAlpha
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.fullType
@@ -146,7 +147,8 @@ fun AppThemePreviewItem(
             .padding(4.dp)
             .clip(RoundedCornerShape(13.dp))
             .background(MaterialTheme.colorScheme.background)
-            .clickable(onClick = onClick),
+            .clickable(onClick = onClick)
+            .focusHighlight(),
     ) {
         // App Bar
         Row(

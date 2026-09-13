@@ -26,9 +26,16 @@ import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -44,6 +51,8 @@ import eu.kanade.presentation.more.settings.screen.about.AboutScreen
 import eu.kanade.presentation.more.settings.widget.TextPreferenceWidget
 import eu.kanade.presentation.util.LocalBackPress
 import eu.kanade.presentation.util.Screen
+import eu.kanade.presentation.util.TvInitialFocusScreen
+import eu.kanade.presentation.util.isTvUi
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.ank.AMR
@@ -52,7 +61,7 @@ import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.i18n.stringResource
 import cafe.adriel.voyager.core.screen.Screen as VoyagerScreen
 
-object SettingsMainScreen : Screen() {
+object SettingsMainScreen : Screen(), TvInitialFocusScreen {
     @Suppress("unused")
     private fun readResolve(): Any = SettingsMainScreen
 
@@ -107,6 +116,9 @@ object SettingsMainScreen : Screen() {
             containerColor = containerColor,
             content = { contentPadding ->
                 val state = rememberLazyListState()
+                val isTvUi = isTvUi()
+                val initialItemFocusRequester = remember { FocusRequester() }
+                var initialFocusRequested by rememberSaveable { mutableStateOf(false) }
                 // SY -->
                 val items = items.filter { it.screen !is SearchableSettings || it.screen.isEnabled() }
                 // SY <--
@@ -123,6 +135,14 @@ object SettingsMainScreen : Screen() {
                         }
                 } else {
                     null
+                }
+                val initialFocusIndex = indexSelected?.takeIf { it >= 0 } ?: 0
+                LaunchedEffect(isTvUi, initialFocusRequested, initialFocusIndex) {
+                    if (isTvUi && !initialFocusRequested && items.isNotEmpty()) {
+                        withFrameNanos { }
+                        initialItemFocusRequester.requestFocus()
+                        initialFocusRequested = true
+                    }
                 }
 
                 LazyColumn(
@@ -153,7 +173,13 @@ object SettingsMainScreen : Screen() {
                         }
                         CompositionLocalProvider(LocalContentColor provides contentColor) {
                             TextPreferenceWidget(
-                                modifier = modifier,
+                                modifier = modifier.then(
+                                    if (isTvUi && index == initialFocusIndex) {
+                                        Modifier.focusRequester(initialItemFocusRequester)
+                                    } else {
+                                        Modifier
+                                    },
+                                ),
                                 title = stringResource(item.titleRes),
                                 subtitle = item.formatSubtitle(),
                                 icon = item.icon,

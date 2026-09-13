@@ -73,8 +73,11 @@ import tachiyomi.presentation.core.components.material.Slider
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.theme.header
+import tachiyomi.presentation.core.util.LocalTvUiEnabled
 import tachiyomi.presentation.core.util.collectAsState
+import tachiyomi.presentation.core.util.focusHighlight
 import tachiyomi.presentation.core.util.secondaryItemAlpha
+import tachiyomi.presentation.core.util.tvFocusGroup
 
 object SettingsItemsPaddings {
     val Horizontal = 24.dp
@@ -303,6 +306,7 @@ fun SelectItem(
     onSelect: (Int) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
+    val isTvUi = LocalTvUiEnabled.current
 
     ExposedDropdownMenuBox(
         expanded = expanded,
@@ -319,7 +323,7 @@ fun SelectItem(
             label = { Text(text = label) },
             value = options[selectedIndex].toString(),
             onValueChange = {},
-            enabled = false,
+            enabled = isTvUi,
             readOnly = true,
             singleLine = true,
             trailingIcon = {
@@ -370,6 +374,7 @@ fun TriStateItem(
                     }
                 },
             )
+            .focusHighlight()
             .fillMaxWidth()
             .padding(
                 horizontal = SettingsItemsPaddings.Horizontal,
@@ -471,18 +476,25 @@ fun RepeatingIconButton(
     content: @Composable () -> Unit,
 ) {
     val currentClickListener by rememberUpdatedState(onClick)
+    val isTvUi = LocalTvUiEnabled.current
     var pressed by remember { mutableStateOf(false) }
 
     IconButton(
-        modifier = modifier.pointerInteropFilter {
-            pressed = when (it.action) {
-                MotionEvent.ACTION_DOWN -> true
-                else -> false
-            }
+        modifier = modifier
+            .pointerInteropFilter {
+                pressed = when (it.action) {
+                    MotionEvent.ACTION_DOWN -> true
+                    else -> false
+                }
 
-            true
+                true
+            }
+            .focusHighlight(),
+        onClick = if (isTvUi) {
+            onClick
+        } else {
+            {}
         },
-        onClick = {},
         enabled = enabled,
         interactionSource = interactionSource,
         content = content,
@@ -613,11 +625,13 @@ fun SettingsIconGrid(labelRes: StringResource, content: LazyGridScope.() -> Unit
         HeadingItem(labelRes)
         LazyVerticalGrid(
             columns = GridCells.Adaptive(128.dp),
-            modifier = Modifier.padding(
-                start = SettingsItemsPaddings.Horizontal,
-                end = SettingsItemsPaddings.Horizontal,
-                bottom = SettingsItemsPaddings.Vertical,
-            ),
+            modifier = Modifier
+                .padding(
+                    start = SettingsItemsPaddings.Horizontal,
+                    end = SettingsItemsPaddings.Horizontal,
+                    bottom = SettingsItemsPaddings.Vertical,
+                )
+                .tvFocusGroup(),
             verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.extraSmall),
             horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
             content = content,
@@ -634,6 +648,7 @@ private fun BaseSettingsItem(
     Row(
         modifier = Modifier
             .clickable(onClick = onClick)
+            .focusHighlight()
             .fillMaxWidth()
             .padding(
                 horizontal = SettingsItemsPaddings.Horizontal,

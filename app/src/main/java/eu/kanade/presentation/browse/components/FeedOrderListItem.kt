@@ -18,6 +18,7 @@ import sh.calvin.reorderable.ReorderableCollectionItemScope
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.presentation.core.util.focusHighlight
 
 @Composable
 fun ReorderableCollectionItemScope.FeedOrderListItem(
@@ -47,7 +48,7 @@ fun ReorderableCollectionItemScope.FeedOrderListItem(
                 text = title,
                 modifier = Modifier.weight(1f),
             )
-            IconButton(onClick = onDelete) {
+            IconButton(modifier = Modifier.focusHighlight(), onClick = onDelete) {
                 Icon(
                     imageVector = Icons.Outlined.Delete,
                     contentDescription = stringResource(MR.strings.action_delete),

@@ -18,6 +18,7 @@
 package eu.kanade.tachiyomi.ui.player.controls.components
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -30,10 +31,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -46,6 +51,9 @@ import `is`.xyz.mpv.Utils
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.presentation.core.components.material.padding
+import tachiyomi.presentation.core.util.LocalTvUiEnabled
+import tachiyomi.presentation.core.util.focusHighlight
+import tachiyomi.presentation.core.util.tvFocusable
 
 @Immutable
 data class IndexedSegment(
@@ -60,6 +68,15 @@ data class IndexedSegment(
     }
 
     fun toSegment(): Segment = Segment(name, start, color)
+}
+
+internal fun tvSeekStepSeconds(keyCode: Int, repeatCount: Int): Float? {
+    val distance = if (repeatCount == 0) 30f else 5f
+    return when (keyCode) {
+        android.view.KeyEvent.KEYCODE_DPAD_LEFT -> -distance
+        android.view.KeyEvent.KEYCODE_DPAD_RIGHT -> distance
+        else -> null
+    }
 }
 
 @Composable
@@ -77,6 +94,9 @@ fun SeekbarWithTimers(
     modifier: Modifier = Modifier,
 ) {
     val clickEvent = LocalPlayerButtonsClickEvent.current
+    val isTvUi = LocalTvUiEnabled.current
+    var remotePosition by remember(position) { mutableFloatStateOf(position) }
+    var remoteSeeking by remember { androidx.compose.runtime.mutableStateOf(false) }
     Row(
         modifier = modifier.height(48.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -107,7 +127,28 @@ fun SeekbarWithTimers(
                         it
                     } + it
                 },
-            modifier = Modifier.weight(1f),
+            modifier = Modifier
+                .weight(1f)
+                .focusHighlight()
+                .onPreviewKeyEvent { event ->
+                    if (!isTvUi) return@onPreviewKeyEvent false
+                    val nativeEvent = event.nativeKeyEvent
+                    val step = tvSeekStepSeconds(nativeEvent.keyCode, nativeEvent.repeatCount)
+                        ?: return@onPreviewKeyEvent false
+                    when (nativeEvent.action) {
+                        android.view.KeyEvent.ACTION_DOWN -> {
+                            remoteSeeking = true
+                            remotePosition = (remotePosition + step).coerceIn(0f, duration)
+                            onValueChange(remotePosition)
+                        }
+                        android.view.KeyEvent.ACTION_UP -> {
+                            if (remoteSeeking) onValueChangeFinished()
+                            remoteSeeking = false
+                        }
+                    }
+                    true
+                }
+                .focusable(enabled = isTvUi),
             colors = SeekerDefaults.seekerColors(
                 progressColor = MaterialTheme.colorScheme.primary,
                 thumbColor = MaterialTheme.colorScheme.primary,
@@ -143,6 +184,7 @@ fun VideoTimer(
                 indication = ripple(),
                 onClick = onClick,
             )
+            .tvFocusable(interactionSource)
             .wrapContentHeight(Alignment.CenterVertically),
         text = Utils.prettyTime(value.toInt(), isInverted),
         color = Color.White,

@@ -15,6 +15,7 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.Navigator
 import eu.kanade.presentation.util.ScreenTransition
 import eu.kanade.presentation.util.isTabletUi
+import eu.kanade.presentation.util.isTvUi
 import tachiyomi.presentation.core.components.AdaptiveSheet as AdaptiveSheetImpl
 
 @OptIn(InternalVoyagerApi::class)
@@ -72,7 +73,8 @@ fun AdaptiveSheet(
     enableSwipeDismiss: Boolean = true,
     content: @Composable () -> Unit,
 ) {
-    val isTabletUi = isTabletUi()
+    val isTvUi = isTvUi()
+    val isTabletUi = isTabletUi() || isTvUi
 
     Dialog(
         onDismissRequest = onDismissRequest,
@@ -81,7 +83,7 @@ fun AdaptiveSheet(
         AdaptiveSheetImpl(
             modifier = modifier,
             isTabletUi = isTabletUi,
-            enableSwipeDismiss = enableSwipeDismiss,
+            enableSwipeDismiss = enableSwipeDismiss && !isTvUi,
             onDismissRequest = onDismissRequest,
         ) {
             content()

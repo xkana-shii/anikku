@@ -49,6 +49,8 @@ import tachiyomi.presentation.core.components.material.DISABLED_ALPHA
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.pluralStringResource
 import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.presentation.core.util.focusHighlight
+import tachiyomi.presentation.core.util.tvFocusGroup
 
 @Stable
 sealed class HosterState(open val name: String) {
@@ -170,7 +172,7 @@ fun QualitySheetVideoContent(
     onClickVideo: (Int, Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    LazyColumn(modifier = modifier.fillMaxWidth()) {
+    LazyColumn(modifier = modifier.fillMaxWidth().tvFocusGroup()) {
         itemsIndexed(videoList) { videoIdx, video ->
             VideoTrack(
                 video = video,
@@ -205,7 +207,7 @@ fun QualitySheetHosterContent(
         state is HosterState.Ready && state.videoList.isEmpty()
     }
 
-    LazyColumn(modifier = modifier.fillMaxWidth()) {
+    LazyColumn(modifier = modifier.fillMaxWidth().tvFocusGroup()) {
         hosterContent(
             hosters = validHosters,
             expandedState = expandedState,
@@ -290,7 +292,8 @@ fun HosterTrack(
     Row(
         modifier = modifier
             .height(32.dp)
-            .clickable(onClick = onClick),
+            .clickable(onClick = onClick)
+            .focusHighlight(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
@@ -357,7 +360,8 @@ fun VideoTrack(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
+            .clickable(onClick = onClick)
+            .focusHighlight(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
     ) {

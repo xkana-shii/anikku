@@ -48,6 +48,7 @@ import kotlinx.collections.immutable.ImmutableList
 import tachiyomi.i18n.aniyomi.AYMR
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.presentation.core.util.focusHighlight
 
 @Composable
 fun SubtitlesSheet(
@@ -125,12 +126,13 @@ fun SubtitleTrackRow(
         modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
+            .focusHighlight()
             .padding(start = MaterialTheme.padding.small, end = MaterialTheme.padding.medium),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Checkbox(
             checked = selected > -1,
-            onCheckedChange = { _ -> onClick() },
+            onCheckedChange = null,
         )
         Text(
             text = getTrackTitle(track),

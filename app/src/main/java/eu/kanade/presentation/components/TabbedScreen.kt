@@ -1,5 +1,7 @@
 package eu.kanade.presentation.components
 
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
@@ -15,15 +17,22 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Tab
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.zIndex
 import dev.icerock.moko.resources.StringResource
+import eu.kanade.presentation.util.isTvUi
 import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import eu.kanade.tachiyomi.ui.browse.feed.FeedScreenModel
 import kotlinx.collections.immutable.ImmutableList
@@ -32,12 +41,14 @@ import kotlinx.coroutines.launch
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.TabText
 import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.presentation.core.util.tvFocusable
 
 @Composable
 fun TabbedScreen(
     titleRes: StringResource,
     tabs: ImmutableList<TabContent>,
     state: PagerState = rememberPagerState { tabs.size },
+    tvPage: MutableState<Int> = rememberSaveable { mutableStateOf(0) },
     searchQuery: String? = null,
     onChangeSearchQuery: (String?) -> Unit = {},
     // KMK -->
@@ -47,6 +58,10 @@ fun TabbedScreen(
 ) {
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
+    val isTvUi = isTvUi()
+    val selectedPage = if (isTvUi) tvPage.value else state.currentPage
+    val tvPageStateHolder = rememberSaveableStateHolder()
+    val tabFocusRequesters = remember(tabs.size) { List(tabs.size) { FocusRequester() } }
 
     // KMK -->
     val feedState by feedScreenModel.state.collectAsState()
@@ -55,7 +70,7 @@ fun TabbedScreen(
 
     Scaffold(
         topBar = {
-            val tab = tabs[state.currentPage]
+            val tab = tabs[selectedPage]
             val searchEnabled = tab.searchEnabled
             // KMK -->
             if (bulkFavoriteState.selectionMode) {
@@ -100,28 +115,51 @@ fun TabbedScreen(
             ),
         ) {
             PrimaryTabRow(
-                selectedTabIndex = state.currentPage,
+                selectedTabIndex = selectedPage,
                 modifier = Modifier.zIndex(1f),
             ) {
                 tabs.forEachIndexed { index, tab ->
+                    val interactionSource = remember(index) { MutableInteractionSource() }
                     Tab(
-                        selected = state.currentPage == index,
-                        onClick = { scope.launch { state.animateScrollToPage(index) } },
+                        modifier = Modifier
+                            .focusRequester(tabFocusRequesters[index])
+                            .tvFocusable(interactionSource),
+                        selected = selectedPage == index,
+                        onClick = {
+                            if (isTvUi) {
+                                tvPage.value = index
+                                tabFocusRequesters[index].requestFocus()
+                            } else {
+                                scope.launch { state.animateScrollToPage(index) }
+                            }
+                        },
                         text = { TabText(text = stringResource(tab.titleRes), badgeCount = tab.badgeNumber) },
                         unselectedContentColor = MaterialTheme.colorScheme.onSurface,
+                        interactionSource = interactionSource,
                     )
                 }
             }
 
-            HorizontalPager(
-                modifier = Modifier.fillMaxSize(),
-                state = state,
-                verticalAlignment = Alignment.Top,
-            ) { page ->
-                tabs[page].content(
-                    PaddingValues(bottom = contentPadding.calculateBottomPadding()),
-                    snackbarHostState,
-                )
+            if (isTvUi) {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    tvPageStateHolder.SaveableStateProvider(selectedPage) {
+                        tabs[selectedPage].content(
+                            PaddingValues(bottom = contentPadding.calculateBottomPadding()),
+                            snackbarHostState,
+                        )
+                    }
+                }
+            } else {
+                HorizontalPager(
+                    modifier = Modifier.fillMaxSize(),
+                    state = state,
+                    verticalAlignment = Alignment.Top,
+                ) { page ->
+                    tabs[page].content(
+                        PaddingValues(bottom = contentPadding.calculateBottomPadding()),
+                        snackbarHostState,
+                    )
+                }
             }
         }
     }

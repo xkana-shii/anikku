@@ -8,11 +8,20 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
 import eu.kanade.presentation.more.settings.screen.SearchableSettings
 import eu.kanade.presentation.more.settings.widget.PreferenceGroupHeader
+import eu.kanade.presentation.util.isTvUi
 import kotlinx.coroutines.delay
 import tachiyomi.presentation.core.components.ScrollbarLazyColumn
 import kotlin.time.Duration.Companion.seconds
@@ -29,6 +38,24 @@ fun PreferenceScreen(
     contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
     val state = rememberLazyListState()
+    val isTvUi = isTvUi()
+    val initialItemFocusRequester = remember { FocusRequester() }
+    var initialFocusRequested by rememberSaveable { mutableStateOf(false) }
+    val initialFocusItem = items.asSequence()
+        .flatMap { preference ->
+            when (preference) {
+                is Preference.PreferenceGroup -> preference.preferenceItems.asSequence()
+                is Preference.PreferenceItem<*, *> -> sequenceOf(preference)
+            }
+        }
+        .firstOrNull { it.isTvInitialFocusCandidate() }
+    LaunchedEffect(isTvUi, initialFocusItem, initialFocusRequested) {
+        if (isTvUi && initialFocusItem != null && !initialFocusRequested) {
+            withFrameNanos { }
+            initialItemFocusRequester.requestFocus()
+            initialFocusRequested = true
+        }
+    }
     val highlightKey = SearchableSettings.highlightKey
     if (highlightKey != null) {
         LaunchedEffect(Unit) {
@@ -61,6 +88,11 @@ fun PreferenceScreen(
                         PreferenceItem(
                             item = item,
                             highlightKey = highlightKey,
+                            modifier = if (isTvUi && item === initialFocusItem) {
+                                Modifier.focusRequester(initialItemFocusRequester)
+                            } else {
+                                Modifier
+                            },
                         )
                     }
                     item {
@@ -75,10 +107,27 @@ fun PreferenceScreen(
                     PreferenceItem(
                         item = preference,
                         highlightKey = highlightKey,
+                        modifier = if (isTvUi && preference === initialFocusItem) {
+                            Modifier.focusRequester(initialItemFocusRequester)
+                        } else {
+                            Modifier
+                        },
                     )
                 }
             }
         }
+    }
+}
+
+private fun Preference.PreferenceItem<*, *>.isTvInitialFocusCandidate(): Boolean {
+    if (!enabled) return false
+    return when (this) {
+        is Preference.PreferenceItem.InfoPreference,
+        is Preference.PreferenceItem.CustomPreference,
+        is Preference.PreferenceItem.SliderPreference,
+        -> false
+        is Preference.PreferenceItem.TextPreference -> onClick != null
+        else -> true
     }
 }
 

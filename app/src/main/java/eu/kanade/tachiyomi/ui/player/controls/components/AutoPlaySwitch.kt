@@ -28,6 +28,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import eu.kanade.tachiyomi.ui.player.controls.LocalPlayerButtonsClickEvent
+import tachiyomi.presentation.core.util.tvFocusable
 
 @Composable
 fun AutoPlaySwitch(
@@ -64,13 +65,15 @@ fun AutoPlaySwitch(
     }
 
     Box(
-        modifier = modifier.clickable(
-            interactionSource = interactionSource,
-            indication = null,
-        ) {
-            clickEvent()
-            onToggleAutoPlay(!isChecked)
-        },
+        modifier = modifier
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+            ) {
+                clickEvent()
+                onToggleAutoPlay(!isChecked)
+            }
+            .tvFocusable(interactionSource),
         contentAlignment = Alignment.Center,
     ) {
         Box(

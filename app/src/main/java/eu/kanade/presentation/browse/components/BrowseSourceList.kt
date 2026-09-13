@@ -8,6 +8,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastAny
@@ -36,6 +40,9 @@ fun BrowseSourceList(
     // KMK -->
     selection: List<Manga>,
     // KMK <--
+    initialItemFocusRequester: FocusRequester? = null,
+    initialItemIndex: Int = 0,
+    listingFocusRequester: FocusRequester? = null,
 ) {
     // AY -->
     val sourceListState = rememberLazyListState()
@@ -64,6 +71,15 @@ fun BrowseSourceList(
                 // SY <--
                 BrowseSourceListItem(
                     manga = manga,
+                    modifier = if (index == initialItemIndex && initialItemFocusRequester != null) {
+                        Modifier
+                            .focusRequester(initialItemFocusRequester)
+                            .focusProperties {
+                                if (listingFocusRequester != null) up = listingFocusRequester
+                            }
+                    } else {
+                        Modifier
+                    },
                     // SY -->
                     metadata = metadata,
                     // SY <--
@@ -91,6 +107,7 @@ fun BrowseSourceList(
 @Composable
 internal fun BrowseSourceListItem(
     manga: Manga,
+    modifier: Modifier = Modifier,
     // SY -->
     metadata: RaisedSearchMetadata?,
     // SY <--
@@ -105,6 +122,7 @@ internal fun BrowseSourceListItem(
     // KMK <--
 ) {
     MangaListItem(
+        modifier = modifier,
         title = manga.title,
         coverData = MangaCover(
             mangaId = manga.id,

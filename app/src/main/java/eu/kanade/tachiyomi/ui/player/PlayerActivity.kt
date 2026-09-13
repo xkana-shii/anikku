@@ -88,6 +88,7 @@ import eu.kanade.tachiyomi.ui.player.settings.GesturePreferences
 import eu.kanade.tachiyomi.ui.player.settings.PlayerPreferences
 import eu.kanade.tachiyomi.ui.player.settings.SubtitlePreferences
 import eu.kanade.tachiyomi.ui.player.utils.ChapterUtils.Companion.getStringRes
+import eu.kanade.tachiyomi.util.system.isTelevision
 import eu.kanade.tachiyomi.util.system.powerManager
 import eu.kanade.tachiyomi.util.system.toShareIntent
 import eu.kanade.tachiyomi.util.system.toast
@@ -128,6 +129,7 @@ class PlayerActivity : BaseActivity() {
     private val inputMethodManager by lazy { getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager }
 
     private var mediaSession: MediaSession? = null
+    private var consumedTvKeyDown: Int? = null
     private val gesturePreferences: GesturePreferences = Injekt.get()
     private val playerPreferences: PlayerPreferences = Injekt.get()
     private val audioPreferences: AudioPreferences = Injekt.get()
@@ -979,6 +981,43 @@ class PlayerActivity : BaseActivity() {
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        val isTvDevice = isTelevision()
+        if (isTvDevice) {
+            val modalOverlayShown = viewModel.sheetShown.value != Sheets.None ||
+                viewModel.panelShown.value != Panels.None ||
+                viewModel.dialogShown.value != Dialogs.None
+            val action = tvRemoteAction(
+                keyCode = keyCode,
+                controlsShown = viewModel.controlsShown.value,
+                modalOverlayShown = modalOverlayShown,
+            )
+            if (action != null) {
+                consumedTvKeyDown = keyCode
+                when (action) {
+                    TvRemoteAction.ShowControls -> viewModel.showControls()
+                    TvRemoteAction.SeekBackward -> viewModel.handleLeftDoubleTap()
+                    TvRemoteAction.SeekForward -> viewModel.handleRightDoubleTap()
+                    TvRemoteAction.TogglePlayback -> {
+                        viewModel.pauseUnpause()
+                        viewModel.showControls()
+                    }
+                    TvRemoteAction.Play -> {
+                        viewModel.unpause()
+                        viewModel.showControls()
+                    }
+                    TvRemoteAction.Pause -> {
+                        viewModel.pause()
+                        viewModel.showControls()
+                    }
+                    TvRemoteAction.PreviousEpisode -> viewModel.changeEpisode(previous = true)
+                    TvRemoteAction.NextEpisode -> viewModel.changeEpisode(previous = false)
+                    TvRemoteAction.HideControls -> viewModel.hideControls()
+                    TvRemoteAction.Stop -> finishAndRemoveTask()
+                }
+                return true
+            }
+            if (isTvNavigationKey(keyCode)) return super.onKeyDown(keyCode, event)
+        }
         when (keyCode) {
             KeyEvent.KEYCODE_VOLUME_UP -> {
                 viewModel.changeVolumeBy(1)
@@ -999,6 +1038,7 @@ class PlayerActivity : BaseActivity() {
             // other keys should be bound by the user in input.conf ig
             else -> {
                 event?.let { player.onKey(it) }
+                if (isTvDevice) return super.onKeyDown(keyCode, event)
                 super.onKeyDown(keyCode, event)
             }
         }
@@ -1006,7 +1046,12 @@ class PlayerActivity : BaseActivity() {
     }
 
     override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
-        if (player.onKey(event!!)) return true
+        if (shouldConsumeTvKeyUp(consumedTvKeyDown, keyCode)) {
+            consumedTvKeyDown = null
+            return true
+        }
+        if (isTelevision() && isTvNavigationKey(keyCode)) return super.onKeyUp(keyCode, event)
+        if (event != null && player.onKey(event)) return true
         return super.onKeyUp(keyCode, event)
     }
 

@@ -39,11 +39,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.core.animation.doOnEnd
 import androidx.core.net.toUri
 import androidx.core.splashscreen.SplashScreen
@@ -73,6 +76,8 @@ import eu.kanade.presentation.more.settings.screen.browse.ExtensionReposScreen
 import eu.kanade.presentation.more.settings.screen.data.RestoreBackupScreen
 import eu.kanade.presentation.util.AssistContentScreen
 import eu.kanade.presentation.util.DefaultNavigatorScreenTransition
+import eu.kanade.presentation.util.TvInitialFocusScreen
+import eu.kanade.presentation.util.isTvUi
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.animesource.model.Hoster
 import eu.kanade.tachiyomi.animesource.model.Video
@@ -236,6 +241,9 @@ class MainActivity : BaseActivity() {
                 screen = HomeScreen,
                 disposeBehavior = NavigatorDisposeBehavior(disposeNestedNavigators = false, disposeSteps = true),
             ) { navigator ->
+                val focusManager = LocalFocusManager.current
+                val tvUi = isTvUi()
+                var previousNavigatorSize by remember(navigator) { mutableStateOf(navigator.size) }
                 LaunchedEffect(navigator) {
                     this@MainActivity.navigator = navigator
 
@@ -248,6 +256,14 @@ class MainActivity : BaseActivity() {
                     }
                 }
                 LaunchedEffect(navigator.lastItem) {
+                    val isForwardNavigation = navigator.size > previousNavigatorSize
+                    previousNavigatorSize = navigator.size
+                    if (tvUi && isForwardNavigation && navigator.lastItem !is TvInitialFocusScreen) {
+                        repeat(3) {
+                            withFrameNanos { }
+                            if (focusManager.moveFocus(FocusDirection.Next)) return@LaunchedEffect
+                        }
+                    }
                     (
                         (navigator.lastItem as? BrowseSourceScreen)?.sourceId
                             // KMK -->

@@ -1,6 +1,8 @@
 package eu.kanade.presentation.more.settings.widget
 
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,14 +24,20 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.toMutableStateList
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.unit.dp
+import eu.kanade.presentation.util.isTvUi
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.presentation.core.util.tvFocusable
 
 private enum class State {
     CHECKED,
@@ -59,6 +67,14 @@ fun <T> TriStateListDialog(
             }
             .toMutableStateList()
     }
+    val isTvUi = isTvUi()
+    val initialItemFocusRequester = remember { FocusRequester() }
+    LaunchedEffect(isTvUi, items.size) {
+        if (isTvUi && items.isNotEmpty()) {
+            withFrameNanos { }
+            initialItemFocusRequester.requestFocus()
+        }
+    }
     AlertDialog(
         onDismissRequest = onDismissRequest,
         title = { Text(text = title) },
@@ -76,16 +92,28 @@ fun <T> TriStateListDialog(
                     LazyColumn(state = listState) {
                         itemsIndexed(items = items) { index, item ->
                             val state = selected[index]
+                            val interactionSource = remember { MutableInteractionSource() }
                             Row(
                                 modifier = Modifier
+                                    .then(
+                                        if (isTvUi && index == 0) {
+                                            Modifier.focusRequester(initialItemFocusRequester)
+                                        } else {
+                                            Modifier
+                                        },
+                                    )
                                     .clip(MaterialTheme.shapes.small)
-                                    .clickable {
+                                    .clickable(
+                                        interactionSource = interactionSource,
+                                        indication = LocalIndication.current,
+                                    ) {
                                         selected[index] = when (state) {
                                             State.UNCHECKED -> State.CHECKED
                                             State.CHECKED -> State.INVERSED
                                             State.INVERSED -> State.UNCHECKED
                                         }
                                     }
+                                    .tvFocusable(interactionSource)
                                     .defaultMinSize(minHeight = 48.dp)
                                     .fillMaxWidth(),
                                 verticalAlignment = Alignment.CenterVertically,

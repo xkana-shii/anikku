@@ -2,12 +2,15 @@ package eu.kanade.presentation.more.settings.screen.appearance
 
 import android.content.Context
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Icon
@@ -19,8 +22,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -31,6 +38,8 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.domain.extension.interactor.GetExtensionLanguages.Companion.getLanguageIconID
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.util.Screen
+import eu.kanade.presentation.util.TvInitialFocusScreen
+import eu.kanade.presentation.util.isTvUi
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import kotlinx.collections.immutable.ImmutableList
@@ -40,8 +49,9 @@ import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.presentation.core.util.tvFocusable
 
-class AppLanguageScreen : Screen() {
+class AppLanguageScreen : Screen(), TvInitialFocusScreen {
 
     @Composable
     override fun Content() {
@@ -51,6 +61,20 @@ class AppLanguageScreen : Screen() {
         val langs = remember { getLangs(context) }
         var currentLanguage by remember {
             mutableStateOf(AppCompatDelegate.getApplicationLocales().get(0)?.toLanguageTag() ?: "")
+        }
+        val isTvUi = isTvUi()
+        val listState = rememberLazyListState()
+        val initialFocusRequester = remember { FocusRequester() }
+        var initialFocusRequested by rememberSaveable { mutableStateOf(false) }
+        val initialFocusIndex = langs.indexOfFirst { it.langTag == currentLanguage }.coerceAtLeast(0)
+
+        LaunchedEffect(isTvUi, initialFocusRequested, initialFocusIndex) {
+            if (isTvUi && !initialFocusRequested && langs.isNotEmpty()) {
+                listState.scrollToItem(initialFocusIndex)
+                withFrameNanos { }
+                initialFocusRequester.requestFocus()
+                initialFocusRequested = true
+            }
         }
 
         LaunchedEffect(currentLanguage) {
@@ -73,25 +97,39 @@ class AppLanguageScreen : Screen() {
         ) { contentPadding ->
             LazyColumn(
                 modifier = Modifier.padding(contentPadding),
+                state = listState,
             ) {
-                items(langs) {
+                items(langs) { language ->
+                    val interactionSource = remember(language.langTag) { MutableInteractionSource() }
                     ListItem(
-                        modifier = Modifier.clickable {
-                            currentLanguage = it.langTag
-                        },
-                        headlineContent = { Text(it.displayName) },
+                        modifier = Modifier
+                            .then(
+                                if (isTvUi && language.langTag == langs[initialFocusIndex].langTag) {
+                                    Modifier.focusRequester(initialFocusRequester)
+                                } else {
+                                    Modifier
+                                },
+                            )
+                            .clickable(
+                                interactionSource = interactionSource,
+                                indication = LocalIndication.current,
+                            ) {
+                                currentLanguage = language.langTag
+                            }
+                            .tvFocusable(interactionSource),
+                        headlineContent = { Text(language.displayName) },
                         supportingContent = {
-                            it.localizedDisplayName?.let {
+                            language.localizedDisplayName?.let {
                                 Text(it)
                             }
                         },
                         // KMK -->
                         leadingContent = {
-                            val iconResId = getLanguageIconID(it.langTag) ?: R.drawable.globe
+                            val iconResId = getLanguageIconID(language.langTag) ?: R.drawable.globe
                             Icon(
                                 painter = painterResource(id = iconResId),
                                 tint = Color.Unspecified,
-                                contentDescription = it.langTag,
+                                contentDescription = language.langTag,
                                 modifier = Modifier
                                     .width(48.dp)
                                     .height(32.dp),
@@ -99,7 +137,7 @@ class AppLanguageScreen : Screen() {
                         },
                         // KMK <--
                         trailingContent = {
-                            if (currentLanguage == it.langTag) {
+                            if (currentLanguage == language.langTag) {
                                 Icon(
                                     imageVector = Icons.Default.Check,
                                     contentDescription = null,

@@ -26,10 +26,16 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
@@ -53,6 +59,8 @@ import eu.kanade.presentation.components.BulkSelectionToolbar
 import eu.kanade.presentation.manga.DuplicateMangaDialog
 import eu.kanade.presentation.util.AssistContentScreen
 import eu.kanade.presentation.util.Screen
+import eu.kanade.presentation.util.TvInitialFocusScreen
+import eu.kanade.presentation.util.isTvUi
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.source.online.HttpSource
@@ -93,7 +101,7 @@ data class BrowseSourceScreen(
      * which was previously opened from `SmartSearchScreen` */
     private val smartSearchConfig: SourcesScreen.SmartSearchConfig? = null,
     // SY <--
-) : Screen(), AssistContentScreen {
+) : Screen(), AssistContentScreen, TvInitialFocusScreen {
 
     private var assistUrl: String? = null
 
@@ -181,6 +189,19 @@ data class BrowseSourceScreen(
         // AY -->
         var topBarHeight by remember { mutableIntStateOf(0) }
         // <-- AY
+        val isTvUi = isTvUi()
+        val firstAvailableResultIndex = (0 until mangaList.itemCount).firstOrNull { mangaList.peek(it) != null }
+        val canRouteToContent = canRouteSourceListingToContent(isTvUi, firstAvailableResultIndex != null)
+        val initialListingFocusRequester = remember { FocusRequester() }
+        val initialItemFocusRequester = remember { FocusRequester() }
+        var initialFocusRequested by rememberSaveable { mutableStateOf(false) }
+        LaunchedEffect(isTvUi, initialFocusRequested) {
+            if (isTvUi && !initialFocusRequested) {
+                withFrameNanos { }
+                initialListingFocusRequester.requestFocus()
+                initialFocusRequested = true
+            }
+        }
         Scaffold(
             topBar = {
                 Column(
@@ -236,11 +257,22 @@ data class BrowseSourceScreen(
 
                     Row(
                         modifier = Modifier
-                            .horizontalScroll(rememberScrollState())
+                            .then(
+                                if (isTvUi) {
+                                    Modifier
+                                } else {
+                                    Modifier.horizontalScroll(rememberScrollState())
+                                },
+                            )
                             .padding(horizontal = MaterialTheme.padding.small),
                         horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
                     ) {
                         FilterChip(
+                            modifier = Modifier
+                                .focusRequester(initialListingFocusRequester)
+                                .focusProperties {
+                                    if (canRouteToContent) down = initialItemFocusRequester
+                                },
                             selected = state.listing == Listing.Popular,
                             onClick = {
                                 screenModel.resetFilters()
@@ -260,6 +292,9 @@ data class BrowseSourceScreen(
                         )
                         if ((screenModel.source as CatalogueSource).supportsLatest) {
                             FilterChip(
+                                modifier = Modifier.focusProperties {
+                                    if (canRouteToContent) down = initialItemFocusRequester
+                                },
                                 selected = state.listing == Listing.Latest,
                                 onClick = {
                                     screenModel.resetFilters()
@@ -280,6 +315,9 @@ data class BrowseSourceScreen(
                         }
                         if (/* SY --> */ state.filterable /* SY <-- */) {
                             FilterChip(
+                                modifier = Modifier.focusProperties {
+                                    if (canRouteToContent) down = initialItemFocusRequester
+                                },
                                 selected = state.listing is Listing.Search &&
                                     // KMK -->
                                     (state.listing as Listing.Search).savedSearchId == null,
@@ -309,6 +347,9 @@ data class BrowseSourceScreen(
                         // KMK -->
                         state.savedSearches.forEach { savedSearch ->
                             FilterChip(
+                                modifier = Modifier.focusProperties {
+                                    if (canRouteToContent) down = initialItemFocusRequester
+                                },
                                 selected = state.listing is Listing.Search &&
                                     (state.listing as Listing.Search).savedSearchId == savedSearch.id,
                                 onClick = {
@@ -386,6 +427,9 @@ data class BrowseSourceScreen(
                 // KMK -->
                 selection = bulkFavoriteState.selection,
                 // KMK <--
+                initialItemFocusRequester = initialItemFocusRequester.takeIf { canRouteToContent },
+                initialItemIndex = firstAvailableResultIndex ?: 0,
+                listingFocusRequester = initialListingFocusRequester.takeIf { isTvUi },
             )
         }
 
@@ -504,4 +548,8 @@ data class BrowseSourceScreen(
         class Text(txt: String) : SearchType(txt)
         class Genre(txt: String) : SearchType(txt)
     }
+}
+
+internal fun canRouteSourceListingToContent(isTvUi: Boolean, hasLoadedItem: Boolean): Boolean {
+    return isTvUi && hasLoadedItem
 }

@@ -38,6 +38,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.VectorPainter
@@ -63,6 +66,8 @@ import tachiyomi.i18n.aniyomi.AYMR
 import tachiyomi.presentation.core.components.material.DISABLED_ALPHA
 import tachiyomi.presentation.core.components.material.SECONDARY_ALPHA
 import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.presentation.core.util.LocalTvUiEnabled
+import tachiyomi.presentation.core.util.focusHighlight
 import tachiyomi.presentation.core.util.secondaryItemAlpha
 import tachiyomi.presentation.core.util.selectedBackground
 
@@ -102,6 +107,9 @@ fun MangaChapterListItem(
     // <-- AM (FILE_SIZE)
     modifier: Modifier = Modifier,
 ) {
+    val isTvUi = LocalTvUiEnabled.current
+    val itemFocusRequester = remember { FocusRequester() }
+    val downloadFocusRequester = remember { FocusRequester() }
     // KMK -->
     val fillermarkPainter = rememberVectorPainter(
         if (!fillermark) {
@@ -149,11 +157,25 @@ fun MangaChapterListItem(
             verticalAlignment = Alignment.CenterVertically,
             // <-- AY
             modifier = Modifier
+                .then(
+                    if (isTvUi) {
+                        Modifier
+                            .focusRequester(itemFocusRequester)
+                            .focusProperties {
+                                if (downloadIndicatorEnabled && onDownloadClick != null) {
+                                    right = downloadFocusRequester
+                                }
+                            }
+                    } else {
+                        Modifier
+                    },
+                )
                 .selectedBackground(selected)
                 .combinedClickable(
                     onClick = onClick,
                     onLongClick = onLongClick,
                 )
+                .focusHighlight()
                 .padding(start = 16.dp, top = 12.dp, end = 8.dp, bottom = 12.dp),
         ) {
             // AY -->
@@ -176,6 +198,9 @@ fun MangaChapterListItem(
                     // AM (FILE_SIZE) -->
                     fileSize = fileSize,
                     // <-- AM (FILE_SIZE)
+                    itemFocusRequester = itemFocusRequester,
+                    downloadFocusRequester = downloadFocusRequester,
+                    isTvUi = isTvUi,
                 )
                 return@Row
             }
@@ -214,6 +239,9 @@ fun MangaChapterListItem(
                                     // AM (FILE_SIZE) -->
                                     fileSize = fileSize,
                                     // <-- AM (FILE_SIZE)
+                                    itemFocusRequester = itemFocusRequester,
+                                    downloadFocusRequester = downloadFocusRequester,
+                                    isTvUi = isTvUi,
                                 )
                             }
                         }
@@ -252,6 +280,9 @@ fun MangaChapterListItem(
                             // AM (FILE_SIZE) -->
                             fileSize = fileSize,
                             // <-- AM (FILE_SIZE)
+                            itemFocusRequester = itemFocusRequester,
+                            downloadFocusRequester = downloadFocusRequester,
+                            isTvUi = isTvUi,
                         )
                     }
                 }
@@ -281,6 +312,9 @@ private fun RowScope.SimpleEpisodeListItemImpl(
     // AM (FILE_SIZE) -->
     fileSize: Long?,
     // <-- AM (FILE_SIZE)
+    itemFocusRequester: FocusRequester,
+    downloadFocusRequester: FocusRequester,
+    isTvUi: Boolean,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -314,6 +348,9 @@ private fun RowScope.SimpleEpisodeListItemImpl(
         // AM (FILE_SIZE) -->
         fileSize = fileSize,
         // <-- AM (FILE_SIZE)
+        itemFocusRequester = itemFocusRequester,
+        downloadFocusRequester = downloadFocusRequester,
+        isTvUi = isTvUi,
     )
 }
 // <-- AY
@@ -579,6 +616,9 @@ private fun BookmarkDownloadIcons(
     // AM (FILE_SIZE) -->
     fileSize: Long?,
     // <-- AM (FILE_SIZE)
+    itemFocusRequester: FocusRequester,
+    downloadFocusRequester: FocusRequester,
+    isTvUi: Boolean,
 ) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         if (bookmark) {
@@ -595,6 +635,15 @@ private fun BookmarkDownloadIcons(
         ChapterDownloadIndicator(
             enabled = downloadIndicatorEnabled,
             modifier = Modifier
+                .then(
+                    if (isTvUi) {
+                        Modifier
+                            .focusRequester(downloadFocusRequester)
+                            .focusProperties { left = itemFocusRequester }
+                    } else {
+                        Modifier
+                    },
+                )
                 .padding(start = 4.dp),
             downloadStateProvider = downloadStateProvider,
             downloadProgressProvider = downloadProgressProvider,

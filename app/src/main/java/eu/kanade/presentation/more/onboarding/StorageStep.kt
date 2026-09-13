@@ -28,6 +28,7 @@ import tachiyomi.presentation.core.components.material.Button
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.collectAsState
+import tachiyomi.presentation.core.util.focusHighlight
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -70,7 +71,9 @@ internal class StorageStep : OnboardingStep {
             if (!locationValid) {
                 // KMK <--
                 Button(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusHighlight(),
                     onClick = {
                         try {
                             // KMK -->
@@ -94,7 +97,9 @@ internal class StorageStep : OnboardingStep {
 
             Text(stringResource(MR.strings.onboarding_storage_help_info, stringResource(MR.strings.app_name)))
             Button(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .focusHighlight(),
                 onClick = { handler.openUri(SettingsDataScreen.HELP_URL) },
             ) {
                 Text(stringResource(MR.strings.onboarding_storage_help_action))

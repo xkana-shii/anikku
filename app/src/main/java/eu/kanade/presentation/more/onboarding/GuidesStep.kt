@@ -17,6 +17,7 @@ import eu.kanade.presentation.theme.TachiyomiPreviewTheme
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.presentation.core.util.focusHighlight
 
 internal class GuidesStep(
     private val onRestoreBackup: () -> Unit,
@@ -34,7 +35,9 @@ internal class GuidesStep(
         ) {
             Text(stringResource(MR.strings.onboarding_guides_new_user, stringResource(MR.strings.app_name)))
             Button(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .focusHighlight(),
                 onClick = { handler.openUri(GETTING_STARTED_URL) },
             ) {
                 Text(stringResource(MR.strings.getting_started_guide))
@@ -47,7 +50,9 @@ internal class GuidesStep(
 
             Text(stringResource(MR.strings.onboarding_guides_returning_user, stringResource(MR.strings.app_name)))
             Button(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .focusHighlight(),
                 onClick = onRestoreBackup,
             ) {
                 Text(stringResource(MR.strings.pref_restore_backup))
