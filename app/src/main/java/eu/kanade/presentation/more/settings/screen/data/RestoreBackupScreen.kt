@@ -13,7 +13,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -27,6 +31,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.WarningBanner
 import eu.kanade.presentation.util.Screen
+import eu.kanade.presentation.util.isTvUi
 import eu.kanade.tachiyomi.data.backup.BackupFileValidator
 import eu.kanade.tachiyomi.data.backup.restore.BackupRestoreJob
 import eu.kanade.tachiyomi.data.backup.restore.RestoreOptions
@@ -50,6 +55,9 @@ class RestoreBackupScreen(
         val navigator = LocalNavigator.currentOrThrow
         val model = rememberScreenModel { RestoreBackupScreenModel(context, uri) }
         val state by model.state.collectAsState()
+        val actionFocusRequester = remember { FocusRequester() }
+        val lastOptionFocusRequester = remember { FocusRequester() }
+        val isTvUi = isTvUi()
 
         Scaffold(
             topBar = {
@@ -64,6 +72,12 @@ class RestoreBackupScreen(
                 contentPadding = contentPadding,
                 actionLabel = stringResource(MR.strings.action_restore),
                 actionEnabled = state.canRestore && state.options.canRestore(),
+                actionFocusRequester = actionFocusRequester,
+                actionModifier = if (state.canRestore && state.options.canRestore() && isTvUi) {
+                    Modifier.focusProperties { up = lastOptionFocusRequester }
+                } else {
+                    Modifier
+                },
                 onClickAction = {
                     model.startRestore()
                     navigator.pop()
@@ -78,12 +92,23 @@ class RestoreBackupScreen(
                 if (state.canRestore) {
                     item {
                         SectionCard {
-                            RestoreOptions.options.forEach { option ->
+                            RestoreOptions.options.forEachIndexed { index, option ->
                                 LabeledCheckbox(
                                     label = stringResource(option.label),
                                     checked = option.getter(state.options),
                                     onCheckedChange = {
                                         model.toggle(option.setter, it)
+                                    },
+                                    modifier = if (
+                                        isTvUi &&
+                                        state.options.canRestore() &&
+                                        index == RestoreOptions.options.lastIndex
+                                    ) {
+                                        Modifier
+                                            .focusRequester(lastOptionFocusRequester)
+                                            .focusProperties { down = actionFocusRequester }
+                                    } else {
+                                        Modifier
                                     },
                                 )
                             }

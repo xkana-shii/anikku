@@ -19,6 +19,7 @@ import eu.kanade.domain.ui.model.AppIcon
 import eu.kanade.domain.ui.model.AppTheme
 import eu.kanade.domain.ui.model.TabletUiMode
 import eu.kanade.domain.ui.model.ThemeMode
+import eu.kanade.domain.ui.model.TvUiMode
 import eu.kanade.domain.ui.model.setAppCompatDelegateThemeMode
 import eu.kanade.domain.ui.model.setAppIcon
 import eu.kanade.presentation.more.settings.Preference
@@ -280,6 +281,13 @@ object SettingsAppearanceScreen : SearchableSettings {
                         context.toast(MR.strings.requires_app_restart)
                         true
                     },
+                ),
+                Preference.PreferenceItem.ListPreference(
+                    preference = uiPreferences.tvUiMode(),
+                    entries = TvUiMode.entries
+                        .associateWith { stringResource(it.titleRes) }
+                        .toImmutableMap(),
+                    title = stringResource(AMR.strings.pref_tv_ui_mode),
                 ),
                 Preference.PreferenceItem.ListPreference(
                     preference = uiPreferences.dateFormat(),

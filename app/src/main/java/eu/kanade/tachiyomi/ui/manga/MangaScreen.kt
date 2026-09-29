@@ -64,6 +64,7 @@ import eu.kanade.presentation.util.AssistContentScreen
 import eu.kanade.presentation.util.Screen
 import eu.kanade.presentation.util.formatChapterNumber
 import eu.kanade.presentation.util.isTabletUi
+import eu.kanade.presentation.util.isTvUi
 import eu.kanade.tachiyomi.animesource.model.FetchType
 import eu.kanade.tachiyomi.data.torrentServer.service.TorrentServerService
 import eu.kanade.tachiyomi.source.ConfigurableSource
@@ -260,7 +261,9 @@ class MangaScreen(
             state = successState,
             snackbarHostState = screenModel.snackbarHostState,
             nextUpdate = successState.manga.expectedNextUpdate,
-            isTabletUi = isTabletUi(),
+            // TV is an Anime-series-only presentation decision. It does not change the
+            // global tablet policy or persist a tablet preference.
+            isTabletUi = isTabletUi() || isTvUi(),
             chapterSwipeStartAction = screenModel.chapterSwipeStartAction,
             chapterSwipeEndAction = screenModel.chapterSwipeEndAction,
             showNextEpisodeAirTime = screenModel.showNextChapterAirTime,

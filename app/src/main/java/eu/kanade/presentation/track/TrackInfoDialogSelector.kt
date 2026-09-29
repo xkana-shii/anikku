@@ -26,13 +26,18 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import dev.icerock.moko.resources.StringResource
 import eu.kanade.presentation.theme.TachiyomiPreviewTheme
+import eu.kanade.presentation.util.isTvUi
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableList
@@ -148,6 +153,11 @@ fun TrackDateSelector(
     onRemove: (() -> Unit)?,
     onDismissRequest: () -> Unit,
 ) {
+    val isTvUi = isTvUi()
+    val cancelFocusRequester = remember { FocusRequester() }
+    LaunchedEffect(isTvUi) {
+        if (isTvUi) cancelFocusRequester.requestFocus()
+    }
     val pickerState = rememberDatePickerState(
         initialSelectedDateMillis = initialSelectedDateMillis,
         selectableDates = selectableDates,
@@ -176,7 +186,10 @@ fun TrackDateSelector(
                         }
                         Spacer(modifier = Modifier.weight(1f))
                     }
-                    TextButton(onClick = onDismissRequest) {
+                    TextButton(
+                        modifier = Modifier.focusRequester(cancelFocusRequester),
+                        onClick = onDismissRequest,
+                    ) {
                         Text(text = stringResource(MR.strings.action_cancel))
                     }
                     TextButton(onClick = { onConfirm(pickerState.selectedDateMillis!!) }) {
@@ -196,6 +209,11 @@ private fun BaseSelector(
     onDismissRequest: () -> Unit,
     thirdButton: @Composable (RowScope.() -> Unit)? = null,
 ) {
+    val isTvUi = isTvUi()
+    val cancelFocusRequester = remember { FocusRequester() }
+    LaunchedEffect(isTvUi) {
+        if (isTvUi) cancelFocusRequester.requestFocus()
+    }
     AlertDialogContent(
         modifier = Modifier.windowInsetsPadding(WindowInsets.systemBars),
         title = { Text(text = title) },
@@ -214,7 +232,10 @@ private fun BaseSelector(
                     thirdButton()
                     Spacer(modifier = Modifier.weight(1f))
                 }
-                TextButton(onClick = onDismissRequest) {
+                TextButton(
+                    modifier = Modifier.focusRequester(cancelFocusRequester),
+                    onClick = onDismissRequest,
+                ) {
                     Text(text = stringResource(MR.strings.action_cancel))
                 }
                 TextButton(onClick = onConfirm) {

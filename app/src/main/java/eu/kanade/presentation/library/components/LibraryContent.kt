@@ -120,7 +120,7 @@ fun LibraryContent(
                     }
                 },
                 onLongClickManga = onToggleRangeSelection,
-                onClickContinueReading = onContinueReadingClicked,
+                onClickContinueReading = onContinueReadingClicked.takeIf { selection.isEmpty() },
             )
         }
 

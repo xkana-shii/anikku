@@ -15,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.navigator.LocalNavigator
 import eu.kanade.domain.ui.UiPreferences
@@ -73,6 +74,7 @@ fun MangaToolbar(
     titleAlphaProvider: () -> Float,
     backgroundAlphaProvider: () -> Float,
     tvFocusRequesters: TvAppBarContentFocusRequesters,
+    tvNavigateUpFocusRequester: FocusRequester?,
     modifier: Modifier = Modifier,
 ) {
     // KMK -->
@@ -274,5 +276,6 @@ fun MangaToolbar(
         isActionMode = isActionMode,
         onCancelActionMode = onCancelActionMode,
         tvFocusRequesters = tvFocusRequesters,
+        tvNavigateUpFocusRequester = tvNavigateUpFocusRequester,
     )
 }

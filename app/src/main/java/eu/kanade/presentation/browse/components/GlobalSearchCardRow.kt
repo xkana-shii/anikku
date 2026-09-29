@@ -39,6 +39,7 @@ fun GlobalSearchCardRow(
     onLongClick: (Manga) -> Unit,
     // KMK -->
     selection: List<Manga>,
+    firstCardModifier: Modifier = Modifier,
     // KMK <--
 ) {
     if (titles.isEmpty()) {
@@ -50,14 +51,15 @@ fun GlobalSearchCardRow(
         contentPadding = PaddingValues(MaterialTheme.padding.small),
         horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.extraSmall),
     ) {
-        items(titles) {
-            val title by getManga(it)
+        items(titles) { manga ->
+            val title by getManga(manga)
             MangaItem(
                 title = title.title,
                 cover = title.asMangaCover(),
                 isFavorite = title.favorite,
                 onClick = { onClick(title) },
                 onLongClick = { onLongClick(title) },
+                modifier = if (manga == titles.first()) firstCardModifier else Modifier,
                 // KMK -->
                 isSelected = selection.fastAny { selected -> selected.id == title.id },
                 // KMK <--
@@ -76,6 +78,7 @@ internal fun MangaItem(
     // KMK -->
     isSelected: Boolean = false,
     usePanoramaCover: Boolean? = null,
+    modifier: Modifier = Modifier,
     // KMK <--
 ) {
     // KMK -->
@@ -90,6 +93,7 @@ internal fun MangaItem(
         ),
     ) {
         MangaComfortableGridItem(
+            modifier = modifier,
             title = title,
             titleMaxLines = 3,
             coverData = cover,

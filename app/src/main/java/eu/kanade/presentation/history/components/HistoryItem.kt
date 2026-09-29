@@ -36,6 +36,7 @@ import eu.kanade.presentation.manga.components.MangaCoverHide
 import eu.kanade.presentation.manga.components.RatioSwitchToPanorama
 import eu.kanade.presentation.theme.TachiyomiPreviewTheme
 import eu.kanade.presentation.util.formatChapterNumber
+import eu.kanade.presentation.util.tvMediaPlayAction
 import eu.kanade.tachiyomi.util.lang.toTimestampString
 import exh.debug.DebugToggles
 import tachiyomi.domain.history.model.HistoryWithRelations
@@ -57,6 +58,7 @@ fun HistoryItem(
     // KMK -->
     onClick: () -> Unit,
     onLongClick: () -> Unit,
+    onPlay: (() -> Unit)? = null,
     // KMK <--
     onClickDelete: () -> Unit,
     onClickFavorite: () -> Unit,
@@ -84,6 +86,7 @@ fun HistoryItem(
                     onLongClick()
                 },
             )
+            .tvMediaPlayAction(onPlay)
             .focusHighlight()
             // KMK <--
             .height(HistoryItemHeight)

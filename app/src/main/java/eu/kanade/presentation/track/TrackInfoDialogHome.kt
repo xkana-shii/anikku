@@ -36,6 +36,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -43,6 +44,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -53,6 +56,7 @@ import dev.icerock.moko.resources.StringResource
 import eu.kanade.presentation.components.DropdownMenu
 import eu.kanade.presentation.theme.TachiyomiPreviewTheme
 import eu.kanade.presentation.track.components.TrackLogoIcon
+import eu.kanade.presentation.util.isTvUi
 import eu.kanade.tachiyomi.data.track.Tracker
 import eu.kanade.tachiyomi.ui.manga.track.TrackItem
 import eu.kanade.tachiyomi.util.lang.toLocalDate
@@ -80,6 +84,13 @@ fun TrackInfoDialogHome(
     onCopyLink: (TrackItem) -> Unit,
     onTogglePrivate: (TrackItem) -> Unit,
 ) {
+    val initialFocusRequester = remember { FocusRequester() }
+    val isTvUi = isTvUi()
+    LaunchedEffect(isTvUi, trackItems.isNotEmpty()) {
+        if (isTvUi && trackItems.isNotEmpty()) {
+            initialFocusRequester.requestFocus()
+        }
+    }
     Column(
         modifier = Modifier
             .animateContentSize()
@@ -89,7 +100,12 @@ fun TrackInfoDialogHome(
             .windowInsetsPadding(WindowInsets.systemBars),
         verticalArrangement = Arrangement.spacedBy(24.dp),
     ) {
-        trackItems.forEach { item ->
+        trackItems.forEachIndexed { index, item ->
+            val initialFocusModifier = if (index == 0) {
+                Modifier.focusRequester(initialFocusRequester)
+            } else {
+                Modifier
+            }
             if (item.track != null) {
                 val supportsScoring = item.tracker.getScoreList().isNotEmpty()
                 val supportsReadingDates = item.tracker.supportsReadingDates
@@ -97,6 +113,7 @@ fun TrackInfoDialogHome(
                 TrackInfoItem(
                     title = item.track.title,
                     tracker = item.tracker,
+                    initialFocusModifier = initialFocusModifier,
                     // AM -->
                     isSeason = isSeason,
                     // <-- AM
@@ -136,6 +153,7 @@ fun TrackInfoDialogHome(
                 TrackInfoItemEmpty(
                     tracker = item.tracker,
                     onNewSearch = { onNewSearch(item) },
+                    initialFocusModifier = initialFocusModifier,
                 )
             }
         }
@@ -165,6 +183,7 @@ private fun TrackInfoItem(
     onCopyLink: () -> Unit,
     private: Boolean,
     onTogglePrivate: (() -> Unit)?,
+    initialFocusModifier: Modifier,
 ) {
     val context = LocalContext.current
     Column {
@@ -196,6 +215,7 @@ private fun TrackInfoItem(
             }
             Box(
                 modifier = Modifier
+                    .then(initialFocusModifier)
                     .height(48.dp)
                     .weight(1f)
                     .combinedClickable(
@@ -315,6 +335,7 @@ private fun TrackDetailsItem(
 private fun TrackInfoItemEmpty(
     tracker: Tracker,
     onNewSearch: () -> Unit,
+    initialFocusModifier: Modifier,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -323,6 +344,7 @@ private fun TrackInfoItemEmpty(
         TextButton(
             onClick = onNewSearch,
             modifier = Modifier
+                .then(initialFocusModifier)
                 .padding(start = 16.dp)
                 .weight(1f),
         ) {
@@ -339,9 +361,18 @@ private fun TrackInfoItemMenu(
     private: Boolean,
     onTogglePrivate: (() -> Unit)?,
 ) {
+    val isTvUi = isTvUi()
+    val menuFocusRequester = remember { FocusRequester() }
+    val firstMenuItemFocusRequester = remember { FocusRequester() }
     var expanded by remember { mutableStateOf(false) }
+    LaunchedEffect(expanded, isTvUi) {
+        if (expanded && isTvUi) firstMenuItemFocusRequester.requestFocus()
+    }
     Box(modifier = Modifier.wrapContentSize(Alignment.TopStart)) {
-        IconButton(onClick = { expanded = true }) {
+        IconButton(
+            modifier = Modifier.focusRequester(menuFocusRequester),
+            onClick = { expanded = true },
+        ) {
             Icon(
                 imageVector = Icons.Default.MoreVert,
                 contentDescription = stringResource(MR.strings.label_more),
@@ -349,9 +380,13 @@ private fun TrackInfoItemMenu(
         }
         DropdownMenu(
             expanded = expanded,
-            onDismissRequest = { expanded = false },
+            onDismissRequest = {
+                expanded = false
+                if (isTvUi) menuFocusRequester.requestFocus()
+            },
         ) {
             DropdownMenuItem(
+                modifier = Modifier.focusRequester(firstMenuItemFocusRequester),
                 text = { Text(stringResource(MR.strings.action_open_in_browser)) },
                 onClick = {
                     onOpenInBrowser()

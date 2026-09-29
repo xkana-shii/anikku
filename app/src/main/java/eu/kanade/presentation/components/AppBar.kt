@@ -88,6 +88,7 @@ fun rememberTvAppBarContentFocusRequesters(): TvAppBarContentFocusRequesters {
 private data class TvAppBarFocusRoute(
     val requesters: TvAppBarContentFocusRequesters,
     val contentAvailable: Boolean,
+    val navigateUpFocusRequester: FocusRequester?,
 )
 
 private val LocalTvAppBarFocusRoute = staticCompositionLocalOf<TvAppBarFocusRoute?> { null }
@@ -108,6 +109,9 @@ private fun Modifier.tvAppBarFocusTarget(): Modifier {
     return focusRequester(route.requesters.appBar)
         .focusProperties {
             if (route.contentAvailable) down = route.requesters.content
+            if (route.navigateUpFocusRequester != null) {
+                up = route.navigateUpFocusRequester
+            }
         }
 }
 
@@ -132,6 +136,7 @@ fun AppBar(
     scrollBehavior: TopAppBarScrollBehavior? = null,
     tvFocusRequesters: TvAppBarContentFocusRequesters? = null,
     tvContentAvailable: Boolean = true,
+    tvNavigateUpFocusRequester: FocusRequester? = null,
 ) {
     val isActionMode by remember(actionModeCounter) {
         derivedStateOf { actionModeCounter > 0 }
@@ -161,6 +166,7 @@ fun AppBar(
         scrollBehavior = scrollBehavior,
         tvFocusRequesters = tvFocusRequesters,
         tvContentAvailable = tvContentAvailable,
+        tvNavigateUpFocusRequester = tvNavigateUpFocusRequester,
     )
 }
 
@@ -187,13 +193,14 @@ fun AppBar(
     scrollBehavior: TopAppBarScrollBehavior? = null,
     tvFocusRequesters: TvAppBarContentFocusRequesters? = null,
     tvContentAvailable: Boolean = true,
+    tvNavigateUpFocusRequester: FocusRequester? = null,
 ) {
     Column(
         modifier = modifier,
     ) {
         CompositionLocalProvider(
             LocalTvAppBarFocusRoute provides tvFocusRequesters?.let {
-                TvAppBarFocusRoute(it, tvContentAvailable)
+                TvAppBarFocusRoute(it, tvContentAvailable, tvNavigateUpFocusRequester)
             },
         ) {
             TopAppBar(
@@ -400,6 +407,7 @@ fun SearchToolbar(
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     tvFocusRequesters: TvAppBarContentFocusRequesters? = null,
     tvContentAvailable: Boolean = true,
+    tvNavigateUpFocusRequester: FocusRequester? = null,
 ) {
     val focusRequester = remember { FocusRequester() }
 
@@ -467,6 +475,7 @@ fun SearchToolbar(
         navigateUp = if (searchQuery == null) navigateUp else onClickCloseSearch,
         tvFocusRequesters = tvFocusRequesters,
         tvContentAvailable = tvContentAvailable,
+        tvNavigateUpFocusRequester = tvNavigateUpFocusRequester,
         actions = {
             key("search") {
                 val onClick = { onChangeSearchQuery("") }

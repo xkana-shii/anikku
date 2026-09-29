@@ -46,6 +46,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -55,6 +56,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
@@ -74,6 +76,7 @@ import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.components.DropdownMenu
 import eu.kanade.presentation.manga.components.MangaCover
 import eu.kanade.presentation.theme.TachiyomiPreviewTheme
+import eu.kanade.presentation.util.isTvUi
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import eu.kanade.tachiyomi.util.system.openInBrowser
 import kotlinx.coroutines.launch
@@ -102,9 +105,17 @@ fun TrackerSearch(
 ) {
     val focusManager = LocalFocusManager.current
     val focusRequester = remember { FocusRequester() }
+    val firstResultFocusRequester = remember { FocusRequester() }
+    val trackFocusRequester = remember { FocusRequester() }
+    val hasResults = queryResult?.getOrNull()?.isNotEmpty() == true
+    val isTvUi = isTvUi()
     val dispatchQueryAndClearFocus: () -> Unit = {
         onDispatchQuery()
         focusManager.clearFocus()
+    }
+
+    LaunchedEffect(isTvUi) {
+        if (isTvUi) focusRequester.requestFocus()
     }
 
     Scaffold(
@@ -112,7 +123,14 @@ fun TrackerSearch(
             Column {
                 TopAppBar(
                     navigationIcon = {
-                        IconButton(onClick = onDismissRequest) {
+                        IconButton(
+                            modifier = Modifier.tvSearchResultTarget(
+                                isTvUi = isTvUi,
+                                hasResults = hasResults,
+                                resultFocusRequester = firstResultFocusRequester,
+                            ),
+                            onClick = onDismissRequest,
+                        ) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                                 contentDescription = null,
@@ -126,6 +144,11 @@ fun TrackerSearch(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .focusRequester(focusRequester)
+                                .tvSearchResultTarget(
+                                    isTvUi = isTvUi,
+                                    hasResults = hasResults,
+                                    resultFocusRequester = firstResultFocusRequester,
+                                )
                                 .runOnEnterKeyPressed(action = dispatchQueryAndClearFocus),
                             textStyle = MaterialTheme.typography.bodyLarge
                                 .copy(color = MaterialTheme.colorScheme.onSurface),
@@ -180,7 +203,9 @@ fun TrackerSearch(
                 ) {
                     Button(
                         onClick = { onConfirmSelection(false) },
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier
+                            .focusRequester(trackFocusRequester)
+                            .weight(1f),
                         elevation = ButtonDefaults.elevatedButtonElevation(),
                     ) {
                         Text(text = stringResource(MR.strings.action_track))
@@ -218,11 +243,25 @@ fun TrackerSearch(
                         items(
                             items = availableTracks,
                             key = { "tracker-search-${it.hashCode()}" },
-                        ) {
+                        ) { track ->
                             SearchResultItem(
-                                trackSearch = it,
-                                selected = it == selected,
-                                onClick = { onSelectedChange(it) },
+                                trackSearch = track,
+                                selected = track == selected,
+                                onClick = { onSelectedChange(track) },
+                                modifier = Modifier
+                                    .then(
+                                        if (track == availableTracks.first()) {
+                                            Modifier.focusRequester(firstResultFocusRequester)
+                                        } else {
+                                            Modifier
+                                        },
+                                    )
+                                    .focusProperties {
+                                        if (track == availableTracks.first()) up = focusRequester
+                                        if (track == availableTracks.last() && selected != null) {
+                                            down = trackFocusRequester
+                                        }
+                                    },
                             )
                         }
                     }
@@ -243,6 +282,7 @@ private fun SearchResultItem(
     trackSearch: TrackSearch,
     selected: Boolean,
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
     val clipboard: Clipboard = LocalClipboard.current
@@ -255,7 +295,7 @@ private fun SearchResultItem(
     var dropDownMenuExpanded by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 12.dp)
             .clip(shape)
@@ -364,6 +404,15 @@ private fun SearchResultItem(
             }
         }
     }
+}
+
+private fun Modifier.tvSearchResultTarget(
+    isTvUi: Boolean,
+    hasResults: Boolean,
+    resultFocusRequester: FocusRequester,
+): Modifier {
+    if (!isTvUi || !hasResults) return this
+    return focusProperties { down = resultFocusRequester }
 }
 
 @Composable

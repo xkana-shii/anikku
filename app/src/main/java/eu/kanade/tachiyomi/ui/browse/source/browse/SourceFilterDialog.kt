@@ -158,10 +158,11 @@ private fun FilterItem(filter: Filter<*>, onUpdate: () -> Unit/* SY --> */, star
             TriStateItem(
                 label = filter.name,
                 state = filter.state.toTriStateFilter(),
-            ) {
-                filter.state = filter.state.toTriStateFilter().next().toTriStateInt()
-                onUpdate()
-            }
+                onClick = {
+                    filter.state = filter.state.toTriStateFilter().next().toTriStateInt()
+                    onUpdate()
+                },
+            )
         }
         is Filter.Text -> {
             TextItem(

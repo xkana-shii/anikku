@@ -10,6 +10,7 @@ import androidx.compose.material3.RippleConfiguration
 import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -39,7 +40,9 @@ import eu.kanade.presentation.theme.colorscheme.TidalWaveColorScheme
 import eu.kanade.presentation.theme.colorscheme.YinYangColorScheme
 import eu.kanade.presentation.theme.colorscheme.YotsubaColorScheme
 import eu.kanade.tachiyomi.util.system.isTelevision
+import eu.kanade.tachiyomi.util.system.resolveTvUiEnabled
 import tachiyomi.presentation.core.util.LocalTvUiEnabled
+import tachiyomi.presentation.core.util.collectAsState
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -50,7 +53,9 @@ fun TachiyomiTheme(
     content: @Composable () -> Unit,
 ) {
     val uiPreferences = Injekt.get<UiPreferences>()
-    CompositionLocalProvider(LocalTvUiEnabled provides LocalContext.current.isTelevision()) {
+    val tvUiMode by uiPreferences.tvUiMode().collectAsState()
+    val tvUiEnabled = resolveTvUiEnabled(tvUiMode, LocalContext.current.isTelevision())
+    CompositionLocalProvider(LocalTvUiEnabled provides tvUiEnabled) {
         BaseTachiyomiTheme(
             appTheme = appTheme ?: uiPreferences.appTheme().get(),
             isAmoled = amoled ?: uiPreferences.themeDarkAmoled().get(),
@@ -74,7 +79,9 @@ fun TachiyomiTheme(
     } else {
         val uiPreferences = Injekt.get<UiPreferences>()
         val isAmoled = amoled ?: uiPreferences.themeDarkAmoled().get()
-        CompositionLocalProvider(LocalTvUiEnabled provides LocalContext.current.isTelevision()) {
+        val tvUiMode by uiPreferences.tvUiMode().collectAsState()
+        val tvUiEnabled = resolveTvUiEnabled(tvUiMode, LocalContext.current.isTelevision())
+        CompositionLocalProvider(LocalTvUiEnabled provides tvUiEnabled) {
             DynamicMaterialExpressiveTheme(
                 seedColor = seedColor,
                 isAmoled = isAmoled,

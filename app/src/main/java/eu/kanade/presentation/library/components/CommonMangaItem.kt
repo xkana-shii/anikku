@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.sp
 import eu.kanade.presentation.manga.components.MangaCover
 import eu.kanade.presentation.manga.components.MangaCoverHide
 import eu.kanade.presentation.manga.components.RatioSwitchToPanorama
+import eu.kanade.presentation.util.tvMediaPlayAction
 import exh.debug.DebugToggles
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.BadgeGroup
@@ -104,6 +105,7 @@ fun MangaCompactGridItem(
         isSelected = isSelected,
         onClick = onClick,
         onLongClick = onLongClick,
+        onPlay = onClickContinueReading,
     ) {
         MangaGridCover(
             cover = {
@@ -241,6 +243,7 @@ fun MangaComfortableGridItem(
         isSelected = isSelected,
         onClick = onClick,
         onLongClick = onLongClick,
+        onPlay = onClickContinueReading,
     ) {
         Column {
             MangaGridCover(
@@ -401,6 +404,7 @@ private fun GridItemSelectable(
     isSelected: Boolean,
     onClick: () -> Unit,
     onLongClick: () -> Unit,
+    onPlay: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
@@ -414,6 +418,7 @@ private fun GridItemSelectable(
                 onClick = onClick,
                 onLongClick = onLongClick,
             )
+            .tvMediaPlayAction(onPlay)
             .tvFocusable(interactionSource)
             .selectedOutline(isSelected = isSelected, color = MaterialTheme.colorScheme.secondary)
             .padding(4.dp),
@@ -486,6 +491,7 @@ fun MangaListItem(
                 onClick = onClick,
                 onLongClick = onLongClick,
             )
+            .tvMediaPlayAction(onClickContinueReading)
             .tvFocusable(interactionSource)
             .padding(horizontal = 16.dp, vertical = 3.dp),
         verticalAlignment = Alignment.CenterVertically,

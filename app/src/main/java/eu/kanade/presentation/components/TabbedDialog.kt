@@ -19,6 +19,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,6 +29,8 @@ import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
 import eu.kanade.presentation.util.isTvUi
@@ -59,9 +62,14 @@ fun TabbedDialog(
     ) {
         val scope = rememberCoroutineScope()
         val isTvUi = isTvUi()
+        val initialTabFocusRequester = remember { FocusRequester() }
         var tvPage by rememberSaveable { mutableStateOf(pagerState.currentPage) }
         val selectedPage = if (isTvUi) tvPage else pagerState.currentPage
         val tvPageStateHolder = rememberSaveableStateHolder()
+
+        LaunchedEffect(isTvUi) {
+            if (isTvUi) initialTabFocusRequester.requestFocus()
+        }
 
         Column {
             Row {
@@ -74,7 +82,11 @@ fun TabbedDialog(
                     tabTitles.fastForEachIndexed { index, tab ->
                         val interactionSource = remember(index) { MutableInteractionSource() }
                         Tab(
-                            modifier = Modifier.tvFocusable(interactionSource),
+                            modifier = Modifier
+                                .then(
+                                    if (index == 0) Modifier.focusRequester(initialTabFocusRequester) else Modifier,
+                                )
+                                .tvFocusable(interactionSource),
                             selected = selectedPage == index,
                             onClick = {
                                 if (isTvUi) {

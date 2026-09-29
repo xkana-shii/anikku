@@ -14,11 +14,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import eu.kanade.presentation.components.TabbedDialog
 import eu.kanade.presentation.components.TabbedDialogPaddings
+import eu.kanade.presentation.util.isTvUi
 import eu.kanade.tachiyomi.ui.updates.UpdatesSettingsScreenModel
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.domain.updates.service.UpdatesPreferences
@@ -36,6 +41,11 @@ fun UpdatesFilterDialog(
     onDismissRequest: () -> Unit,
     screenModel: UpdatesSettingsScreenModel,
 ) {
+    val firstFilterFocusRequester = remember { FocusRequester() }
+    val isTvUi = isTvUi()
+    LaunchedEffect(isTvUi) {
+        if (isTvUi) firstFilterFocusRequester.requestFocus()
+    }
     TabbedDialog(
         onDismissRequest = onDismissRequest,
         tabTitles = persistentListOf(
@@ -47,7 +57,10 @@ fun UpdatesFilterDialog(
                 .padding(vertical = TabbedDialogPaddings.Vertical)
                 .verticalScroll(rememberScrollState()),
         ) {
-            FilterSheet(screenModel = screenModel)
+            FilterSheet(
+                screenModel = screenModel,
+                firstFilterModifier = Modifier.focusRequester(firstFilterFocusRequester),
+            )
         }
     }
 }
@@ -55,12 +68,14 @@ fun UpdatesFilterDialog(
 @Composable
 private fun ColumnScope.FilterSheet(
     screenModel: UpdatesSettingsScreenModel,
+    firstFilterModifier: Modifier,
 ) {
     val filterDownloaded by screenModel.updatesPreferences.filterDownloaded().collectAsState()
     TriStateItem(
         label = stringResource(MR.strings.label_downloaded),
         state = filterDownloaded,
         onClick = { screenModel.toggleFilter(UpdatesPreferences::filterDownloaded) },
+        modifier = firstFilterModifier,
     )
 
     val filterUnread by screenModel.updatesPreferences.filterUnread().collectAsState()

@@ -361,9 +361,10 @@ fun TriStateItem(
     state: TriState,
     enabled: Boolean = true,
     onClick: ((TriState) -> Unit)?,
+    modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .clickable(
                 enabled = enabled && onClick != null,
                 onClick = {

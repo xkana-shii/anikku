@@ -66,6 +66,7 @@ import androidx.media.AudioFocusRequestCompat
 import androidx.media.AudioManagerCompat
 import com.hippo.unifile.UniFile
 import eu.kanade.domain.connections.service.ConnectionsPreferences
+import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.theme.TachiyomiTheme
 import eu.kanade.tachiyomi.animesource.model.ChapterType
 import eu.kanade.tachiyomi.animesource.model.Hoster
@@ -90,6 +91,7 @@ import eu.kanade.tachiyomi.ui.player.settings.SubtitlePreferences
 import eu.kanade.tachiyomi.ui.player.utils.ChapterUtils.Companion.getStringRes
 import eu.kanade.tachiyomi.util.system.isTelevision
 import eu.kanade.tachiyomi.util.system.powerManager
+import eu.kanade.tachiyomi.util.system.resolveTvUiEnabled
 import eu.kanade.tachiyomi.util.system.toShareIntent
 import eu.kanade.tachiyomi.util.system.toast
 import `is`.xyz.mpv.MPV
@@ -131,6 +133,7 @@ class PlayerActivity : BaseActivity() {
     private var mediaSession: MediaSession? = null
     private var consumedTvKeyDown: Int? = null
     private val gesturePreferences: GesturePreferences = Injekt.get()
+    private val uiPreferences: UiPreferences = Injekt.get()
     private val playerPreferences: PlayerPreferences = Injekt.get()
     private val audioPreferences: AudioPreferences = Injekt.get()
     private val advancedPlayerPreferences: AdvancedPlayerPreferences = Injekt.get()
@@ -981,7 +984,7 @@ class PlayerActivity : BaseActivity() {
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        val isTvDevice = isTelevision()
+        val isTvDevice = isTvUiEnabled()
         if (isTvDevice) {
             val modalOverlayShown = viewModel.sheetShown.value != Sheets.None ||
                 viewModel.panelShown.value != Panels.None ||
@@ -1050,9 +1053,13 @@ class PlayerActivity : BaseActivity() {
             consumedTvKeyDown = null
             return true
         }
-        if (isTelevision() && isTvNavigationKey(keyCode)) return super.onKeyUp(keyCode, event)
+        if (isTvUiEnabled() && isTvNavigationKey(keyCode)) return super.onKeyUp(keyCode, event)
         if (event != null && player.onKey(event)) return true
         return super.onKeyUp(keyCode, event)
+    }
+
+    private fun isTvUiEnabled(): Boolean {
+        return resolveTvUiEnabled(uiPreferences.tvUiMode().get(), isTelevision())
     }
 
     private fun setupMediaSession() {

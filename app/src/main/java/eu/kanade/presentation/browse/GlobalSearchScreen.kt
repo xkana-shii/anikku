@@ -14,6 +14,9 @@ import eu.kanade.presentation.browse.components.GlobalSearchLoadingResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchToolbar
 import eu.kanade.presentation.components.BulkSelectionToolbar
+import eu.kanade.presentation.components.TvAppBarContentFocusRequesters
+import eu.kanade.presentation.components.rememberTvAppBarContentFocusRequesters
+import eu.kanade.presentation.components.tvAppBarContentFocusTarget
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.SearchItemResult
@@ -42,6 +45,11 @@ fun GlobalSearchScreen(
     hasPinnedSources: Boolean,
     // KMK <--
 ) {
+    val tvFocusRequesters = rememberTvAppBarContentFocusRequesters()
+    val firstResultSourceId = state.filteredItems.entries
+        .firstOrNull { (_, result) -> result is SearchItemResult.Success && result.result.isNotEmpty() }
+        ?.key
+        ?.id
     // KMK -->
     val bulkFavoriteState by bulkFavoriteScreenModel.state.collectAsState()
     // KMK <--
@@ -87,6 +95,8 @@ fun GlobalSearchScreen(
                     toggleSelectionMode = bulkFavoriteScreenModel::toggleSelectionMode,
                     isRunning = bulkFavoriteState.isRunning,
                     hasPinnedSources = hasPinnedSources,
+                    tvFocusRequesters = tvFocusRequesters,
+                    tvContentAvailable = firstResultSourceId != null,
                     // KMK <--
                 )
             }
@@ -101,6 +111,8 @@ fun GlobalSearchScreen(
             onLongClickItem = onLongClickItem,
             // KMK -->
             selection = bulkFavoriteState.selection,
+            firstResultSourceId = firstResultSourceId,
+            tvFocusRequesters = tvFocusRequesters,
             // KMK <--
         )
     }
@@ -115,6 +127,8 @@ internal fun GlobalSearchContent(
     onClickItem: (Manga) -> Unit,
     onLongClickItem: (Manga) -> Unit,
     fromSourceId: Long? = null,
+    firstResultSourceId: Long? = null,
+    tvFocusRequesters: TvAppBarContentFocusRequesters? = null,
     // KMK -->
     selection: List<Manga>,
     // KMK <--
@@ -163,6 +177,10 @@ internal fun GlobalSearchContent(
                                 onLongClick = onLongClickItem,
                                 // KMK -->
                                 selection = selection,
+                                firstCardModifier = tvFocusRequesters
+                                    ?.takeIf { source.id == firstResultSourceId }
+                                    ?.let { Modifier.tvAppBarContentFocusTarget(it) }
+                                    ?: Modifier,
                                 // KMK <--
                             )
                         }

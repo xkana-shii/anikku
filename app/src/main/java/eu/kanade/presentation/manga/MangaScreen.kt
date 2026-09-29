@@ -50,6 +50,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
@@ -94,6 +96,7 @@ import eu.kanade.presentation.manga.components.NextEpisodeAiringListItem
 import eu.kanade.presentation.manga.components.OutlinedButtonWithArrow
 import eu.kanade.presentation.manga.components.RelatedMangasRow
 import eu.kanade.presentation.util.formatChapterNumber
+import eu.kanade.presentation.util.tvMediaPlayAction
 import eu.kanade.tachiyomi.animesource.model.FetchType
 import eu.kanade.tachiyomi.data.download.DownloadProvider
 import eu.kanade.tachiyomi.data.download.model.Download
@@ -482,6 +485,10 @@ private fun MangaScreenSmallImpl(
             chapters.fastAny { it.selected }
         }
     }
+    val isStartResumeVisible = remember(chapters, isAnySelected) {
+        chapters.fastAny { !it.chapter.read } && !isAnySelected
+    }
+    val tvStartResumeFocusRequester = remember { FocusRequester() }
 
     // KMK -->
     val uiPreferences = Injekt.get<UiPreferences>()
@@ -563,6 +570,7 @@ private fun MangaScreenSmallImpl(
                     titleAlphaProvider = { titleAlpha },
                     backgroundAlphaProvider = { backgroundAlpha },
                     tvFocusRequesters = tvFocusRequesters,
+                    tvNavigateUpFocusRequester = tvStartResumeFocusRequester.takeIf { isStartResumeVisible },
                     // AY -->
                     modifier = Modifier.onSizeChanged { toolbarHeight = it.height },
                     // <-- AY
@@ -589,9 +597,6 @@ private fun MangaScreenSmallImpl(
             },
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
             floatingActionButton = {
-                val isFABVisible = remember(chapters) {
-                    chapters.fastAny { !it.chapter.read } && !isAnySelected
-                }
                 val isReading = remember(state.chapters) {
                     state.chapters.fastAny { it.chapter.read }
                 }
@@ -606,9 +611,10 @@ private fun MangaScreenSmallImpl(
                     onClick = onContinueReading,
                     expanded = chapterListState.shouldExpandFAB(),
                     modifier = Modifier.animateFloatingActionButton(
-                        visible = isFABVisible,
+                        visible = isStartResumeVisible,
                         alignment = Alignment.BottomEnd,
                     )
+                        .focusRequester(tvStartResumeFocusRequester)
                         // KMK -->
                         .offset { IntOffset(offsetX.roundToInt(), 0) }
                         .onGloballyPositioned { coordinates ->
@@ -644,6 +650,7 @@ private fun MangaScreenSmallImpl(
                 FabPosition.Start
             },
             modifier = Modifier
+                .tvMediaPlayAction(onContinueReading.takeIf { isStartResumeVisible })
                 .onGloballyPositioned { coordinates ->
                     layoutSize = coordinates.size
                 }
@@ -1073,6 +1080,10 @@ private fun MangaScreenLargeImpl(
             chapters.fastAny { it.selected }
         }
     }
+    val isStartResumeVisible = remember(chapters, isAnySelected) {
+        chapters.fastAny { !it.chapter.read } && !isAnySelected
+    }
+    val tvStartResumeFocusRequester = remember { FocusRequester() }
 
     // KMK -->
     val uiPreferences = Injekt.get<UiPreferences>()
@@ -1152,6 +1163,7 @@ private fun MangaScreenLargeImpl(
                     titleAlphaProvider = { 1f },
                     backgroundAlphaProvider = { 1f },
                     tvFocusRequesters = tvFocusRequesters,
+                    tvNavigateUpFocusRequester = tvStartResumeFocusRequester.takeIf { isStartResumeVisible },
                 )
             },
             bottomBar = {
@@ -1180,9 +1192,6 @@ private fun MangaScreenLargeImpl(
             },
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
             floatingActionButton = {
-                val isFABVisible = remember(chapters) {
-                    chapters.fastAny { !it.chapter.read } && !isAnySelected
-                }
                 val isReading = remember(state.chapters) {
                     state.chapters.fastAny { it.chapter.read }
                 }
@@ -1197,9 +1206,10 @@ private fun MangaScreenLargeImpl(
                     onClick = onContinueReading,
                     expanded = chapterListState.shouldExpandFAB(),
                     modifier = Modifier.animateFloatingActionButton(
-                        visible = isFABVisible,
+                        visible = isStartResumeVisible,
                         alignment = Alignment.BottomEnd,
                     )
+                        .focusRequester(tvStartResumeFocusRequester)
                         // KMK -->
                         .offset { IntOffset(offsetX.roundToInt(), 0) }
                         .onGloballyPositioned { coordinates ->
@@ -1235,6 +1245,7 @@ private fun MangaScreenLargeImpl(
                 FabPosition.Start
             },
             modifier = Modifier
+                .tvMediaPlayAction(onContinueReading.takeIf { isStartResumeVisible })
                 .onGloballyPositioned { coordinates ->
                     layoutSize = coordinates.size
                 }

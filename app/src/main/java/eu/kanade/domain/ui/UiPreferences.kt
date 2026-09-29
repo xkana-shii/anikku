@@ -7,6 +7,7 @@ import eu.kanade.domain.ui.model.AppTheme
 import eu.kanade.domain.ui.model.StartScreen
 import eu.kanade.domain.ui.model.TabletUiMode
 import eu.kanade.domain.ui.model.ThemeMode
+import eu.kanade.domain.ui.model.TvUiMode
 import tachiyomi.core.common.preference.PreferenceStore
 import tachiyomi.core.common.preference.getEnum
 import java.time.format.DateTimeFormatter
@@ -45,6 +46,8 @@ class UiPreferences(
     fun dateFormat() = preferenceStore.getString("app_date_format", "")
 
     fun tabletUiMode() = preferenceStore.getEnum("tablet_ui_mode", TabletUiMode.AUTOMATIC)
+
+    fun tvUiMode() = preferenceStore.getEnum("tv_ui_mode", TvUiMode.AUTOMATIC)
 
     fun imagesInDescription() = preferenceStore.getBoolean("pref_render_images_description", true)
 

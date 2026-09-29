@@ -32,6 +32,7 @@ import eu.kanade.presentation.history.components.HistoryItem
 import eu.kanade.presentation.theme.TachiyomiPreviewTheme
 import eu.kanade.presentation.updates.formatProgress
 import eu.kanade.presentation.util.animateItemFastScroll
+import eu.kanade.presentation.util.isTvUi
 import eu.kanade.tachiyomi.ui.history.HistoryScreenModel
 import eu.kanade.tachiyomi.ui.history.HistoryScreenModel.HistorySelectionOptions
 import kotlinx.collections.immutable.persistentListOf
@@ -181,6 +182,7 @@ private fun HistoryScreenContent(
     tvFocusRequesters: TvAppBarContentFocusRequesters,
     // KMK <--
 ) {
+    val isTvUi = isTvUi()
     FastScrollLazyColumn(
         contentPadding = contentPadding,
     ) {
@@ -228,8 +230,11 @@ private fun HistoryScreenContent(
                                         fromLongPress = false,
                                     ),
                                 )
-                                else -> onClickResume(value)
+                                else -> if (isTvUi) onClickCover(value) else onClickResume(value)
                             }
+                        },
+                        onPlay = onClickResume.takeUnless { selectionMode }?.let { resume ->
+                            { resume(value) }
                         },
                         onLongClick = {
                             onHistorySelected(

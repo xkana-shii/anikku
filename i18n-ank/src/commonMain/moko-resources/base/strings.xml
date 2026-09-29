@@ -239,4 +239,8 @@
 
     <string name="action_clear_anime">Clear anime</string>
     <string name="episodes_from_database">Episodes &amp; History from Database</string>
+    <string name="pref_tv_ui_mode">TV interface</string>
+    <string name="pref_tv_ui_mode_automatic">Automatic</string>
+    <string name="pref_tv_ui_mode_always">Always use TV interface</string>
+    <string name="pref_tv_ui_mode_never">Never use TV interface</string>
 </resources>

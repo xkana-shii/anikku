@@ -13,6 +13,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -22,6 +24,8 @@ fun LazyColumnWithAction(
     onClickAction: () -> Unit,
     modifier: Modifier = Modifier,
     actionEnabled: Boolean = true,
+    actionFocusRequester: FocusRequester? = null,
+    actionModifier: Modifier = Modifier,
     content: LazyListScope.() -> Unit,
 ) {
     Column(
@@ -37,7 +41,8 @@ fun LazyColumnWithAction(
         HorizontalDivider()
 
         Button(
-            modifier = Modifier
+            modifier = (actionFocusRequester?.let { Modifier.focusRequester(it) } ?: Modifier)
+                .then(actionModifier)
                 .padding(horizontal = 16.dp, vertical = 8.dp)
                 .fillMaxWidth(),
             enabled = actionEnabled,
