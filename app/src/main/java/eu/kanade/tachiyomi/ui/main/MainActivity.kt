@@ -1,7 +1,6 @@
 package eu.kanade.tachiyomi.ui.main
 
 import android.animation.ValueAnimator
-import android.app.Activity
 import android.app.Application
 import android.app.SearchManager
 import android.app.assist.AssistContent
@@ -55,6 +54,7 @@ import androidx.core.util.Consumer
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.interpolator.view.animation.LinearOutSlowInInterpolator
 import androidx.lifecycle.lifecycleScope
+import animiru.feature.mpvfiles.MpvConfig
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.NavigatorDisposeBehavior
@@ -148,6 +148,10 @@ class MainActivity : BaseActivity() {
 
     private val libraryPreferences: LibraryPreferences by injectLazy()
     private val preferences: BasePreferences by injectLazy()
+
+    // AM -->
+    private val mpvConfig: MpvConfig by injectLazy()
+    // <-- AM
 
     // KMK -->
     private val backupPreferences: BackupPreferences by injectLazy()
@@ -428,7 +432,7 @@ class MainActivity : BaseActivity() {
         externalPlayerResult = registerForActivityResult(
             ActivityResultContracts.StartActivityForResult(),
         ) { result: ActivityResult ->
-            if (result.resultCode == Activity.RESULT_OK) {
+            if (result.resultCode == RESULT_OK) {
                 val animeId = savedInstanceState?.getLong(SAVED_STATE_ANIME_KEY)
                 val episodeId = savedInstanceState?.getLong(SAVED_STATE_EPISODE_KEY)
 
@@ -664,7 +668,7 @@ class MainActivity : BaseActivity() {
                     navigator.push(RestoreBackupScreen(intent.data.toString()))
                 }
                 // Deep link to add extension repo
-                else if (intent.scheme == "anikku" && intent.data?.host == "add-repo") {
+                else if (intent.scheme == "aniyomi" && intent.data?.host == "add-repo") {
                     intent.data?.getQueryParameter("url")?.let { repoUrl ->
                         navigator.popUntilRoot()
                         navigator.push(ExtensionReposScreen(repoUrl))
@@ -693,6 +697,13 @@ class MainActivity : BaseActivity() {
             outState.putLong(SAVED_STATE_EPISODE_KEY, it)
         }
     }
+
+    // AM -->
+    override fun onResume() {
+        super.onResume()
+        mpvConfig.copyFiles()
+    }
+    // <-- AM
 
     companion object {
         const val INTENT_ANIMESEARCH = "eu.kanade.tachiyomi.ANIMESEARCH"

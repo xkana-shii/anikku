@@ -73,6 +73,9 @@
     <string name="action_edit_info">Edit info</string>
     <string name="custom_entry_info">Custom entry info</string>
 
+    <!-- Downloads -->
+    <string name="pref_download_ignore_broken_tracks">Skip broken external tracks</string>
+
     <!-- Storage overview -->
     <string name="pref_storage_overview">Storage overview</string>
     <string name="calculating_storage_overview">Calculating storage usage... (%1$s)</string>
@@ -208,6 +211,7 @@
     <!-- Player prefs - subtitles -->
     <string name="player_pref_subtitle_black_bars">Render on black bars</string>
     <string name="player_pref_subtitle_black_bars_summary">Display subtitles on black bars when available</string>
+    <string name="player_pref_subtitle_system_fonts">Include system fonts</string>
 
     <!-- Player - deband -->
     <string name="player_sheets_video_settings_title">Video settings</string>
