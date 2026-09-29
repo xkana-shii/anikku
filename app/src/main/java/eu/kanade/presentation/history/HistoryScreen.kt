@@ -24,7 +24,10 @@ import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.AppBarTitle
 import eu.kanade.presentation.components.SearchToolbar
+import eu.kanade.presentation.components.TvAppBarContentFocusRequesters
 import eu.kanade.presentation.components.relativeDateText
+import eu.kanade.presentation.components.rememberTvAppBarContentFocusRequesters
+import eu.kanade.presentation.components.tvAppBarContentFocusTarget
 import eu.kanade.presentation.history.components.HistoryItem
 import eu.kanade.presentation.theme.TachiyomiPreviewTheme
 import eu.kanade.presentation.updates.formatProgress
@@ -67,6 +70,8 @@ fun HistoryScreen(
     // KMK -->
     BackHandler(enabled = state.selectionMode, onBack = toggleSelectionMode)
     // KMK <--
+    val tvFocusRequesters = rememberTvAppBarContentFocusRequesters()
+    val firstHistoryItem = state.list.firstOrNull()
 
     Scaffold(
         topBar = { scrollBehavior ->
@@ -78,6 +83,8 @@ fun HistoryScreen(
                     onClickSelectAll = { onSelectAll(true) },
                     onClickInvertSelection = onInvertSelection,
                     onClickClearHistory = { onDialogChange(HistoryScreenModel.Dialog.Delete(state.selected)) },
+                    tvFocusRequesters = tvFocusRequesters,
+                    tvContentAvailable = firstHistoryItem != null,
                 )
                 // KMK <--
                 else -> SearchToolbar(
@@ -106,6 +113,8 @@ fun HistoryScreen(
                         )
                     },
                     scrollBehavior = scrollBehavior,
+                    tvFocusRequesters = tvFocusRequesters,
+                    tvContentAvailable = firstHistoryItem != null,
                 )
             }
         },
@@ -144,6 +153,8 @@ fun HistoryScreen(
                     selectionMode = state.selectionMode,
                     onHistorySelected = onHistorySelected,
                     usePanoramaCover = usePanoramaCover,
+                    firstHistoryItem = firstHistoryItem,
+                    tvFocusRequesters = tvFocusRequesters,
                     // KMK <--
                 )
             }
@@ -166,6 +177,8 @@ private fun HistoryScreenContent(
     selectionMode: Boolean,
     onHistorySelected: (HistoryWithRelations, HistorySelectionOptions) -> Unit,
     usePanoramaCover: Boolean,
+    firstHistoryItem: HistoryWithRelations?,
+    tvFocusRequesters: TvAppBarContentFocusRequesters,
     // KMK <--
 ) {
     FastScrollLazyColumn(
@@ -194,7 +207,15 @@ private fun HistoryScreenContent(
                     val isSelected = remember(state.selection) { value.chapterId in state.selection }
                     // KMK <--
                     HistoryItem(
-                        modifier = Modifier.animateItemFastScroll(),
+                        modifier = Modifier
+                            .animateItemFastScroll()
+                            .then(
+                                if (value == firstHistoryItem) {
+                                    Modifier.tvAppBarContentFocusTarget(tvFocusRequesters)
+                                } else {
+                                    Modifier
+                                },
+                            ),
                         history = value,
                         onClickCover = { onClickCover(value) },
                         // KMK -->
@@ -258,6 +279,8 @@ private fun HistorySelectionToolbar(
     onClickSelectAll: () -> Unit,
     onClickInvertSelection: () -> Unit,
     onClickClearHistory: () -> Unit,
+    tvFocusRequesters: TvAppBarContentFocusRequesters,
+    tvContentAvailable: Boolean,
 ) {
     AppBar(
         titleContent = { Text(text = "$selectedCount") },
@@ -285,6 +308,8 @@ private fun HistorySelectionToolbar(
         },
         isActionMode = true,
         onCancelActionMode = onCancelActionMode,
+        tvFocusRequesters = tvFocusRequesters,
+        tvContentAvailable = tvContentAvailable,
     )
 }
 // KMK <--

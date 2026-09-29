@@ -76,7 +76,10 @@ import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.anime.components.AnimeSeasonListItem
 import eu.kanade.presentation.browse.RelatedMangaTitle
+import eu.kanade.presentation.components.TvAppBarContentFocusRequesters
 import eu.kanade.presentation.components.relativeDateTimeText
+import eu.kanade.presentation.components.rememberTvAppBarContentFocusRequesters
+import eu.kanade.presentation.components.tvAppBarContentFocusTarget
 import eu.kanade.presentation.manga.components.ChapterDownloadAction
 import eu.kanade.presentation.manga.components.ChapterHeader
 import eu.kanade.presentation.manga.components.ExpandableMangaDescription
@@ -220,6 +223,7 @@ fun MangaScreen(
     // <-- AY
 ) {
     val context = LocalContext.current
+    val tvFocusRequesters = rememberTvAppBarContentFocusRequesters()
     val onCopyTagToClipboard: (tag: String) -> Unit = {
         if (it.isNotEmpty()) {
             context.copyToClipboard(it, it)
@@ -239,6 +243,7 @@ fun MangaScreen(
             showFileSize = showFileSize,
             // <-- AM (FILE_SIZE)
             navigateUp = navigateUp,
+            tvFocusRequesters = tvFocusRequesters,
             onChapterClicked = onChapterClicked,
             onDownloadChapter = onDownloadChapter,
             onAddToLibraryClicked = onAddToLibraryClicked,
@@ -309,6 +314,7 @@ fun MangaScreen(
             showFileSize = showFileSize,
             // <-- AM (FILE_SIZE)
             navigateUp = navigateUp,
+            tvFocusRequesters = tvFocusRequesters,
             onChapterClicked = onChapterClicked,
             onDownloadChapter = onDownloadChapter,
             onAddToLibraryClicked = onAddToLibraryClicked,
@@ -382,6 +388,7 @@ private fun MangaScreenSmallImpl(
     showFileSize: Boolean,
     // <-- AM (FILE_SIZE)
     navigateUp: () -> Unit,
+    tvFocusRequesters: TvAppBarContentFocusRequesters,
     onChapterClicked: (Chapter, Boolean) -> Unit,
     onDownloadChapter: ((List<ChapterList.Item>, ChapterDownloadAction) -> Unit)?,
     onAddToLibraryClicked: () -> Unit,
@@ -555,6 +562,7 @@ private fun MangaScreenSmallImpl(
                     onInvertSelection = { onInvertSelection() },
                     titleAlphaProvider = { titleAlpha },
                     backgroundAlphaProvider = { backgroundAlpha },
+                    tvFocusRequesters = tvFocusRequesters,
                     // AY -->
                     modifier = Modifier.onSizeChanged { toolbarHeight = it.height },
                     // <-- AY
@@ -710,6 +718,7 @@ private fun MangaScreenSmallImpl(
                         // <-- AY
                     ) {
                         MangaActionRow(
+                            firstActionModifier = Modifier.tvAppBarContentFocusTarget(tvFocusRequesters),
                             favorite = state.manga.favorite,
                             trackingCount = state.trackingCount,
                             nextUpdate = nextUpdate,
@@ -976,6 +985,7 @@ private fun MangaScreenLargeImpl(
     showFileSize: Boolean,
     // <-- AM (FILE_SIZE)
     navigateUp: () -> Unit,
+    tvFocusRequesters: TvAppBarContentFocusRequesters,
     onChapterClicked: (Chapter, Boolean) -> Unit,
     onDownloadChapter: ((List<ChapterList.Item>, ChapterDownloadAction) -> Unit)?,
     onAddToLibraryClicked: () -> Unit,
@@ -1141,6 +1151,7 @@ private fun MangaScreenLargeImpl(
                     onInvertSelection = { onInvertSelection() },
                     titleAlphaProvider = { 1f },
                     backgroundAlphaProvider = { 1f },
+                    tvFocusRequesters = tvFocusRequesters,
                 )
             },
             bottomBar = {
@@ -1270,6 +1281,7 @@ private fun MangaScreenLargeImpl(
                                 // KMK <--
                             )
                             MangaActionRow(
+                                firstActionModifier = Modifier.tvAppBarContentFocusTarget(tvFocusRequesters),
                                 favorite = state.manga.favorite,
                                 trackingCount = state.trackingCount,
                                 nextUpdate = nextUpdate,

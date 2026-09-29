@@ -16,6 +16,7 @@ import eu.kanade.presentation.components.AppBarTitle
 import eu.kanade.presentation.components.DropdownMenu
 import eu.kanade.presentation.components.RadioMenuItem
 import eu.kanade.presentation.components.SearchToolbar
+import eu.kanade.presentation.components.TvAppBarContentFocusRequesters
 import eu.kanade.tachiyomi.source.Source
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.domain.library.model.LibraryDisplayMode
@@ -43,6 +44,7 @@ fun BrowseSourceToolbar(
     // KMK -->
     toggleSelectionMode: () -> Unit,
     isRunning: Boolean,
+    tvFocusRequesters: TvAppBarContentFocusRequesters,
     // KMK <--
 ) {
     // Avoid capturing unstable source in actions lambda
@@ -151,5 +153,6 @@ fun BrowseSourceToolbar(
             }
         },
         scrollBehavior = scrollBehavior,
+        tvFocusRequesters = tvFocusRequesters,
     )
 }

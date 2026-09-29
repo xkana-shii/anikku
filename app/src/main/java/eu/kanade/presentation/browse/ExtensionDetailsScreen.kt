@@ -49,7 +49,10 @@ import eu.kanade.domain.extension.interactor.ExtensionSourceItem
 import eu.kanade.presentation.browse.components.ExtensionIcon
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
+import eu.kanade.presentation.components.TvAppBarContentFocusRequesters
 import eu.kanade.presentation.components.WarningBanner
+import eu.kanade.presentation.components.rememberTvAppBarContentFocusRequesters
+import eu.kanade.presentation.components.tvAppBarContentFocusTarget
 import eu.kanade.presentation.more.settings.widget.TextPreferenceWidget
 import eu.kanade.presentation.more.settings.widget.TrailingWidgetBuffer
 import eu.kanade.tachiyomi.R
@@ -83,6 +86,7 @@ fun ExtensionDetailsScreen(
     onClickSource: (sourceId: Long) -> Unit,
     onClickIncognito: (Boolean) -> Unit,
 ) {
+    val tvFocusRequesters = rememberTvAppBarContentFocusRequesters()
     val uriHandler = LocalUriHandler.current
     val url = remember(state.extension) {
         val regex = """https://raw.githubusercontent.com/(.+?)/(.+?)/.+""".toRegex()
@@ -144,6 +148,8 @@ fun ExtensionDetailsScreen(
                     )
                 },
                 scrollBehavior = scrollBehavior,
+                tvFocusRequesters = tvFocusRequesters,
+                tvContentAvailable = state.extension != null,
             )
         },
     ) { paddingValues ->
@@ -164,6 +170,7 @@ fun ExtensionDetailsScreen(
             onClickUninstall = onClickUninstall,
             onClickSource = onClickSource,
             onClickIncognito = onClickIncognito,
+            tvFocusRequesters = tvFocusRequesters,
         )
     }
 }
@@ -178,6 +185,7 @@ private fun ExtensionDetails(
     onClickUninstall: () -> Unit,
     onClickSource: (sourceId: Long) -> Unit,
     onClickIncognito: (Boolean) -> Unit,
+    tvFocusRequesters: TvAppBarContentFocusRequesters,
 ) {
     val context = LocalContext.current
     var showNsfwWarning by remember { mutableStateOf(false) }
@@ -207,6 +215,7 @@ private fun ExtensionDetails(
                     showNsfwWarning = true
                 },
                 onExtIncognitoChange = onClickIncognito,
+                tvFocusRequesters = tvFocusRequesters,
             )
         }
 
@@ -239,6 +248,7 @@ private fun DetailsHeader(
     onClickUninstall: () -> Unit,
     onClickAppInfo: (() -> Unit)?,
     onExtIncognitoChange: (Boolean) -> Unit,
+    tvFocusRequesters: TvAppBarContentFocusRequesters,
 ) {
     val context = LocalContext.current
 
@@ -345,7 +355,9 @@ private fun DetailsHeader(
             horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.medium),
         ) {
             OutlinedButton(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .weight(1f)
+                    .tvAppBarContentFocusTarget(tvFocusRequesters),
                 onClick = onClickUninstall,
             ) {
                 Text(stringResource(MR.strings.ext_uninstall))

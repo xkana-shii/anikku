@@ -11,11 +11,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Public
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
@@ -24,10 +27,14 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.components.AppBar
+import eu.kanade.presentation.components.rememberTvAppBarContentFocusRequesters
+import eu.kanade.presentation.components.tvAppBarContentFocusTarget
 import eu.kanade.presentation.more.LogoHeader
 import eu.kanade.presentation.more.settings.widget.TextPreferenceWidget
 import eu.kanade.presentation.util.LocalBackPress
 import eu.kanade.presentation.util.Screen
+import eu.kanade.presentation.util.TvInitialFocusScreen
+import eu.kanade.presentation.util.isTvUi
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.data.updater.AppUpdateChecker
 import eu.kanade.tachiyomi.ui.more.ComingUpdatesScreen
@@ -62,7 +69,7 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 
-class AboutScreen : Screen() {
+class AboutScreen : Screen(), TvInitialFocusScreen {
     @Suppress("unused")
     private fun readResolve(): Any = AboutScreen
 
@@ -74,6 +81,17 @@ class AboutScreen : Screen() {
         val handleBack = LocalBackPress.current
         val navigator = LocalNavigator.currentOrThrow
         var isCheckingUpdates by remember { mutableStateOf(false) }
+        val isTvUi = isTvUi()
+        val tvFocusRequesters = rememberTvAppBarContentFocusRequesters()
+        var initialFocusRequested by rememberSaveable { mutableStateOf(false) }
+
+        LaunchedEffect(isTvUi, initialFocusRequested) {
+            if (isTvUi && !initialFocusRequested) {
+                withFrameNanos { }
+                tvFocusRequesters.content.requestFocus()
+                initialFocusRequested = true
+            }
+        }
 
         // KMK -->
         var isCheckingWhatsNew by remember { mutableStateOf(false) }
@@ -86,6 +104,7 @@ class AboutScreen : Screen() {
                     title = stringResource(MR.strings.pref_category_about),
                     navigateUp = if (handleBack != null) handleBack::invoke else null,
                     scrollBehavior = scrollBehavior,
+                    tvFocusRequesters = tvFocusRequesters,
                 )
             },
         ) { contentPadding ->
@@ -98,6 +117,7 @@ class AboutScreen : Screen() {
 
                 item {
                     TextPreferenceWidget(
+                        modifier = Modifier.tvAppBarContentFocusTarget(tvFocusRequesters),
                         title = stringResource(MR.strings.version),
                         subtitle = getVersionName(withBuildDate = true),
                         onPreferenceClick = {

@@ -32,8 +32,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -45,6 +43,8 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import dev.icerock.moko.resources.StringResource
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
+import eu.kanade.presentation.components.rememberTvAppBarContentFocusRequesters
+import eu.kanade.presentation.components.tvAppBarContentFocusTarget
 import eu.kanade.presentation.more.settings.screen.SettingsSearchScreen
 import eu.kanade.presentation.more.settings.screen.player.custombutton.PlayerSettingsCustomButtonScreen
 import eu.kanade.presentation.more.settings.screen.player.editor.PlayerSettingsEditorScreen
@@ -90,6 +90,7 @@ object PlayerSettingsMainScreen : Screen(), TvInitialFocusScreen {
         val backPress = LocalBackPress.currentOrThrow
         val containerColor = if (twoPane) getPalerSurface() else MaterialTheme.colorScheme.surface
         val topBarState = rememberTopAppBarState()
+        val tvFocusRequesters = rememberTvAppBarContentFocusRequesters()
 
         Scaffold(
             topBarScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(topBarState),
@@ -109,13 +110,14 @@ object PlayerSettingsMainScreen : Screen(), TvInitialFocusScreen {
                         )
                     },
                     scrollBehavior = scrollBehavior,
+                    tvFocusRequesters = tvFocusRequesters,
+                    tvContentAvailable = items.isNotEmpty(),
                 )
             },
             containerColor = containerColor,
             content = { contentPadding ->
                 val state = rememberLazyListState()
                 val isTvUi = isTvUi()
-                val initialItemFocusRequester = remember { FocusRequester() }
                 var initialFocusRequested by rememberSaveable { mutableStateOf(false) }
                 val indexSelected = if (twoPane) {
                     items.indexOfFirst { it.screen::class == navigator.items.first()::class }
@@ -135,7 +137,7 @@ object PlayerSettingsMainScreen : Screen(), TvInitialFocusScreen {
                 LaunchedEffect(isTvUi, initialFocusRequested, initialFocusIndex) {
                     if (isTvUi && !initialFocusRequested && items.isNotEmpty()) {
                         withFrameNanos { }
-                        initialItemFocusRequester.requestFocus()
+                        tvFocusRequesters.content.requestFocus()
                         initialFocusRequested = true
                     }
                 }
@@ -172,7 +174,7 @@ object PlayerSettingsMainScreen : Screen(), TvInitialFocusScreen {
                             TextPreferenceWidget(
                                 modifier = modifier.then(
                                     if (isTvUi && index == initialFocusIndex) {
-                                        Modifier.focusRequester(initialItemFocusRequester)
+                                        Modifier.tvAppBarContentFocusTarget(tvFocusRequesters)
                                     } else {
                                         Modifier
                                     },

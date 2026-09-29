@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -35,16 +36,20 @@ import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
@@ -57,6 +62,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import eu.kanade.presentation.util.isTvUi
 import kotlinx.collections.immutable.ImmutableList
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.i18n.stringResource
@@ -67,6 +73,43 @@ import tachiyomi.presentation.core.util.secondaryItemAlpha
 import tachiyomi.presentation.core.util.showSoftKeyboard
 
 const val SEARCH_DEBOUNCE_MILLIS = 250L
+
+@Stable
+class TvAppBarContentFocusRequesters internal constructor(
+    internal val appBar: FocusRequester,
+    internal val content: FocusRequester,
+)
+
+@Composable
+fun rememberTvAppBarContentFocusRequesters(): TvAppBarContentFocusRequesters {
+    return remember { TvAppBarContentFocusRequesters(FocusRequester(), FocusRequester()) }
+}
+
+private data class TvAppBarFocusRoute(
+    val requesters: TvAppBarContentFocusRequesters,
+    val contentAvailable: Boolean,
+)
+
+private val LocalTvAppBarFocusRoute = staticCompositionLocalOf<TvAppBarFocusRoute?> { null }
+
+@Composable
+fun Modifier.tvAppBarContentFocusTarget(
+    requesters: TvAppBarContentFocusRequesters,
+): Modifier {
+    if (!isTvUi()) return this
+    return focusRequester(requesters.content)
+        .focusProperties { up = requesters.appBar }
+}
+
+@Composable
+private fun Modifier.tvAppBarFocusTarget(): Modifier {
+    val route = LocalTvAppBarFocusRoute.current
+    if (!isTvUi() || route == null) return this
+    return focusRequester(route.requesters.appBar)
+        .focusProperties {
+            if (route.contentAvailable) down = route.requesters.content
+        }
+}
 
 @Composable
 fun AppBar(
@@ -87,6 +130,8 @@ fun AppBar(
     actionModeActions: @Composable RowScope.() -> Unit = {},
 
     scrollBehavior: TopAppBarScrollBehavior? = null,
+    tvFocusRequesters: TvAppBarContentFocusRequesters? = null,
+    tvContentAvailable: Boolean = true,
 ) {
     val isActionMode by remember(actionModeCounter) {
         derivedStateOf { actionModeCounter > 0 }
@@ -114,6 +159,8 @@ fun AppBar(
         isActionMode = isActionMode,
         onCancelActionMode = onCancelActionMode,
         scrollBehavior = scrollBehavior,
+        tvFocusRequesters = tvFocusRequesters,
+        tvContentAvailable = tvContentAvailable,
     )
 }
 
@@ -138,47 +185,70 @@ fun AppBar(
     // KMK <--
 
     scrollBehavior: TopAppBarScrollBehavior? = null,
+    tvFocusRequesters: TvAppBarContentFocusRequesters? = null,
+    tvContentAvailable: Boolean = true,
 ) {
     Column(
         modifier = modifier,
     ) {
-        TopAppBar(
-            navigationIcon = {
-                if (isActionMode) {
-                    IconButton(modifier = Modifier.focusHighlight(), onClick = onCancelActionMode) {
-                        Icon(
-                            imageVector = Icons.Outlined.Close,
-                            contentDescription = stringResource(MR.strings.action_cancel),
-                        )
-                    }
-                } else {
-                    // KMK -->
-                    Row {
-                        // KMK <--
-                        navigateUp?.let {
-                            IconButton(modifier = Modifier.focusHighlight(), onClick = it) {
-                                UpIcon(navigationIcon = navigationIcon)
-                            }
-                        }
-                        // KMK -->
-                        goHome?.let {
-                            IconButton(modifier = Modifier.focusHighlight(), onClick = { it.invoke() }) {
-                                UpIcon(navigationIcon = Icons.Filled.Home)
-                            }
-                        }
-                        // KMK <--
-                    }
-                }
+        CompositionLocalProvider(
+            LocalTvAppBarFocusRoute provides tvFocusRequesters?.let {
+                TvAppBarFocusRoute(it, tvContentAvailable)
             },
-            title = titleContent,
-            actions = actions,
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = backgroundColor ?: MaterialTheme.colorScheme.surfaceColorAtElevation(
-                    elevation = if (isActionMode) 3.dp else 0.dp,
+        ) {
+            TopAppBar(
+                navigationIcon = {
+                    if (isActionMode) {
+                        IconButton(
+                            modifier = Modifier
+                                .tvAppBarFocusTarget()
+                                .focusHighlight(CircleShape),
+                            onClick = onCancelActionMode,
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Close,
+                                contentDescription = stringResource(MR.strings.action_cancel),
+                            )
+                        }
+                    } else {
+                        // KMK -->
+                        Row {
+                            // KMK <--
+                            navigateUp?.let {
+                                IconButton(
+                                    modifier = Modifier
+                                        .tvAppBarFocusTarget()
+                                        .focusHighlight(CircleShape),
+                                    onClick = it,
+                                ) {
+                                    UpIcon(navigationIcon = navigationIcon)
+                                }
+                            }
+                            // KMK -->
+                            goHome?.let {
+                                IconButton(
+                                    modifier = Modifier
+                                        .tvAppBarFocusTarget()
+                                        .focusHighlight(CircleShape),
+                                    onClick = { it.invoke() },
+                                ) {
+                                    UpIcon(navigationIcon = Icons.Filled.Home)
+                                }
+                            }
+                            // KMK <--
+                        }
+                    }
+                },
+                title = titleContent,
+                actions = actions,
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = backgroundColor ?: MaterialTheme.colorScheme.surfaceColorAtElevation(
+                        elevation = if (isActionMode) 3.dp else 0.dp,
+                    ),
                 ),
-            ),
-            scrollBehavior = scrollBehavior,
-        )
+                scrollBehavior = scrollBehavior,
+            )
+        }
     }
 }
 
@@ -228,7 +298,9 @@ fun AppBarActions(
             focusable = false,
         ) {
             IconButton(
-                modifier = Modifier.focusHighlight(),
+                modifier = Modifier
+                    .tvAppBarFocusTarget()
+                    .focusHighlight(CircleShape),
                 onClick = it.onClick,
                 enabled = it.enabled,
             ) {
@@ -277,7 +349,9 @@ fun AppBarActions(
             focusable = false,
         ) {
             IconButton(
-                modifier = Modifier.focusHighlight(),
+                modifier = Modifier
+                    .tvAppBarFocusTarget()
+                    .focusHighlight(CircleShape),
                 onClick = { showMenu = !showMenu },
             ) {
                 Icon(
@@ -324,6 +398,8 @@ fun SearchToolbar(
     scrollBehavior: TopAppBarScrollBehavior? = null,
     visualTransformation: VisualTransformation = VisualTransformation.None,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
+    tvFocusRequesters: TvAppBarContentFocusRequesters? = null,
+    tvContentAvailable: Boolean = true,
 ) {
     val focusRequester = remember { FocusRequester() }
 
@@ -389,6 +465,8 @@ fun SearchToolbar(
             )
         },
         navigateUp = if (searchQuery == null) navigateUp else onClickCloseSearch,
+        tvFocusRequesters = tvFocusRequesters,
+        tvContentAvailable = tvContentAvailable,
         actions = {
             key("search") {
                 val onClick = { onChangeSearchQuery("") }
@@ -407,7 +485,9 @@ fun SearchToolbar(
                         focusable = false,
                     ) {
                         IconButton(
-                            modifier = Modifier.focusHighlight(),
+                            modifier = Modifier
+                                .tvAppBarFocusTarget()
+                                .focusHighlight(CircleShape),
                             onClick = onClick,
                         ) {
                             Icon(
@@ -428,7 +508,9 @@ fun SearchToolbar(
                         focusable = false,
                     ) {
                         IconButton(
-                            modifier = Modifier.focusHighlight(),
+                            modifier = Modifier
+                                .tvAppBarFocusTarget()
+                                .focusHighlight(CircleShape),
                             onClick = {
                                 onClick()
                                 focusRequester.requestFocus()

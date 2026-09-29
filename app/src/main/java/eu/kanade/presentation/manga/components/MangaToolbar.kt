@@ -22,6 +22,7 @@ import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.AppBarTitle
 import eu.kanade.presentation.components.DownloadDropdownMenu
+import eu.kanade.presentation.components.TvAppBarContentFocusRequesters
 import eu.kanade.presentation.manga.DownloadAction
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.ui.browse.source.feed.SourceFeedScreen
@@ -71,6 +72,7 @@ fun MangaToolbar(
 
     titleAlphaProvider: () -> Float,
     backgroundAlphaProvider: () -> Float,
+    tvFocusRequesters: TvAppBarContentFocusRequesters,
     modifier: Modifier = Modifier,
 ) {
     // KMK -->
@@ -271,5 +273,6 @@ fun MangaToolbar(
         },
         isActionMode = isActionMode,
         onCancelActionMode = onCancelActionMode,
+        tvFocusRequesters = tvFocusRequesters,
     )
 }

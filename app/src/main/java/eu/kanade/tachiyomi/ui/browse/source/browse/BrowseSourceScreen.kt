@@ -56,6 +56,8 @@ import eu.kanade.presentation.browse.components.SavedSearchCreateDialog
 import eu.kanade.presentation.browse.components.SavedSearchDeleteDialog
 import eu.kanade.presentation.category.components.ChangeCategoryDialog
 import eu.kanade.presentation.components.BulkSelectionToolbar
+import eu.kanade.presentation.components.rememberTvAppBarContentFocusRequesters
+import eu.kanade.presentation.components.tvAppBarContentFocusTarget
 import eu.kanade.presentation.manga.DuplicateMangaDialog
 import eu.kanade.presentation.util.AssistContentScreen
 import eu.kanade.presentation.util.Screen
@@ -194,6 +196,7 @@ data class BrowseSourceScreen(
         val canRouteToContent = canRouteSourceListingToContent(isTvUi, firstAvailableResultIndex != null)
         val initialListingFocusRequester = remember { FocusRequester() }
         val initialItemFocusRequester = remember { FocusRequester() }
+        val tvAppBarFocusRequesters = rememberTvAppBarContentFocusRequesters()
         var initialFocusRequested by rememberSaveable { mutableStateOf(false) }
         LaunchedEffect(isTvUi, initialFocusRequested) {
             if (isTvUi && !initialFocusRequested) {
@@ -229,6 +232,7 @@ data class BrowseSourceScreen(
                                     .map { it.value.first }
                                     .let { bulkFavoriteScreenModel.reverseSelection(it) }
                             },
+                            tvFocusRequesters = tvAppBarFocusRequesters,
                         )
                     } else {
                         // KMK <--
@@ -251,6 +255,7 @@ data class BrowseSourceScreen(
                             // KMK -->
                             toggleSelectionMode = bulkFavoriteScreenModel::toggleSelectionMode,
                             isRunning = bulkFavoriteState.isRunning,
+                            tvFocusRequesters = tvAppBarFocusRequesters,
                             // KMK <--
                         )
                     }
@@ -270,6 +275,7 @@ data class BrowseSourceScreen(
                         FilterChip(
                             modifier = Modifier
                                 .focusRequester(initialListingFocusRequester)
+                                .tvAppBarContentFocusTarget(tvAppBarFocusRequesters)
                                 .focusProperties {
                                     if (canRouteToContent) down = initialItemFocusRequester
                                 },

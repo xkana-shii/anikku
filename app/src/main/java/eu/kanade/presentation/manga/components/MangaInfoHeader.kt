@@ -253,6 +253,7 @@ fun MangaActionRow(
     interval: Int,
     // KMK <--
     modifier: Modifier = Modifier,
+    firstActionModifier: Modifier = Modifier,
 ) {
     // KMK -->
     val libraryPreferences: LibraryPreferences = Injekt.get()
@@ -282,6 +283,7 @@ fun MangaActionRow(
 
     Row(modifier = modifier.padding(start = 16.dp, top = 8.dp, end = 16.dp)) {
         MangaActionButton(
+            modifier = firstActionModifier,
             title = if (favorite) {
                 stringResource(MR.strings.in_library)
             } else {
@@ -1005,10 +1007,11 @@ private fun RowScope.MangaActionButton(
     color: Color,
     onClick: () -> Unit,
     onLongClick: (() -> Unit)? = null,
+    modifier: Modifier = Modifier,
 ) {
     TextButton(
         onClick = onClick,
-        modifier = Modifier.weight(1f),
+        modifier = modifier.weight(1f),
         onLongClick = onLongClick,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {

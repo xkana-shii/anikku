@@ -104,6 +104,7 @@ internal fun LazyListScope.updatesLastUpdatedItem(
 
 internal fun LazyListScope.updatesUiItems(
     uiModels: List<UpdatesUiModel>,
+    focusModifier: @Composable (UpdatesUiModel.Item) -> Modifier = { Modifier },
     // KMK -->
     expandedState: Set<String>,
     collapseToggle: (key: String) -> Unit,
@@ -160,6 +161,7 @@ internal fun LazyListScope.updatesUiItems(
                     // KMK <--
                     UpdatesUiItem(
                         modifier = Modifier.animateItemFastScroll(),
+                        focusModifier = focusModifier(item),
                         update = updatesItem.update,
                         selected = updatesItem.selected,
                         readProgress = updatesItem.update.lastPageRead
@@ -256,6 +258,7 @@ private fun UpdatesUiItem(
     usePanoramaCover: Boolean,
     // KMK <--
     modifier: Modifier = Modifier,
+    focusModifier: Modifier = Modifier,
     // KMK -->
     coverRatio: MutableFloatState = remember { mutableFloatStateOf(1f) },
     // KMK <--
@@ -304,7 +307,7 @@ private fun UpdatesUiItem(
     ) {
         // KMK <--
         Row(
-            modifier = Modifier
+            modifier = focusModifier
                 .selectedBackground(selected)
                 .combinedClickable(
                     onClick = onClick,

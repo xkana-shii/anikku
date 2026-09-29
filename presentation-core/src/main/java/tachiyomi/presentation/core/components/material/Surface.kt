@@ -69,7 +69,7 @@ fun Surface(
                     border = border,
                     shadowElevation = shadowElevation,
                 )
-                .tvFocusable(interactionSource)
+                .tvFocusable(interactionSource, shape = shape)
                 .combinedClickable(
                     interactionSource = interactionSource,
                     indication = ripple(),

@@ -19,6 +19,8 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
+import eu.kanade.presentation.components.TvAppBarContentFocusRequesters
+import eu.kanade.presentation.components.tvAppBarContentFocusTarget
 import eu.kanade.presentation.more.settings.screen.SearchableSettings
 import eu.kanade.presentation.more.settings.widget.PreferenceGroupHeader
 import eu.kanade.presentation.util.isTvUi
@@ -36,6 +38,7 @@ fun PreferenceScreen(
     items: List<Preference>,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
+    tvFocusRequesters: TvAppBarContentFocusRequesters? = null,
 ) {
     val state = rememberLazyListState()
     val isTvUi = isTvUi()
@@ -52,7 +55,7 @@ fun PreferenceScreen(
     LaunchedEffect(isTvUi, initialFocusItem, initialFocusRequested) {
         if (isTvUi && initialFocusItem != null && !initialFocusRequested) {
             withFrameNanos { }
-            initialItemFocusRequester.requestFocus()
+            (tvFocusRequesters?.content ?: initialItemFocusRequester).requestFocus()
             initialFocusRequested = true
         }
     }
@@ -89,7 +92,8 @@ fun PreferenceScreen(
                             item = item,
                             highlightKey = highlightKey,
                             modifier = if (isTvUi && item === initialFocusItem) {
-                                Modifier.focusRequester(initialItemFocusRequester)
+                                tvFocusRequesters?.let { Modifier.tvAppBarContentFocusTarget(it) }
+                                    ?: Modifier.focusRequester(initialItemFocusRequester)
                             } else {
                                 Modifier
                             },
@@ -108,7 +112,8 @@ fun PreferenceScreen(
                         item = preference,
                         highlightKey = highlightKey,
                         modifier = if (isTvUi && preference === initialFocusItem) {
-                            Modifier.focusRequester(initialItemFocusRequester)
+                            tvFocusRequesters?.let { Modifier.tvAppBarContentFocusTarget(it) }
+                                ?: Modifier.focusRequester(initialItemFocusRequester)
                         } else {
                             Modifier
                         },
@@ -129,6 +134,17 @@ private fun Preference.PreferenceItem<*, *>.isTvInitialFocusCandidate(): Boolean
         is Preference.PreferenceItem.TextPreference -> onClick != null
         else -> true
     }
+}
+
+internal fun List<Preference>.anyTvInitialFocusCandidate(): Boolean {
+    return asSequence()
+        .flatMap { preference ->
+            when (preference) {
+                is Preference.PreferenceGroup -> preference.preferenceItems.asSequence()
+                is Preference.PreferenceItem<*, *> -> sequenceOf(preference)
+            }
+        }
+        .any { it.isTvInitialFocusCandidate() }
 }
 
 private fun List<Preference>.findHighlightedIndex(highlightKey: String): Int {

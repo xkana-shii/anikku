@@ -26,8 +26,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -37,6 +35,8 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.domain.extension.interactor.GetExtensionLanguages.Companion.getLanguageIconID
 import eu.kanade.presentation.components.AppBar
+import eu.kanade.presentation.components.rememberTvAppBarContentFocusRequesters
+import eu.kanade.presentation.components.tvAppBarContentFocusTarget
 import eu.kanade.presentation.util.Screen
 import eu.kanade.presentation.util.TvInitialFocusScreen
 import eu.kanade.presentation.util.isTvUi
@@ -64,7 +64,7 @@ class AppLanguageScreen : Screen(), TvInitialFocusScreen {
         }
         val isTvUi = isTvUi()
         val listState = rememberLazyListState()
-        val initialFocusRequester = remember { FocusRequester() }
+        val tvFocusRequesters = rememberTvAppBarContentFocusRequesters()
         var initialFocusRequested by rememberSaveable { mutableStateOf(false) }
         val initialFocusIndex = langs.indexOfFirst { it.langTag == currentLanguage }.coerceAtLeast(0)
 
@@ -72,7 +72,7 @@ class AppLanguageScreen : Screen(), TvInitialFocusScreen {
             if (isTvUi && !initialFocusRequested && langs.isNotEmpty()) {
                 listState.scrollToItem(initialFocusIndex)
                 withFrameNanos { }
-                initialFocusRequester.requestFocus()
+                tvFocusRequesters.content.requestFocus()
                 initialFocusRequested = true
             }
         }
@@ -92,6 +92,8 @@ class AppLanguageScreen : Screen(), TvInitialFocusScreen {
                     title = stringResource(MR.strings.pref_app_language),
                     navigateUp = navigator::pop,
                     scrollBehavior = scrollBehavior,
+                    tvFocusRequesters = tvFocusRequesters,
+                    tvContentAvailable = langs.isNotEmpty(),
                 )
             },
         ) { contentPadding ->
@@ -105,7 +107,7 @@ class AppLanguageScreen : Screen(), TvInitialFocusScreen {
                         modifier = Modifier
                             .then(
                                 if (isTvUi && language.langTag == langs[initialFocusIndex].langTag) {
-                                    Modifier.focusRequester(initialFocusRequester)
+                                    Modifier.tvAppBarContentFocusTarget(tvFocusRequesters)
                                 } else {
                                     Modifier
                                 },

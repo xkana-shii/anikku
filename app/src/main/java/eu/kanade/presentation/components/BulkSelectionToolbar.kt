@@ -25,6 +25,8 @@ fun BulkSelectionToolbar(
     onChangeCategoryClick: () -> Unit,
     onSelectAll: (() -> Unit)? = null,
     onReverseSelection: (() -> Unit)? = null,
+    tvFocusRequesters: TvAppBarContentFocusRequesters? = null,
+    tvContentAvailable: Boolean = true,
 ) {
     AppBar(
         titleContent = { Text(text = "$selectedCount") },
@@ -81,6 +83,8 @@ fun BulkSelectionToolbar(
         },
         isActionMode = true,
         onCancelActionMode = onClickClearSelection,
+        tvFocusRequesters = tvFocusRequesters,
+        tvContentAvailable = tvContentAvailable,
     )
 }
 

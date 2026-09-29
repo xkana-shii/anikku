@@ -25,12 +25,16 @@ import androidx.compose.ui.util.fastAll
 import androidx.compose.ui.util.fastAny
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
+import eu.kanade.presentation.components.TvAppBarContentFocusRequesters
+import eu.kanade.presentation.components.rememberTvAppBarContentFocusRequesters
+import eu.kanade.presentation.components.tvAppBarContentFocusTarget
 import eu.kanade.presentation.manga.components.ChapterDownloadAction
 import eu.kanade.presentation.manga.components.MangaBottomActionMenu
 import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.ui.player.settings.PlayerPreferences
 import eu.kanade.tachiyomi.ui.updates.UpdatesItem
 import eu.kanade.tachiyomi.ui.updates.UpdatesScreenModel
+import eu.kanade.tachiyomi.ui.updates.groupByDateAndManga
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -80,6 +84,14 @@ fun UpdateScreen(
     // KMK <--
 ) {
     BackHandler(enabled = state.selectionMode, onBack = { onSelectAll(false) })
+    val tvFocusRequesters = rememberTvAppBarContentFocusRequesters()
+    val uiModels = remember(state.items, state.expandedState) { state.getUiModel() }
+    val firstFocusableItem = remember(uiModels, state.expandedState) {
+        uiModels.filterIsInstance<UpdatesUiModel.Item>().firstOrNull { item ->
+            item is UpdatesUiModel.Leader ||
+                item.item.update.groupByDateAndManga() in state.expandedState
+        }
+    }
 
     Scaffold(
         topBar = { scrollBehavior ->
@@ -93,6 +105,8 @@ fun UpdateScreen(
                 onInvertSelection = { onInvertSelection() },
                 onCancelActionMode = { onSelectAll(false) },
                 scrollBehavior = scrollBehavior,
+                tvFocusRequesters = tvFocusRequesters,
+                tvContentAvailable = firstFocusableItem != null,
             )
         },
         bottomBar = {
@@ -141,7 +155,14 @@ fun UpdateScreen(
                         updatesLastUpdatedItem(lastUpdated)
 
                         updatesUiItems(
-                            uiModels = state.getUiModel(),
+                            uiModels = uiModels,
+                            focusModifier = { item ->
+                                if (item === firstFocusableItem) {
+                                    Modifier.tvAppBarContentFocusTarget(tvFocusRequesters)
+                                } else {
+                                    Modifier
+                                }
+                            },
                             // KMK -->
                             expandedState = state.expandedState,
                             collapseToggle = collapseToggle,
@@ -178,6 +199,8 @@ private fun UpdatesAppBar(
     onCancelActionMode: () -> Unit,
     scrollBehavior: TopAppBarScrollBehavior,
     modifier: Modifier = Modifier,
+    tvFocusRequesters: TvAppBarContentFocusRequesters,
+    tvContentAvailable: Boolean,
 ) {
     AppBar(
         modifier = modifier,
@@ -223,6 +246,8 @@ private fun UpdatesAppBar(
             )
         },
         scrollBehavior = scrollBehavior,
+        tvFocusRequesters = tvFocusRequesters,
+        tvContentAvailable = tvContentAvailable,
     )
 }
 
