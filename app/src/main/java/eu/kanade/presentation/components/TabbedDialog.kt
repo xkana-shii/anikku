@@ -19,7 +19,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -27,9 +29,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
@@ -47,6 +51,20 @@ object TabbedDialogPaddings {
     val Vertical = 8.dp
 }
 
+internal data class TabbedDialogPageFocus(
+    val firstRequester: FocusRequester,
+    val tabRequester: FocusRequester,
+)
+
+internal val LocalTabbedDialogPageFocus = compositionLocalOf<TabbedDialogPageFocus?> { null }
+
+@Composable
+fun Modifier.tabbedDialogFirstFocusTarget(): Modifier {
+    val pageFocus = LocalTabbedDialogPageFocus.current ?: return this
+    return focusRequester(pageFocus.firstRequester)
+        .focusProperties { up = pageFocus.tabRequester }
+}
+
 @Composable
 fun TabbedDialog(
     onDismissRequest: () -> Unit,
@@ -62,13 +80,17 @@ fun TabbedDialog(
     ) {
         val scope = rememberCoroutineScope()
         val isTvUi = isTvUi()
-        val initialTabFocusRequester = remember { FocusRequester() }
+        val tabFocusRequesters = remember(tabTitles) { tabTitles.map { FocusRequester() } }
+        val pageFocusRequesters = remember(tabTitles) { tabTitles.map { FocusRequester() } }
         var tvPage by rememberSaveable { mutableStateOf(pagerState.currentPage) }
         val selectedPage = if (isTvUi) tvPage else pagerState.currentPage
         val tvPageStateHolder = rememberSaveableStateHolder()
 
         LaunchedEffect(isTvUi) {
-            if (isTvUi) initialTabFocusRequester.requestFocus()
+            if (isTvUi) {
+                withFrameNanos { }
+                pageFocusRequesters.firstOrNull()?.requestFocus()
+            }
         }
 
         Column {
@@ -83,9 +105,10 @@ fun TabbedDialog(
                         val interactionSource = remember(index) { MutableInteractionSource() }
                         Tab(
                             modifier = Modifier
-                                .then(
-                                    if (index == 0) Modifier.focusRequester(initialTabFocusRequester) else Modifier,
-                                )
+                                .focusRequester(tabFocusRequesters[index])
+                                .focusProperties {
+                                    if (isTvUi) down = pageFocusRequesters[index]
+                                }
                                 .tvFocusable(interactionSource),
                             selected = selectedPage == index,
                             onClick = {
@@ -109,7 +132,14 @@ fun TabbedDialog(
             if (isTvUi) {
                 Box(modifier = Modifier.animateContentSize()) {
                     tvPageStateHolder.SaveableStateProvider(selectedPage) {
-                        content(selectedPage)
+                        CompositionLocalProvider(
+                            LocalTabbedDialogPageFocus provides TabbedDialogPageFocus(
+                                firstRequester = pageFocusRequesters[selectedPage],
+                                tabRequester = tabFocusRequesters[selectedPage],
+                            ),
+                        ) {
+                            content(selectedPage)
+                        }
                     }
                 }
             } else {

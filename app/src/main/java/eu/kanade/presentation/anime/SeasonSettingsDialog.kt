@@ -22,6 +22,7 @@ import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.manga.model.seasonDownloadedFilter
 import eu.kanade.presentation.components.TabbedDialog
 import eu.kanade.presentation.components.TabbedDialogPaddings
+import eu.kanade.presentation.components.tabbedDialogFirstFocusTarget
 import eu.kanade.presentation.manga.SetAsDefaultDialog
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.core.common.preference.TriState
@@ -171,11 +172,15 @@ private fun ColumnScope.SeasonFilterPage(
         label = stringResource(MR.strings.label_downloaded),
         state = downloadFilter,
         onClick = onDownloadFilterChanged,
+        modifier = Modifier.tabbedDialogFirstFocusTarget().takeIf { onDownloadFilterChanged != null }
+            ?: Modifier,
     )
     TriStateItem(
         label = stringResource(AYMR.strings.action_filter_unseen),
         state = unseenFilter,
         onClick = onUnseenFilterChanged,
+        modifier = Modifier.tabbedDialogFirstFocusTarget().takeIf { onDownloadFilterChanged == null }
+            ?: Modifier,
     )
     TriStateItem(
         label = stringResource(MR.strings.label_started),
@@ -218,6 +223,8 @@ private fun ColumnScope.SeasonSortPage(
             label = stringResource(titleRes),
             sortDescending = sortDescending.takeIf { sortingMode == mode },
             onClick = { onItemSelected(mode) },
+            modifier = Modifier.tabbedDialogFirstFocusTarget().takeIf { mode == Anime.SEASON_SORT_SOURCE }
+                ?: Modifier,
         )
     }
 }
@@ -251,6 +258,8 @@ private fun ColumnScope.SeasonDisplayPage(
     SettingsChipRow(MR.strings.action_display_mode) {
         displayModes.forEach { (titleRes, mode) ->
             FilterChip(
+                modifier = Modifier.tabbedDialogFirstFocusTarget().takeIf { mode == displayModes.first().second }
+                    ?: Modifier,
                 selected = displayGridMode == mode,
                 onClick = { displayGridModeChange(mode) },
                 label = { Text(stringResource(titleRes)) },

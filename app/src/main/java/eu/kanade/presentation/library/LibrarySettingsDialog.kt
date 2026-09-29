@@ -34,6 +34,7 @@ import dev.icerock.moko.resources.StringResource
 import eu.kanade.presentation.category.visualName
 import eu.kanade.presentation.components.TabbedDialog
 import eu.kanade.presentation.components.TabbedDialogPaddings
+import eu.kanade.presentation.components.tabbedDialogFirstFocusTarget
 import eu.kanade.presentation.more.settings.widget.TriStateListDialog
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.library.LibrarySettingsScreenModel
@@ -139,12 +140,16 @@ private fun ColumnScope.FilterPage(
         },
         enabled = !downloadedOnly,
         onClick = { screenModel.toggleFilter(LibraryPreferences::filterDownloaded) },
+        modifier = Modifier.tabbedDialogFirstFocusTarget().takeIf { !downloadedOnly }
+            ?: Modifier,
     )
     val filterUnread by screenModel.libraryPreferences.filterUnread().collectAsState()
     TriStateItem(
         label = stringResource(AYMR.strings.action_filter_unseen),
         state = filterUnread,
         onClick = { screenModel.toggleFilter(LibraryPreferences::filterUnread) },
+        modifier = Modifier.tabbedDialogFirstFocusTarget().takeIf { downloadedOnly }
+            ?: Modifier,
     )
     val filterStarted by screenModel.libraryPreferences.filterStarted().collectAsState()
     TriStateItem(
@@ -304,6 +309,8 @@ private fun ColumnScope.SortPage(
                 }
                 screenModel.setSort(category, mode, direction)
             },
+            modifier = Modifier.tabbedDialogFirstFocusTarget().takeIf { mode == LibrarySort.Type.Alphabetical }
+                ?: Modifier,
         )
     }
 }
@@ -327,6 +334,8 @@ private fun ColumnScope.DisplayPage(
     SettingsChipRow(MR.strings.action_display_mode) {
         displayModes.map { (titleRes, mode) ->
             FilterChip(
+                modifier = Modifier.tabbedDialogFirstFocusTarget().takeIf { mode == LibraryDisplayMode.CompactGrid }
+                    ?: Modifier,
                 selected = displayMode == mode,
                 onClick = { screenModel.setDisplayMode(mode) },
                 label = { Text(stringResource(titleRes)) },
@@ -478,6 +487,8 @@ private fun ColumnScope.GroupPage(
             onClick = {
                 screenModel.setGrouping(it.int)
             },
+            modifier = Modifier.tabbedDialogFirstFocusTarget().takeIf { it == groups.first() }
+                ?: Modifier,
         )
     }
 }

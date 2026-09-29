@@ -41,6 +41,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -73,6 +74,7 @@ fun TrackInfoDialogHome(
     // AM -->
     isSeason: Boolean,
     // <-- AM
+    isActive: Boolean = true,
     onStatusClick: (TrackItem) -> Unit,
     onChapterClick: (TrackItem) -> Unit,
     onScoreClick: (TrackItem) -> Unit,
@@ -86,8 +88,9 @@ fun TrackInfoDialogHome(
 ) {
     val initialFocusRequester = remember { FocusRequester() }
     val isTvUi = isTvUi()
-    LaunchedEffect(isTvUi, trackItems.isNotEmpty()) {
-        if (isTvUi && trackItems.isNotEmpty()) {
+    LaunchedEffect(isTvUi, isActive, trackItems.isNotEmpty()) {
+        if (isTvUi && isActive && trackItems.isNotEmpty()) {
+            withFrameNanos { }
             initialFocusRequester.requestFocus()
         }
     }

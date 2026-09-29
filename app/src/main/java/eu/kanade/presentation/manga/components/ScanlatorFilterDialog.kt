@@ -21,11 +21,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.toMutableStateList
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import kotlinx.collections.immutable.ImmutableSet
@@ -45,6 +49,13 @@ fun ScanlatorFilterDialog(
         availableScanlators.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it })
     }
     val mutableExcludedScanlators = remember(excludedScanlators) { excludedScanlators.toMutableStateList() }
+    val firstScanlatorFocusRequester = remember { FocusRequester() }
+    LaunchedEffect(sortedAvailableScanlators) {
+        if (sortedAvailableScanlators.isNotEmpty()) {
+            withFrameNanos { }
+            firstScanlatorFocusRequester.requestFocus()
+        }
+    }
     AlertDialog(
         onDismissRequest = onDismissRequest,
         title = { Text(text = stringResource(MR.strings.exclude_scanlators)) },
@@ -74,6 +85,13 @@ fun ScanlatorFilterDialog(
                                         mutableExcludedScanlators.add(scanlator)
                                     }
                                 }
+                                .then(
+                                    if (scanlator == sortedAvailableScanlators.first()) {
+                                        Modifier.focusRequester(firstScanlatorFocusRequester)
+                                    } else {
+                                        Modifier
+                                    },
+                                )
                                 .minimumInteractiveComponentSize()
                                 .clip(MaterialTheme.shapes.small)
                                 .fillMaxWidth()

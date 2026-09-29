@@ -14,16 +14,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import eu.kanade.presentation.components.TabbedDialog
 import eu.kanade.presentation.components.TabbedDialogPaddings
-import eu.kanade.presentation.util.isTvUi
+import eu.kanade.presentation.components.tabbedDialogFirstFocusTarget
 import eu.kanade.tachiyomi.ui.updates.UpdatesSettingsScreenModel
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.domain.updates.service.UpdatesPreferences
@@ -41,11 +37,6 @@ fun UpdatesFilterDialog(
     onDismissRequest: () -> Unit,
     screenModel: UpdatesSettingsScreenModel,
 ) {
-    val firstFilterFocusRequester = remember { FocusRequester() }
-    val isTvUi = isTvUi()
-    LaunchedEffect(isTvUi) {
-        if (isTvUi) firstFilterFocusRequester.requestFocus()
-    }
     TabbedDialog(
         onDismissRequest = onDismissRequest,
         tabTitles = persistentListOf(
@@ -59,7 +50,7 @@ fun UpdatesFilterDialog(
         ) {
             FilterSheet(
                 screenModel = screenModel,
-                firstFilterModifier = Modifier.focusRequester(firstFilterFocusRequester),
+                firstFilterModifier = Modifier.tabbedDialogFirstFocusTarget(),
             )
         }
     }

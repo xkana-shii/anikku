@@ -126,6 +126,7 @@ data class TrackInfoDialogHomeScreen(
             dateFormat = dateFormat,
             // AM -->
             isSeason = isSeason,
+            isActive = navigator.lastItem == this,
             // <-- AM
             onStatusClick = {
                 navigator.push(

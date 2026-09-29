@@ -35,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
@@ -68,6 +69,11 @@ fun AdaptiveSheet(
     val scope = rememberCoroutineScope()
     val focusManager = LocalFocusManager.current
     val isTvUi = LocalTvUiEnabled.current
+    val structuralFocusModifier = if (isTvUi) {
+        Modifier.focusProperties { canFocus = false }
+    } else {
+        Modifier
+    }
     val maxWidth = if (LocalConfiguration.current.orientation == ORIENTATION_LANDSCAPE) {
         600.dp
     } else {
@@ -98,6 +104,7 @@ fun AdaptiveSheet(
         }
         Box(
             modifier = Modifier
+                .then(structuralFocusModifier)
                 .clickable(
                     interactionSource = null,
                     indication = null,
@@ -110,6 +117,7 @@ fun AdaptiveSheet(
             Surface(
                 modifier = Modifier
                     .requiredWidthIn(max = maxWidth)
+                    .then(structuralFocusModifier)
                     .clickable(
                         interactionSource = null,
                         indication = null,
@@ -149,6 +157,7 @@ fun AdaptiveSheet(
         }
         Box(
             modifier = Modifier
+                .then(structuralFocusModifier)
                 .clickable(
                     interactionSource = null,
                     indication = null,
@@ -167,6 +176,7 @@ fun AdaptiveSheet(
             Surface(
                 modifier = Modifier
                     .widthIn(max = maxWidth)
+                    .then(structuralFocusModifier)
                     .clickable(
                         interactionSource = null,
                         indication = null,

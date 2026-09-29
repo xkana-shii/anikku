@@ -18,9 +18,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.components.AdaptiveSheet
+import eu.kanade.presentation.util.isTvUi
 import eu.kanade.tachiyomi.source.model.FilterList
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
@@ -58,71 +64,104 @@ fun SourceFilterDialog(
     // KMK <--
 ) {
     val updateFilters = { onUpdate(filters) }
+    val resetFocusRequester = remember { FocusRequester() }
+    val isTvUi = isTvUi()
 
-    AdaptiveSheet(onDismissRequest = onDismissRequest) {
-        LazyColumn {
-            stickyHeader(
-                key = "$STICKY_HEADER_KEY_PREFIX-title",
-            ) {
-                Row(
-                    modifier = Modifier
-                        .background(MaterialTheme.colorScheme.background)
-                        .padding(8.dp),
-                ) {
-                    TextButton(onClick = onReset) {
-                        Text(
-                            text = stringResource(MR.strings.action_reset),
-                            style = LocalTextStyle.current.copy(
-                                color = MaterialTheme.colorScheme.primary,
-                            ),
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.weight(1f))
-
-                    // KMK -->
-                    if (shouldShowSavingButton) {
-                        // KMK <--
-                        // SY -->
-                        IconButton(onClick = onSave) {
-                            Icon(
-                                Icons.Default.Save,
-                                contentDescription = stringResource(MR.strings.action_save),
-                                tint = MaterialTheme.colorScheme.onBackground,
-                            )
-                        }
-                        // SY <--
-                    }
-                    Button(onClick = {
-                        onFilter()
-                        onDismissRequest()
-                    }) {
-                        Text(stringResource(MR.strings.action_filter))
-                    }
-                }
-                HorizontalDivider()
-            }
-
-            item {
-                SavedSearchItem(
-                    savedSearches = savedSearches,
-                    onSavedSearch = onSavedSearch,
-                    onSavedSearchPress = onSavedSearchPress,
-                    // KMK -->
-                    onSavedSearchPressDesc = onSavedSearchPressDesc,
-                    // KMK <--
-                )
-            }
-
-            items(filters) {
-                FilterItem(it, updateFilters /* SY --> */, startExpanded /* SY <-- */)
-            }
+    LaunchedEffect(isTvUi) {
+        if (isTvUi) {
+            withFrameNanos { }
+            resetFocusRequester.requestFocus()
         }
     }
+
+    AdaptiveSheet(
+        onDismissRequest = onDismissRequest,
+        content = {
+            LazyColumn {
+                stickyHeader(
+                    key = "$STICKY_HEADER_KEY_PREFIX-title",
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .background(MaterialTheme.colorScheme.background)
+                            .padding(8.dp),
+                    ) {
+                        TextButton(
+                            modifier = Modifier.focusRequester(resetFocusRequester),
+                            onClick = onReset,
+                        ) {
+                            Text(
+                                text = stringResource(MR.strings.action_reset),
+                                style = LocalTextStyle.current.copy(
+                                    color = MaterialTheme.colorScheme.primary,
+                                ),
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.weight(1f))
+
+                        // KMK -->
+                        if (shouldShowSavingButton) {
+                            // KMK <--
+                            // SY -->
+                            IconButton(
+                                onClick = onSave,
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Save,
+                                    contentDescription = stringResource(MR.strings.action_save),
+                                    tint = MaterialTheme.colorScheme.onBackground,
+                                )
+                            }
+                            // SY <--
+                        }
+
+                        Button(
+                            onClick = {
+                                onFilter()
+                                onDismissRequest()
+                            },
+                        ) {
+                            Text(stringResource(MR.strings.action_filter))
+                        }
+                    }
+
+                    HorizontalDivider()
+                }
+
+                item {
+                    SavedSearchItem(
+                        savedSearches = savedSearches,
+                        onSavedSearch = onSavedSearch,
+                        onSavedSearchPress = onSavedSearchPress,
+                        // KMK -->
+                        onSavedSearchPressDesc = onSavedSearchPressDesc,
+                        // KMK <--
+                    )
+                }
+
+                items(filters) { filter ->
+                    FilterItem(
+                        filter = filter,
+                        onUpdate = updateFilters,
+                        // SY -->
+                        startExpanded = startExpanded,
+                        // SY <--
+                    )
+                }
+            }
+        },
+    )
 }
 
 @Composable
-private fun FilterItem(filter: Filter<*>, onUpdate: () -> Unit/* SY --> */, startExpanded: Boolean /* SY <-- */) {
+private fun FilterItem(
+    filter: Filter<*>,
+    onUpdate: () -> Unit,
+    // SY -->
+    startExpanded: Boolean,
+    // SY <--
+) {
     when (filter) {
         // SY -->
         is Filter.AutoComplete -> {
@@ -133,100 +172,129 @@ private fun FilterItem(filter: Filter<*>, onUpdate: () -> Unit/* SY --> */, star
                 values = filter.values.toImmutableList(),
                 skipAutoFillTags = filter.skipAutoFillTags.toImmutableList(),
                 validPrefixes = filter.validPrefixes.toImmutableList(),
-            ) {
-                filter.state = it
-                onUpdate()
-            }
-        }
-        // SY <--
-        is Filter.Header -> {
-            HeadingItem(filter.name)
-        }
-        is Filter.Separator -> {
-            HorizontalDivider()
-        }
-        is Filter.CheckBox -> {
-            CheckboxItem(
-                label = filter.name,
-                checked = filter.state,
-            ) {
-                filter.state = !filter.state
-                onUpdate()
-            }
-        }
-        is Filter.TriState -> {
-            TriStateItem(
-                label = filter.name,
-                state = filter.state.toTriStateFilter(),
-                onClick = {
-                    filter.state = filter.state.toTriStateFilter().next().toTriStateInt()
+                onChange = {
+                    filter.state = it
                     onUpdate()
                 },
             )
         }
+        // SY <--
+
+        is Filter.Header -> {
+            HeadingItem(filter.name)
+        }
+
+        is Filter.Separator -> {
+            HorizontalDivider()
+        }
+
+        is Filter.CheckBox -> {
+            CheckboxItem(
+                label = filter.name,
+                checked = filter.state,
+                onClick = {
+                    filter.state = !filter.state
+                    onUpdate()
+                },
+            )
+        }
+
+        is Filter.TriState -> {
+            TriStateItem(
+                label = filter.name,
+                state = filter.state.toTriStateFilter(),
+                onClick = { newState ->
+                    filter.state = newState.toTriStateInt()
+                    onUpdate()
+                },
+            )
+        }
+
         is Filter.Text -> {
             TextItem(
                 label = filter.name,
                 value = filter.state,
-            ) {
-                filter.state = it
-                onUpdate()
-            }
+                onChange = {
+                    filter.state = it
+                    onUpdate()
+                },
+            )
         }
+
         is Filter.Select<*> -> {
             SelectItem(
                 label = filter.name,
                 options = filter.values,
                 selectedIndex = filter.state,
-            ) {
-                filter.state = it
-                onUpdate()
-            }
+                onSelect = {
+                    filter.state = it
+                    onUpdate()
+                },
+            )
         }
+
         is Filter.Sort -> {
             CollapsibleBox(
                 heading = filter.name,
                 // SY -->
                 startExpanded = startExpanded,
                 // SY <--
-            ) {
-                Column {
-                    filter.values.mapIndexed { index, item ->
-                        val sortAscending = filter.state?.ascending
-                            ?.takeIf { index == filter.state?.index }
-                        SortItem(
-                            label = item,
-                            sortDescending = if (sortAscending != null) !sortAscending else null,
-                            onClick = {
-                                val ascending = if (index == filter.state?.index) {
-                                    !filter.state!!.ascending
+                content = {
+                    Column {
+                        filter.values.forEachIndexed { index, item ->
+                            val sortAscending = filter.state?.ascending
+                                ?.takeIf { index == filter.state?.index }
+
+                            SortItem(
+                                label = item,
+                                sortDescending = if (sortAscending != null) {
+                                    !sortAscending
                                 } else {
-                                    filter.state?.ascending ?: true
-                                }
-                                filter.state = Filter.Sort.Selection(
-                                    index = index,
-                                    ascending = ascending,
-                                )
-                                onUpdate()
-                            },
-                        )
+                                    null
+                                },
+                                onClick = {
+                                    val ascending = if (index == filter.state?.index) {
+                                        !filter.state!!.ascending
+                                    } else {
+                                        filter.state?.ascending ?: true
+                                    }
+
+                                    filter.state = Filter.Sort.Selection(
+                                        index = index,
+                                        ascending = ascending,
+                                    )
+
+                                    onUpdate()
+                                },
+                            )
+                        }
                     }
-                }
-            }
+                },
+            )
         }
+
         is Filter.Group<*> -> {
             CollapsibleBox(
                 heading = filter.name,
                 // SY -->
                 startExpanded = startExpanded,
                 // SY <--
-            ) {
-                Column {
-                    filter.state
-                        .filterIsInstance<Filter<*>>()
-                        .map { FilterItem(filter = it, onUpdate = onUpdate /* SY --> */, startExpanded /* SY <-- */) }
-                }
-            }
+                content = {
+                    Column {
+                        filter.state
+                            .filterIsInstance<Filter<*>>()
+                            .forEach { childFilter ->
+                                FilterItem(
+                                    filter = childFilter,
+                                    onUpdate = onUpdate,
+                                    // SY -->
+                                    startExpanded = startExpanded,
+                                    // SY <--
+                                )
+                            }
+                    }
+                },
+            )
         }
     }
 }

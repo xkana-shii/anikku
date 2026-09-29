@@ -52,6 +52,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -106,16 +107,25 @@ fun TrackerSearch(
     val focusManager = LocalFocusManager.current
     val focusRequester = remember { FocusRequester() }
     val firstResultFocusRequester = remember { FocusRequester() }
+    val lastResultFocusRequester = remember { FocusRequester() }
     val trackFocusRequester = remember { FocusRequester() }
     val hasResults = queryResult?.getOrNull()?.isNotEmpty() == true
     val isTvUi = isTvUi()
+    val actionUpFocusRequester = if (queryResult?.getOrNull()?.size == 1) {
+        firstResultFocusRequester
+    } else {
+        lastResultFocusRequester
+    }
     val dispatchQueryAndClearFocus: () -> Unit = {
         onDispatchQuery()
         focusManager.clearFocus()
     }
 
     LaunchedEffect(isTvUi) {
-        if (isTvUi) focusRequester.requestFocus()
+        if (isTvUi) {
+            withFrameNanos { }
+            focusRequester.requestFocus()
+        }
     }
 
     Scaffold(
@@ -205,6 +215,7 @@ fun TrackerSearch(
                         onClick = { onConfirmSelection(false) },
                         modifier = Modifier
                             .focusRequester(trackFocusRequester)
+                            .focusProperties { up = actionUpFocusRequester }
                             .weight(1f),
                         elevation = ButtonDefaults.elevatedButtonElevation(),
                     ) {
@@ -250,16 +261,27 @@ fun TrackerSearch(
                                 onClick = { onSelectedChange(track) },
                                 modifier = Modifier
                                     .then(
-                                        if (track == availableTracks.first()) {
-                                            Modifier.focusRequester(firstResultFocusRequester)
-                                        } else {
-                                            Modifier
+                                        when {
+                                            availableTracks.size == 1 && track == availableTracks.first() -> {
+                                                Modifier.focusRequester(firstResultFocusRequester)
+                                            }
+                                            track == availableTracks.first() -> {
+                                                Modifier.focusRequester(firstResultFocusRequester)
+                                            }
+                                            track == availableTracks.last() -> {
+                                                Modifier.focusRequester(lastResultFocusRequester)
+                                            }
+                                            else -> Modifier
                                         },
                                     )
                                     .focusProperties {
                                         if (track == availableTracks.first()) up = focusRequester
                                         if (track == availableTracks.last() && selected != null) {
                                             down = trackFocusRequester
+                                        } else {
+                                            if (track == availableTracks.first() && availableTracks.size == 1) {
+                                                down = trackFocusRequester
+                                            }
                                         }
                                     },
                             )

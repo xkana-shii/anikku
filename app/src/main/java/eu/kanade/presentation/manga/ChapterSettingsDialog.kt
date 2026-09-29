@@ -31,6 +31,7 @@ import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.manga.model.downloadedFilter
 import eu.kanade.presentation.components.TabbedDialog
 import eu.kanade.presentation.components.TabbedDialogPaddings
+import eu.kanade.presentation.components.tabbedDialogFirstFocusTarget
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.core.common.preference.TriState
 import tachiyomi.domain.anime.model.Anime
@@ -169,11 +170,15 @@ private fun ColumnScope.FilterPage(
         label = stringResource(MR.strings.label_downloaded),
         state = downloadFilter,
         onClick = onDownloadFilterChanged,
+        modifier = Modifier.tabbedDialogFirstFocusTarget().takeIf { onDownloadFilterChanged != null }
+            ?: Modifier,
     )
     TriStateItem(
         label = stringResource(AYMR.strings.action_filter_unseen),
         state = unreadFilter,
         onClick = onUnreadFilterChanged,
+        modifier = Modifier.tabbedDialogFirstFocusTarget().takeIf { onDownloadFilterChanged == null }
+            ?: Modifier,
     )
     TriStateItem(
         label = stringResource(MR.strings.action_filter_bookmarked),
@@ -238,6 +243,8 @@ private fun ColumnScope.SortPage(
             label = stringResource(titleRes),
             sortDescending = sortDescending.takeIf { sortingMode == mode },
             onClick = { onItemSelected(mode) },
+            modifier = Modifier.tabbedDialogFirstFocusTarget().takeIf { mode == Manga.EPISODE_SORTING_SOURCE }
+                ?: Modifier,
         )
     }
 }
@@ -261,6 +268,8 @@ private fun ColumnScope.DisplayPage(
             label = stringResource(titleRes),
             selected = displayMode == mode,
             onClick = { onDisplayModeChanged(mode) },
+            modifier = Modifier.tabbedDialogFirstFocusTarget().takeIf { mode == Manga.EPISODE_DISPLAY_NAME }
+                ?: Modifier,
         )
     }
     // AY -->

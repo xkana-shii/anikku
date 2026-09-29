@@ -104,7 +104,7 @@ fun HeadingItem(text: String) {
 }
 
 @Composable
-fun IconItem(label: String, icon: ImageVector, onClick: () -> Unit) {
+fun IconItem(label: String, icon: ImageVector, onClick: () -> Unit, modifier: Modifier = Modifier) {
     BaseSettingsItem(
         label = label,
         widget = {
@@ -115,11 +115,17 @@ fun IconItem(label: String, icon: ImageVector, onClick: () -> Unit) {
             )
         },
         onClick = onClick,
+        modifier = modifier,
     )
 }
 
 @Composable
-fun SortItem(label: String, sortDescending: Boolean?, onClick: () -> Unit) {
+fun SortItem(
+    label: String,
+    sortDescending: Boolean?,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val arrowIcon = when (sortDescending) {
         true -> Icons.Default.ArrowDownward
         false -> Icons.Default.ArrowUpward
@@ -130,11 +136,17 @@ fun SortItem(label: String, sortDescending: Boolean?, onClick: () -> Unit) {
         label = label,
         icon = arrowIcon,
         onClick = onClick,
+        modifier = modifier,
     )
 }
 
 @Composable
-fun BaseSortItem(label: String, icon: ImageVector?, onClick: () -> Unit) {
+fun BaseSortItem(
+    label: String,
+    icon: ImageVector?,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     BaseSettingsItem(
         label = label,
         widget = {
@@ -149,6 +161,7 @@ fun BaseSortItem(label: String, icon: ImageVector?, onClick: () -> Unit) {
             }
         },
         onClick = onClick,
+        modifier = modifier,
     )
 }
 
@@ -163,7 +176,12 @@ fun CheckboxItem(label: String, pref: Preference<Boolean>) {
 }
 
 @Composable
-fun CheckboxItem(label: String, checked: Boolean, onClick: () -> Unit) {
+fun CheckboxItem(
+    label: String,
+    checked: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     BaseSettingsItem(
         label = label,
         widget = {
@@ -173,11 +191,17 @@ fun CheckboxItem(label: String, checked: Boolean, onClick: () -> Unit) {
             )
         },
         onClick = onClick,
+        modifier = modifier,
     )
 }
 
 @Composable
-fun RadioItem(label: String, selected: Boolean, onClick: () -> Unit) {
+fun RadioItem(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     BaseSettingsItem(
         label = label,
         widget = {
@@ -187,6 +211,7 @@ fun RadioItem(label: String, selected: Boolean, onClick: () -> Unit) {
             )
         },
         onClick = onClick,
+        modifier = modifier,
     )
 }
 
@@ -584,6 +609,7 @@ fun IconItem(
     icon: Painter,
     selected: Boolean,
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     BaseSettingsItem(
         label = label,
@@ -599,6 +625,7 @@ fun IconItem(
             )
         },
         onClick = onClick,
+        modifier = modifier,
     )
 }
 // SY <--
@@ -645,9 +672,10 @@ private fun BaseSettingsItem(
     label: String,
     widget: @Composable RowScope.() -> Unit,
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .clickable(onClick = onClick)
             .focusHighlight()
             .fillMaxWidth()
