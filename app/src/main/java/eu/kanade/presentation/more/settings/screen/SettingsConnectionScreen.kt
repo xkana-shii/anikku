@@ -41,15 +41,21 @@ import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import dev.icerock.moko.resources.StringResource
+import eu.kanade.domain.connections.service.WebhookEvent
+import eu.kanade.domain.connections.service.WebhookPreferences
 import eu.kanade.presentation.more.settings.Preference
 import eu.kanade.tachiyomi.data.connections.ConnectionsManager
 import eu.kanade.tachiyomi.data.connections.ConnectionsService
+import eu.kanade.tachiyomi.data.webhook.WebhookNotifier
 import eu.kanade.tachiyomi.ui.setting.connections.DiscordLoginScreen
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toPersistentMap
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.withUIContext
+import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.ank.AMR
 import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.i18n.stringResource
 import uy.kohesive.injekt.Injekt
@@ -67,6 +73,10 @@ object SettingsConnectionScreen : SearchableSettings {
     override fun getPreferences(): List<Preference> {
         val navigator = LocalNavigator.currentOrThrow
         val connectionsManager = remember { Injekt.get<ConnectionsManager>() }
+        val webhookPreferences = remember { Injekt.get<WebhookPreferences>() }
+        val webhookNotifier = remember { Injekt.get<WebhookNotifier>() }
+        val categories by remember { Injekt.get<GetCategories>() }.subscribe().collectAsState(emptyList())
+        val scope = rememberCoroutineScope()
 
         var dialog by remember { mutableStateOf<Any?>(null) }
         dialog?.run {
@@ -98,6 +108,28 @@ object SettingsConnectionScreen : SearchableSettings {
                     ),
                     Preference.PreferenceItem.InfoPreference(
                         stringResource(KMR.strings.connections_discord_info, stringResource(MR.strings.app_name)),
+                    ),
+                ),
+            ),
+            Preference.PreferenceGroup(
+                title = stringResource(AMR.strings.pref_webhooks),
+                preferenceItems = persistentListOf(
+                    Preference.PreferenceItem.SwitchPreference(webhookPreferences.enabled(), stringResource(AMR.strings.pref_webhooks_enabled)),
+                    Preference.PreferenceItem.EditTextPreference(webhookPreferences.discordUrl(), stringResource(AMR.strings.pref_webhooks_discord_url)),
+                    Preference.PreferenceItem.EditTextPreference(webhookPreferences.genericUrl(), stringResource(AMR.strings.pref_webhooks_generic_url)),
+                    Preference.PreferenceItem.MultiSelectListPreference(
+                        preference = webhookPreferences.events(),
+                        entries = WebhookEvent.entries.associate { it.id to it.id.replace('_', ' ').replaceFirstChar(Char::uppercase) }.toPersistentMap(),
+                        title = stringResource(AMR.strings.pref_webhooks_events),
+                    ),
+                    Preference.PreferenceItem.MultiSelectListPreference(
+                        preference = webhookPreferences.excludedCategories(),
+                        entries = categories.associate { it.id.toString() to it.name }.toPersistentMap(),
+                        title = stringResource(AMR.strings.pref_webhooks_excluded_categories),
+                    ),
+                    Preference.PreferenceItem.TextPreference(
+                        title = stringResource(AMR.strings.pref_webhooks_test),
+                        onClick = { scope.launchIO { runCatching { webhookNotifier.sendTest() } } },
                     ),
                 ),
             ),

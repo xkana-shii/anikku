@@ -323,7 +323,7 @@ open class FeedScreenModel(
                         if (generation == requestGeneration) {
                             state.copy(
                                 items = state.items?.map { if (it.feed.id == result.feed.id) result else it }
-                                    .toImmutableList(),
+                                    ?.toImmutableList(),
                             )
                         } else {
                             state

@@ -257,4 +257,12 @@
     <string name="pref_tv_ui_mode_automatic">Automatic</string>
     <string name="pref_tv_ui_mode_always">Always use TV interface</string>
     <string name="pref_tv_ui_mode_never">Never use TV interface</string>
+    <string name="pref_priority_tracker">Priority tracker</string>
+    <string name="pref_webhooks">Webhooks</string>
+    <string name="pref_webhooks_enabled">Enable webhooks</string>
+    <string name="pref_webhooks_discord_url">Discord webhook URL</string>
+    <string name="pref_webhooks_generic_url">Generic webhook URL</string>
+    <string name="pref_webhooks_test">Send test webhook</string>
+    <string name="pref_webhooks_events">Webhook events</string>
+    <string name="pref_webhooks_excluded_categories">Excluded categories</string>
 </resources>

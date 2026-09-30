@@ -174,6 +174,16 @@ object SettingsTrackingScreen : SearchableSettings {
                     .toPersistentMap(),
                 title = stringResource(AMR.strings.pref_auto_reread_reset_to),
             ),
+            // ANK --> A dynamically-resolved default for player progress and multi-tracker edits.
+            Preference.PreferenceItem.ListPreference(
+                preference = trackPreferences.priorityTracker(),
+                entries = (
+                    mapOf(0L to stringResource(MR.strings.label_default)) + trackerManager.loggedInTrackers()
+                        .associate { it.id to it.name }
+                    ).toPersistentMap(),
+                title = stringResource(AMR.strings.pref_priority_tracker),
+            ),
+            // <-- ANK
             // KMK -->
             Preference.PreferenceItem.SwitchPreference(
                 preference = trackPreferences.autoSyncProgressFromTrackers(),

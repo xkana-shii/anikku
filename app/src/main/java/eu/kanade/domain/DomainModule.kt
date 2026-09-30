@@ -26,6 +26,8 @@ import eu.kanade.domain.track.interactor.AddTracks
 import eu.kanade.domain.track.interactor.RefreshTracks
 import eu.kanade.domain.track.interactor.SyncChapterProgressWithTrack
 import eu.kanade.domain.track.interactor.TrackChapter
+import eu.kanade.domain.track.interactor.UpdateTracks
+import eu.kanade.tachiyomi.data.webhook.WebhookNotifier
 import eu.kanade.tachiyomi.ui.player.domain.TrackSelect
 import mihon.data.repository.ExtensionRepoRepositoryImpl
 import mihon.domain.chapter.interactor.FilterChaptersForDownload
@@ -171,6 +173,8 @@ class DomainModule : InjektModule {
 
         addSingletonFactory<TrackRepository> { TrackRepositoryImpl(get()) }
         addFactory { TrackChapter(get(), get(), get(), get()) }
+        addFactory { UpdateTracks(get(), get()) }
+        addSingletonFactory { WebhookNotifier(get(), get(), get(), get()) }
         addFactory { AddTracks(get(), get(), get(), get(), get(), get()) }
         addFactory { RefreshTracks(get(), get(), get(), get()) }
         addFactory { DeleteTrack(get()) }

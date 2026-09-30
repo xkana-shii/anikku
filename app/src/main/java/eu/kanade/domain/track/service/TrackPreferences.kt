@@ -7,6 +7,7 @@ import eu.kanade.tachiyomi.data.track.anilist.Anilist
 import tachiyomi.core.common.preference.Preference
 import tachiyomi.core.common.preference.PreferenceStore
 import tachiyomi.core.common.preference.getEnum
+import tachiyomi.domain.track.service.PreferredTrackerMap
 
 class TrackPreferences(
     private val preferenceStore: PreferenceStore,
@@ -68,4 +69,19 @@ class TrackPreferences(
     // KMK -->
     fun autoSyncProgressFromTrackers() = preferenceStore.getBoolean("pref_auto_sync_progress_from_trackers_key", true)
     // KMK <--
+
+    // ANK --> Priority is global; entry overrides remain portable across restores.
+    fun priorityTracker() = preferenceStore.getLong("pref_priority_tracker", 0)
+
+    private fun preferredTrackerOverrides() = preferenceStore.getString("pref_preferred_tracker_overrides", "")
+
+    fun preferredTracker(animeId: Long, applicableTrackerIds: Set<Long>): Long? {
+        val override = PreferredTrackerMap.decode(preferredTrackerOverrides().get())[animeId]
+        return listOfNotNull(override, priorityTracker().get().takeIf { it > 0 }).firstOrNull { it in applicableTrackerIds }
+    }
+
+    fun setPreferredTracker(animeId: Long, trackerId: Long?) {
+        preferredTrackerOverrides().set(PreferredTrackerMap.update(preferredTrackerOverrides().get(), animeId, trackerId))
+    }
+    // <-- ANK
 }

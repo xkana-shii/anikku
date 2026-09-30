@@ -31,6 +31,8 @@ import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.data.sync.SyncDataJob
 import eu.kanade.tachiyomi.data.track.TrackStatus
 import eu.kanade.tachiyomi.data.track.TrackerManager
+import eu.kanade.tachiyomi.data.webhook.WebhookNotifier
+import eu.kanade.domain.connections.service.WebhookEvent
 import eu.kanade.tachiyomi.source.getChapterList
 import eu.kanade.tachiyomi.source.getMangaDetails
 import eu.kanade.tachiyomi.source.model.SManga
@@ -449,6 +451,13 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                                             .sortedByDescending { it.sourceOrder }
 
                                         if (newChapters.isNotEmpty()) {
+                                            // ANK --> Best effort; network delivery cannot affect the update job.
+                                            Injekt.get<WebhookNotifier>().notify(
+                                                WebhookEvent.LIBRARY_UPDATE,
+                                                manga,
+                                                mapOf("new_episodes" to newChapters.size.toString()),
+                                            )
+                                            // <-- ANK
                                             val chaptersToDownload = filterChaptersForDownload.await(manga, newChapters)
 
                                             if (chaptersToDownload.isNotEmpty()) {
