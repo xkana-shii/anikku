@@ -35,6 +35,7 @@ import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.backup.service.BackupPreferences
 import tachiyomi.domain.manga.interactor.GetFavorites
+import tachiyomi.domain.manga.interactor.GetLibraryManga
 import tachiyomi.domain.manga.interactor.GetMergedManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.repository.MangaRepository
@@ -53,6 +54,7 @@ class BackupCreator(
 
     private val parser: ProtoBuf = Injekt.get(),
     private val getFavorites: GetFavorites = Injekt.get(),
+    private val getLibraryManga: GetLibraryManga = Injekt.get(),
     private val backupPreferences: BackupPreferences = Injekt.get(),
     private val mangaRepository: MangaRepository = Injekt.get(),
 
@@ -72,7 +74,11 @@ class BackupCreator(
     // SY <--
 ) {
 
-    suspend fun backup(uri: Uri, options: BackupOptions): String {
+    suspend fun backup(
+        uri: Uri,
+        options: BackupOptions,
+        entryFilter: BackupEntryFilter = BackupEntryFilter(),
+    ): String {
         var file: UniFile? = null
         try {
             file = if (isAutoBackup) {
@@ -101,7 +107,10 @@ class BackupCreator(
             val mergedManga = getMergedManga.await()
             // SY <--
             // ANK -->
-            val mainMangas = getFavorites.await() + nonFavoriteManga /* SY --> */ + mergedManga /* SY <-- */
+            val mainMangas = filterLibraryEntries(
+                getFavorites.await() /* SY --> */ + mergedManga /* SY <-- */,
+                entryFilter,
+            ) + if (entryFilter.enabled) emptyList() else nonFavoriteManga
             val unfavoritedSeasons = if (options.seasons) {
                 val mainMangaIds = mainMangas.mapTo(mutableSetOf()) { it.id }
                 val seasonParentIds = mainMangas
@@ -120,7 +129,7 @@ class BackupCreator(
 
             val backup = Backup(
                 backupManga = backupManga,
-                backupCategories = backupCategories(options),
+                backupCategories = backupCategories(options, entryFilter),
                 backupSources = backupSources(backupManga),
                 backupPreferences = backupAppPreferences(options),
                 backupExtensionRepo = backupExtensionRepos(options),
@@ -168,16 +177,35 @@ class BackupCreator(
         }
     }
 
-    suspend fun backupCategories(options: BackupOptions): List<BackupCategory> {
+    suspend fun backupCategories(
+        options: BackupOptions,
+        entryFilter: BackupEntryFilter = BackupEntryFilter(),
+    ): List<BackupCategory> {
         if (!options.categories) return emptyList()
 
-        return categoriesBackupCreator()
+        return categoriesBackupCreator().filter { !entryFilter.enabled || it.id in entryFilter.categoryIds }
     }
 
     suspend fun backupMangas(mangas: List<Manga>, options: BackupOptions): List<BackupManga> {
         if (!options.libraryEntries) return emptyList()
 
         return mangaBackupCreator(mangas, options)
+    }
+
+    private suspend fun filterLibraryEntries(
+        mangas: List<Manga>,
+        entryFilter: BackupEntryFilter,
+    ): List<Manga> {
+        if (!entryFilter.enabled) return mangas
+
+        val categoriesByMangaId = getLibraryManga.await().associate { libraryManga ->
+            libraryManga.manga.id to libraryManga.categories
+        }
+        return mangas.filter { manga ->
+            val categories = categoriesByMangaId[manga.id].orEmpty()
+            categories.any { it in entryFilter.categoryIds } ||
+                (entryFilter.includeUncategorized && categories.isEmpty())
+        }
     }
 
     fun backupSources(mangas: List<BackupManga>): List<BackupSource> {
@@ -243,3 +271,9 @@ class BackupCreator(
         }
     }
 }
+
+data class BackupEntryFilter(
+    val categoryIds: Set<Long> = emptySet(),
+    val includeUncategorized: Boolean = true,
+    val enabled: Boolean = false,
+)

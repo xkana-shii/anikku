@@ -237,6 +237,10 @@
     <string name="pref_invalidate_episode_download_cache_summary">Force app to recheck downloaded episodes</string>
     <string name="pref_update_only_completely_seen">With unseen episode(s)</string>
     <string name="pref_library_update_show_tab_badge_episode">Show unseen count on Updates icon</string>
+    <string name="pref_library_update_excluded_sources">Excluded sources</string>
+    <string name="pref_library_update_excluded_sources_summary">Do not update entries from these sources</string>
+    <string name="backup_all_categories">All categories</string>
+    <string name="backup_uncategorized">Uncategorized</string>
 
     <string name="last_seen_episode">Last seen episode</string>
     <string name="second_to_last_episode">Second to last seen episode</string>

@@ -66,6 +66,7 @@ data class FeedItemUI(
     val title: String,
     val subtitle: String,
     val results: List<Manga>?,
+    val error: String? = null,
 )
 
 @Composable
@@ -165,6 +166,9 @@ fun FeedItem(
     when {
         item.results == null -> {
             GlobalSearchLoadingResultItem()
+        }
+        item.error != null -> {
+            GlobalSearchErrorResultItem(message = item.error)
         }
         item.results.isEmpty() -> {
             GlobalSearchErrorResultItem(message = stringResource(MR.strings.no_results_found))

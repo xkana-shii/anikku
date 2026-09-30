@@ -52,7 +52,12 @@ class BackupCreateJob(private val context: Context, workerParams: WorkerParamete
             ?: BackupOptions()
 
         return try {
-            val location = BackupCreator(context, isAutoBackup).backup(uri, options)
+            val entryFilter = BackupEntryFilter(
+                categoryIds = inputData.getLongArray(CATEGORY_IDS_KEY)?.toSet().orEmpty(),
+                includeUncategorized = inputData.getBoolean(INCLUDE_UNCATEGORIZED_KEY, true),
+                enabled = inputData.getBoolean(FILTER_LIBRARY_ENTRIES_KEY, false),
+            )
+            val location = BackupCreator(context, isAutoBackup).backup(uri, options, entryFilter)
             if (!isAutoBackup) {
                 notifier.showBackupComplete(UniFile.fromUri(context, location.toUri())!!)
             }
@@ -114,11 +119,19 @@ class BackupCreateJob(private val context: Context, workerParams: WorkerParamete
             }
         }
 
-        fun startNow(context: Context, uri: Uri, options: BackupOptions) {
+        fun startNow(
+            context: Context,
+            uri: Uri,
+            options: BackupOptions,
+            entryFilter: BackupEntryFilter = BackupEntryFilter(),
+        ) {
             val inputData = workDataOf(
                 IS_AUTO_BACKUP_KEY to false,
                 LOCATION_URI_KEY to uri.toString(),
                 OPTIONS_KEY to options.asBooleanArray(),
+                FILTER_LIBRARY_ENTRIES_KEY to entryFilter.enabled,
+                CATEGORY_IDS_KEY to entryFilter.categoryIds.toLongArray(),
+                INCLUDE_UNCATEGORIZED_KEY to entryFilter.includeUncategorized,
             )
             val request = OneTimeWorkRequestBuilder<BackupCreateJob>()
                 .addTag(TAG_MANUAL)
@@ -147,3 +160,6 @@ private const val TAG_MANUAL = "$TAG_AUTO:manual"
 private const val IS_AUTO_BACKUP_KEY = "is_auto_backup" // Boolean
 private const val LOCATION_URI_KEY = "location_uri" // String
 private const val OPTIONS_KEY = "options" // BooleanArray
+private const val FILTER_LIBRARY_ENTRIES_KEY = "filter_library_entries" // Boolean
+private const val CATEGORY_IDS_KEY = "category_ids" // LongArray
+private const val INCLUDE_UNCATEGORIZED_KEY = "include_uncategorized" // Boolean

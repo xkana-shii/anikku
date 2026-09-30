@@ -39,6 +39,7 @@ import tachiyomi.domain.library.service.LibraryPreferences.Companion.DEVICE_NETW
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.DEVICE_ONLY_ON_WIFI
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.MARK_DUPLICATE_CHAPTER_READ_EXISTING
 import tachiyomi.domain.library.service.LibraryPreferences.Companion.MARK_DUPLICATE_CHAPTER_READ_NEW
+import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.aniyomi.AYMR
 import tachiyomi.i18n.ank.AMR
@@ -62,11 +63,12 @@ object SettingsLibraryScreen : SearchableSettings {
     override fun getPreferences(): List<Preference> {
         val getCategories = remember { Injekt.get<GetCategories>() }
         val libraryPreferences = remember { Injekt.get<LibraryPreferences>() }
+        val sourceManager = remember { Injekt.get<SourceManager>() }
         val allCategories by getCategories.subscribe().collectAsState(initial = emptyList())
 
         return listOf(
             getCategoriesGroup(LocalNavigator.currentOrThrow, allCategories, libraryPreferences),
-            getGlobalUpdateGroup(allCategories, libraryPreferences),
+            getGlobalUpdateGroup(allCategories, libraryPreferences, sourceManager),
             // AY -->
             getSeasonBehaviorGroup(libraryPreferences),
             // <-- AY
@@ -129,17 +131,20 @@ object SettingsLibraryScreen : SearchableSettings {
     private fun getGlobalUpdateGroup(
         allCategories: List<Category>,
         libraryPreferences: LibraryPreferences,
+        sourceManager: SourceManager,
     ): Preference.PreferenceGroup {
         val context = LocalContext.current
 
         val autoUpdateIntervalPref = libraryPreferences.autoUpdateInterval()
         val autoUpdateCategoriesPref = libraryPreferences.updateCategories()
         val autoUpdateCategoriesExcludePref = libraryPreferences.updateCategoriesExclude()
+        val autoUpdateSourcesExcludePref = libraryPreferences.updateSourcesExclude()
 
         val autoUpdateInterval by autoUpdateIntervalPref.collectAsState()
 
         val included by autoUpdateCategoriesPref.collectAsState()
         val excluded by autoUpdateCategoriesExcludePref.collectAsState()
+        val sources by sourceManager.catalogueSources.collectAsState(initial = emptyList())
         var showCategoriesDialog by rememberSaveable { mutableStateOf(false) }
         if (showCategoriesDialog) {
             TriStateListDialog(
@@ -201,6 +206,15 @@ object SettingsLibraryScreen : SearchableSettings {
                         excluded = excluded,
                     ),
                     onClick = { showCategoriesDialog = true },
+                ),
+                Preference.PreferenceItem.MultiSelectListPreference(
+                    preference = autoUpdateSourcesExcludePref,
+                    entries = sources
+                        .sortedBy { it.name.lowercase() }
+                        .associate { it.id.toString() to it.name }
+                        .toImmutableMap(),
+                    title = stringResource(AMR.strings.pref_library_update_excluded_sources),
+                    subtitle = stringResource(AMR.strings.pref_library_update_excluded_sources_summary),
                 ),
                 // SY -->
                 Preference.PreferenceItem.ListPreference(

@@ -79,6 +79,7 @@ open class FeedScreenModel(
     val events = _events.receiveAsFlow()
 
     private val coroutineDispatcher = Executors.newFixedThreadPool(1).asCoroutineDispatcher()
+    private var requestGeneration = 0L
     var pushed: Boolean = false
 
     init {
@@ -111,7 +112,7 @@ open class FeedScreenModel(
     fun init() {
         pushed = false
         screenModelScope.launchIO {
-            val newItems = state.value.items?.map { it.copy(results = null) } ?: return@launchIO
+            val newItems = state.value.items?.map { it.copy(results = null, error = null) } ?: return@launchIO
             mutableState.update { state ->
                 state.copy(
                     items = newItems
@@ -248,6 +249,7 @@ open class FeedScreenModel(
         savedSearch: SavedSearch?,
         source: CatalogueSource?,
         @Suppress("SameParameterValue") results: List<DomainManga>?,
+        error: String? = null,
     ): FeedItemUI {
         return FeedItemUI(
             feed,
@@ -260,6 +262,7 @@ open class FeedScreenModel(
                 LocaleHelper.getLocalizedDisplayName(source?.lang)
             },
             results,
+            error,
         )
     }
 
@@ -271,10 +274,11 @@ open class FeedScreenModel(
      * Initiates get manga per feed.
      */
     private fun getFeed(feedSavedSearch: List<FeedItemUI>) {
+        val generation = ++requestGeneration
         screenModelScope.launch {
             feedSavedSearch.map { itemUI ->
                 async {
-                    val page = try {
+                    val result = try {
                         if (itemUI.source != null) {
                             withContext(coroutineDispatcher) {
                                 if (itemUI.savedSearch == null) {
@@ -294,33 +298,36 @@ open class FeedScreenModel(
                                         getFilterList(itemUI.savedSearch, itemUI.source),
                                     )
                                 }
-                            }.mangas
+                            }.mangas.let { page ->
+                                withIOContext {
+                                    itemUI.copy(
+                                        results = page
+                                            .map { it.toDomainManga(itemUI.source.id) }
+                                            .distinctBy { it.url }
+                                            .let { networkToLocalManga(it) }
+                                            .filter { !hideInLibraryFeedItems.get() || !it.favorite },
+                                    )
+                                }
+                            }
                         } else {
-                            emptyList()
+                            itemUI.copy(results = emptyList())
                         }
                     } catch (e: Exception) {
-                        emptyList()
-                    }
-
-                    val result = withIOContext {
                         itemUI.copy(
-                            results = page
-                                .map { it.toDomainManga(itemUI.source!!.id) }
-                                .distinctBy { it.url }
-                                .let { networkToLocalManga(it) }
-                                // KMK -->
-                                .filter { !hideInLibraryFeedItems.get() || !it.favorite },
-                            // KMK <--
+                            results = emptyList(),
+                            error = e.message ?: e::class.simpleName,
                         )
                     }
 
                     mutableState.update { state ->
-                        state.copy(
-                            items = state.items?.map { if (it.feed.id == result.feed.id) result else it }
-                                // KMK -->
-                                ?.toImmutableList(),
-                            // KMK <--
-                        )
+                        if (generation == requestGeneration) {
+                            state.copy(
+                                items = state.items?.map { if (it.feed.id == result.feed.id) result else it }
+                                    .toImmutableList(),
+                            )
+                        } else {
+                            state
+                        }
                     }
                 }
             }.awaitAll()

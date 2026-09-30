@@ -218,6 +218,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
      */
     private suspend fun addMangaToQueue(categoryId: Long, group: Int, groupExtra: String?) {
         val libraryManga = getLibraryManga.await()
+        val excludedSources = libraryPreferences.updateSourcesExclude().get()
         // SY -->
         val groupLibraryUpdateType = libraryPreferences.groupLibraryUpdateType().get()
         // SY <--
@@ -230,6 +231,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
             mangaToUpdate = libraryManga
                 .filter {
                     it.manga.id in targetMangaIds &&
+                        it.manga.source.toString() !in excludedSources &&
                         when {
                             // Apply update restrictions even for targeted updates
                             it.manga.updateStrategy == UpdateStrategy.ONLY_FETCH_ONCE && it.totalChapters > 0L -> false
@@ -338,6 +340,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
             // SY <--
             .filter {
                 when {
+                    it.manga.source.toString() in excludedSources -> false
                     it.manga.updateStrategy == UpdateStrategy.ONLY_FETCH_ONCE && it.totalChapters > 0L -> {
                         skippedUpdates.add(
                             it.manga to

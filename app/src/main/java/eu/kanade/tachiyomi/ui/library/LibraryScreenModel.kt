@@ -1093,6 +1093,7 @@ class LibraryScreenModel(
                 .distinctBy { it.libraryManga.manga.source }
                 .fastMapNotNull { sourceManager.get(it.libraryManga.manga.source) }
                 .associateBy { it.id }
+            val categories = getCategories.await().associate { it.id to it.name }
             unfiltered.asFlow().cancellable().filter { item ->
                 val mangaId = item.libraryManga.manga.id
                 if (query.startsWith("id:", true)) {
@@ -1112,6 +1113,7 @@ class LibraryScreenModel(
                     libraryManga = item.libraryManga,
                     tracks = tracks[mangaId],
                     source = sources[sourceId],
+                    categories = categories,
                     loggedInTrackServices = loggedInTrackServices,
                 )
             }.toList()
@@ -1125,6 +1127,7 @@ class LibraryScreenModel(
         libraryManga: LibraryManga,
         tracks: List<Track>?,
         source: Source?,
+        categories: Map<Long, String>,
         checkGenre: Boolean = true,
         loggedInTrackServices: Map<Long, TriState>,
     ): Boolean {
@@ -1150,6 +1153,15 @@ class LibraryScreenModel(
                                 ) ||
                             (genre.fastAny { it.contains(query, true) })
                     }
+                    is Namespace -> matchesLibraryField(
+                        queryComponent = queryComponent,
+                        manga = manga,
+                        libraryManga = libraryManga,
+                        source = source,
+                        tracks = tracks,
+                        categories = categories,
+                        context = context,
+                    ) ?: true
                     else -> true
                 }
                 true -> when (queryComponent) {
@@ -1172,13 +1184,75 @@ class LibraryScreenModel(
                                 )
                     }
                     is Namespace -> {
-                        val searchedTag = queryComponent.tag?.asQuery()
-                        queryComponent.namespace.isBlank() && searchedTag.isNullOrBlank()
+                        matchesLibraryField(
+                            queryComponent = queryComponent,
+                            manga = manga,
+                            libraryManga = libraryManga,
+                            source = source,
+                            tracks = tracks,
+                            categories = categories,
+                            context = context,
+                        )?.not() ?: run {
+                            val searchedTag = queryComponent.tag?.asQuery()
+                            queryComponent.namespace.isBlank() && searchedTag.isNullOrBlank()
+                        }
                     }
                     else -> true
                 }
             }
         }
+    }
+
+    /**
+     * Field prefixes supplement the existing EH/SY namespace parser. Returning null deliberately
+     * leaves an unknown namespace to that parser rather than changing its established behavior.
+     */
+    private fun matchesLibraryField(
+        queryComponent: Namespace,
+        manga: Manga,
+        libraryManga: LibraryManga,
+        source: Source?,
+        tracks: List<Track>?,
+        categories: Map<Long, String>,
+        context: Context,
+    ): Boolean? {
+        val query = queryComponent.tag?.asQuery()?.takeIf(String::isNotBlank) ?: return null
+        fun matches(value: String?) = value?.let {
+            if (queryComponent.exact) it.equals(query, ignoreCase = true) else it.contains(query, ignoreCase = true)
+        } == true
+
+        return when (queryComponent.namespace) {
+            "title" -> matches(manga.title)
+            "author" -> matches(manga.author)
+            "artist" -> matches(manga.artist)
+            "description" -> matches(manga.description)
+            "source", "src" -> matches(source?.name) || matches(manga.source.toString())
+            "genre", "tag", "tags" -> manga.genre.orEmpty().any(::matches)
+            "id" -> manga.id.toString() == query
+            "category" -> {
+                if (query.equals("uncategorized", ignoreCase = true)) {
+                    libraryManga.categories.isEmpty()
+                } else {
+                    libraryManga.categories.any { id -> matches(categories[id]) || id.toString() == query }
+                }
+            }
+            "status" -> matches(mangaStatusName(manga.status)) || manga.status.toString() == query
+            "tracker" -> tracks.orEmpty().any { track ->
+                val service = trackerManager.get(track.trackerId)
+                matches(service?.name) || service?.getStatus(track.status)?.let(context::stringResource)?.let(::matches) == true
+            }
+            else -> null
+        }
+    }
+
+    private fun mangaStatusName(status: Long): String = when (status.toInt()) {
+        SManga.ONGOING -> "ongoing"
+        SManga.COMPLETED -> "completed"
+        SManga.LICENSED -> "licensed"
+        SManga.PUBLISHING_FINISHED -> "publishing finished"
+        SManga.CANCELLED -> "cancelled"
+        SManga.ON_HIATUS -> "on hiatus"
+        else -> "unknown"
     }
 
     private fun filterTracks(constraint: String, tracks: List<Track>, context: Context): Boolean {

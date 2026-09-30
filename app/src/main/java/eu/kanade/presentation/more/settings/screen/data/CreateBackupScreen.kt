@@ -10,27 +10,35 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import eu.kanade.presentation.category.visualName
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.WarningBanner
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.data.backup.create.BackupCreateJob
 import eu.kanade.tachiyomi.data.backup.create.BackupCreator
+import eu.kanade.tachiyomi.data.backup.create.BackupEntryFilter
 import eu.kanade.tachiyomi.data.backup.create.BackupOptions
 import eu.kanade.tachiyomi.util.system.DeviceUtil
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.update
+import tachiyomi.domain.category.interactor.GetCategories
+import tachiyomi.domain.category.model.Category
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.ank.AMR
 import tachiyomi.presentation.core.components.LabeledCheckbox
 import tachiyomi.presentation.core.components.LazyColumnWithAction
 import tachiyomi.presentation.core.components.SectionCard
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.i18n.stringResource
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 
 class CreateBackupScreen : Screen() {
 
@@ -40,6 +48,8 @@ class CreateBackupScreen : Screen() {
         val navigator = LocalNavigator.currentOrThrow
         val model = rememberScreenModel { CreateBackupScreenModel() }
         val state by model.state.collectAsState()
+        val getCategories = remember { Injekt.get<GetCategories>() }
+        val categories by getCategories.subscribe().collectAsState(initial = emptyList())
 
         val chooseBackupDir = rememberLauncherForActivityResult(
             contract = ActivityResultContracts.CreateDocument("application/*"),
@@ -89,6 +99,7 @@ class CreateBackupScreen : Screen() {
                 item {
                     SectionCard(MR.strings.label_library) {
                         Options(BackupOptions.libraryOptions, state, model)
+                        BackupCategories(categories, state, model)
                     }
                 }
 
@@ -104,6 +115,36 @@ class CreateBackupScreen : Screen() {
                     }
                 }
             }
+        }
+    }
+
+    @Composable
+    private fun BackupCategories(
+        categories: List<Category>,
+        state: CreateBackupScreenModel.State,
+        model: CreateBackupScreenModel,
+    ) {
+        LabeledCheckbox(
+            label = stringResource(AMR.strings.backup_all_categories),
+            checked = !state.filterLibraryEntries,
+            onCheckedChange = { model.setFilterLibraryEntries(!it) },
+            enabled = state.options.libraryEntries,
+        )
+        if (state.filterLibraryEntries) {
+            categories.forEach { category ->
+                LabeledCheckbox(
+                    label = category.visualName,
+                    checked = category.id in state.categoryIds,
+                    onCheckedChange = { model.toggleCategory(category.id, it) },
+                    enabled = state.options.libraryEntries,
+                )
+            }
+            LabeledCheckbox(
+                label = stringResource(AMR.strings.backup_uncategorized),
+                checked = state.includeUncategorized,
+                onCheckedChange = model::setIncludeUncategorized,
+                enabled = state.options.libraryEntries,
+            )
         }
     }
 
@@ -137,11 +178,38 @@ private class CreateBackupScreenModel : StateScreenModel<CreateBackupScreenModel
     }
 
     fun createBackup(context: Context, uri: Uri) {
-        BackupCreateJob.startNow(context, uri, state.value.options)
+        val state = state.value
+        BackupCreateJob.startNow(
+            context = context,
+            uri = uri,
+            options = state.options,
+            entryFilter = BackupEntryFilter(
+                categoryIds = state.categoryIds,
+                includeUncategorized = state.includeUncategorized,
+                enabled = state.filterLibraryEntries,
+            ),
+        )
+    }
+
+    fun setFilterLibraryEntries(enabled: Boolean) {
+        mutableState.update { it.copy(filterLibraryEntries = enabled) }
+    }
+
+    fun toggleCategory(categoryId: Long, enabled: Boolean) {
+        mutableState.update {
+            it.copy(categoryIds = it.categoryIds.toMutableSet().apply { if (enabled) add(categoryId) else remove(categoryId) })
+        }
+    }
+
+    fun setIncludeUncategorized(enabled: Boolean) {
+        mutableState.update { it.copy(includeUncategorized = enabled) }
     }
 
     @Immutable
     data class State(
         val options: BackupOptions = BackupOptions(),
+        val filterLibraryEntries: Boolean = false,
+        val categoryIds: Set<Long> = emptySet(),
+        val includeUncategorized: Boolean = true,
     )
 }

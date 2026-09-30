@@ -7,7 +7,6 @@ import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.sync.SyncPreferences
 import eu.kanade.domain.track.service.TrackPreferences
 import eu.kanade.domain.ui.UiPreferences
-import eu.kanade.tachiyomi.core.security.PrivacyPreferences
 import eu.kanade.tachiyomi.core.security.SecurityPreferences
 import eu.kanade.tachiyomi.network.NetworkPreferences
 import eu.kanade.tachiyomi.torrentServer.TorrentServerPreferences
@@ -51,9 +50,6 @@ class PreferenceModule(val app: Application) : InjektModule {
         }
         addSingletonFactory {
             SecurityPreferences(get())
-        }
-        addSingletonFactory {
-            PrivacyPreferences(get())
         }
         addSingletonFactory {
             LibraryPreferences(get())

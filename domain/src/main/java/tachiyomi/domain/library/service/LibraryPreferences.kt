@@ -189,6 +189,9 @@ class LibraryPreferences(
 
     fun updateCategoriesExclude() = preferenceStore.getStringSet(LIBRARY_UPDATE_CATEGORIES_EXCLUDE_PREF_KEY, emptySet())
 
+    /** Stable source IDs that must be skipped by every library update. */
+    fun updateSourcesExclude() = preferenceStore.getStringSet(LIBRARY_UPDATE_SOURCES_EXCLUDE_PREF_KEY, emptySet())
+
     // Mixture Item
 
     fun filterChapterByRead() = preferenceStore.getLong(
@@ -417,6 +420,7 @@ class LibraryPreferences(
         const val DEFAULT_CATEGORY_PREF_KEY = "default_anime_category"
         private const val LIBRARY_UPDATE_CATEGORIES_PREF_KEY = "animelib_update_categories"
         private const val LIBRARY_UPDATE_CATEGORIES_EXCLUDE_PREF_KEY = "animelib_update_categories_exclude"
+        private const val LIBRARY_UPDATE_SOURCES_EXCLUDE_PREF_KEY = "animelib_update_sources_exclude"
 
         // KMK -->
         private const val FILTER_LIBRARY_CATEGORIES_INCLUDE_PREF_KEY = "pref_filter_library_categories_include"
@@ -427,6 +431,7 @@ class LibraryPreferences(
             DEFAULT_CATEGORY_PREF_KEY,
             LIBRARY_UPDATE_CATEGORIES_PREF_KEY,
             LIBRARY_UPDATE_CATEGORIES_EXCLUDE_PREF_KEY,
+            LIBRARY_UPDATE_SOURCES_EXCLUDE_PREF_KEY,
             // KMK -->
             FILTER_LIBRARY_CATEGORIES_INCLUDE_PREF_KEY,
             FILTER_LIBRARY_CATEGORIES_EXCLUDE_PREF_KEY,
