@@ -439,22 +439,25 @@ class HistoryScreenModel(
 
         fun getUiModel(): List<HistoryUiModel> {
             val mangaCountByDate = list
-                .groupBy { it.readAt.time.toLocalDate() }
-                .mapValues { (_, histories) -> histories.map { it.mangaId }.distinct().size }
+                .mapNotNull { history ->
+                    history.readAt?.time?.toLocalDate()?.let { date -> date to history.mangaId }
+                }
+                .groupBy({ it.first }, { it.second })
+                .mapValues { (_, mangaIds) -> mangaIds.distinct().size }
 
             return list.map { HistoryUiModel.Item(it) }
-            .insertSeparators { before, after ->
-                val beforeDate = before?.item?.readAt?.time?.toLocalDate()
-                val afterDate = after?.item?.readAt?.time?.toLocalDate()
-                when {
-                    beforeDate != afterDate && afterDate != null -> HistoryUiModel.Header(
-                        afterDate,
-                        mangaCountByDate[afterDate] ?: 0,
-                    )
-                    // Return null to avoid adding a separator between two items.
-                    else -> null
+                .insertSeparators { before, after ->
+                    val beforeDate = before?.item?.readAt?.time?.toLocalDate()
+                    val afterDate = after?.item?.readAt?.time?.toLocalDate()
+                    when {
+                        beforeDate != afterDate && afterDate != null -> HistoryUiModel.Header(
+                            afterDate,
+                            mangaCountByDate[afterDate] ?: 0,
+                        )
+                        // Return null to avoid adding a separator between two items.
+                        else -> null
+                    }
                 }
-            }
         }
     }
     // KMK <--

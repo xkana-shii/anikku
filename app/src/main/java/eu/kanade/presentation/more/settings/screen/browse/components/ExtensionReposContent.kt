@@ -187,7 +187,7 @@ private fun ExtensionRepoListItem(
 
 // KMK -->
 fun repoResId(signKey: String) = when (signKey) {
-        KANASHII_SIGNATURE -> R.drawable.ic_kanashii
+    KANASHII_SIGNATURE -> R.drawable.ic_kanashii
     ANIKKU_SIGNATURE -> R.mipmap.anikku
     REPO_SIGNATURE -> R.mipmap.repo
     else -> R.mipmap.extension

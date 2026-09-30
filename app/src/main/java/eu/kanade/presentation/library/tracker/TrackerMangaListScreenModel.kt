@@ -37,11 +37,13 @@ class TrackerMangaListScreenModel(
                     .filter { it.mangaId in ids && it.trackerId == tracker?.id }
                     .map { it.remoteId }
                     .toSet()
-                mutableState.update { it.copy(
-                    trackerId = tracker?.id,
-                    statusList = tracker?.getStatusList().orEmpty(),
-                    getStatusRes = tracker?.let { service -> service::getStatus } ?: { null },
-                ) }
+                mutableState.update {
+                    it.copy(
+                        trackerId = tracker?.id,
+                        statusList = tracker?.getStatusList().orEmpty(),
+                        getStatusRes = tracker?.let { service -> service::getStatus } ?: { null },
+                    )
+                }
             }
         }
     }
@@ -57,12 +59,16 @@ class TrackerMangaListScreenModel(
                 .onSuccess { result ->
                     val items = result.filterNot { it.remoteId in libraryRemoteIds }
                     mutableState.update { state ->
-                        state.copy(tabs = state.tabs + (tabIndex to current.copy(
-                            items = current.items + items,
-                            page = current.page + 1,
-                            isLoading = false,
-                            endReached = items.isEmpty(),
-                        )))
+                        state.copy(
+                            tabs = state.tabs + (
+                                tabIndex to current.copy(
+                                    items = current.items + items,
+                                    page = current.page + 1,
+                                    isLoading = false,
+                                    endReached = items.isEmpty(),
+                                )
+                                ),
+                        )
                     }
                 }
                 .onFailure {

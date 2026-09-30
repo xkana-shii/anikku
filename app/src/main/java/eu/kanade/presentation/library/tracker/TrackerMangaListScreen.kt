@@ -5,10 +5,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -21,8 +21,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.model.rememberScreenModel
@@ -31,9 +31,9 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreen
+import tachiyomi.i18n.ank.AMR
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.i18n.stringResource
-import tachiyomi.i18n.ank.AMR
 
 class TrackerMangaListScreen : Screen() {
     @Composable
@@ -91,8 +91,10 @@ class TrackerMangaListScreen : Screen() {
                         ) { Text(item.title.orEmpty()) }
                     }
                     if (tab.isLoading) item { CircularProgressIndicator(Modifier.padding(16.dp)) }
-                    if (!tab.endReached && tab.items.isNotEmpty()) item {
-                        Button(onClick = { model.loadNextPage(tabIndex) }) { Text(stringResource(AMR.strings.action_load_more)) }
+                    if (!tab.endReached && tab.items.isNotEmpty()) {
+                        item {
+                            Button(onClick = { model.loadNextPage(tabIndex) }) { Text(stringResource(AMR.strings.action_load_more)) }
+                        }
                     }
                 }
             }

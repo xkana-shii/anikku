@@ -108,6 +108,7 @@ fun MigrationListScreenContent(
                                 text = "$finishedCount/${items.size}",
                                 color = MaterialTheme.colorScheme.primaryContainer,
                                 contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                style = MaterialTheme.typography.labelSmall,
                             )
                         }
                     }
