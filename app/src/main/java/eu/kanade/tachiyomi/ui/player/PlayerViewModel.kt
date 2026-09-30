@@ -32,6 +32,7 @@ import com.yubyf.truetypeparser.TTFFile
 import dev.icerock.moko.resources.StringResource
 import eu.kanade.domain.anime.interactor.SetAnimeViewerFlags
 import eu.kanade.domain.base.BasePreferences
+import eu.kanade.domain.connections.service.WebhookEvent
 import eu.kanade.domain.episode.model.toDbEpisode
 import eu.kanade.domain.source.interactor.GetIncognitoState
 import eu.kanade.domain.sync.SyncPreferences
@@ -59,6 +60,7 @@ import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.data.track.anilist.Anilist
 import eu.kanade.tachiyomi.data.track.myanimelist.MyAnimeList
 import eu.kanade.tachiyomi.data.track.simkl.Simkl
+import eu.kanade.tachiyomi.data.webhook.WebhookNotifier
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.player.controls.components.IndexedSegment
@@ -2194,6 +2196,13 @@ class PlayerViewModel @JvmOverloads constructor(
     private fun updateEpisodeProgressOnComplete(currentEp: Episode) {
         if (currentEp.seen) return
         currentEp.seen = true
+        anime?.let { anime ->
+            Injekt.get<WebhookNotifier>().notify(
+                WebhookEvent.EPISODE_SEEN,
+                anime,
+                mapOf("episode" to currentEp.name),
+            )
+        }
         updateTrackEpisodeSeen(currentEp)
         maybePromptRereadOnEpisodeComplete()
         deleteEpisodeIfNeeded(currentEp)

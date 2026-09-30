@@ -184,7 +184,7 @@ fun EditMangaDialog(
             onDismissRequest = { showTrackerSelectionDialogue.value = false },
             onTrackerSelect = { tracker, track ->
                 scope.launch {
-                    autofillFromTracker(binding!!, track, tracker)
+                    autofillFromTracker(binding!!, track, tracker, scope, colorScheme)
                 }
             },
         )
@@ -390,12 +390,12 @@ private fun onViewCreated(
     binding.resetInfo.setOnClickListener { resetInfo(manga, binding, scope, colorScheme) }
     binding.autofillFromTracker.setOnClickListener {
         scope.launch {
-            getTrackers(manga, binding, context, getTracks, trackerManager, tracks, showTrackerSelectionDialogue)
+            getTrackers(manga, binding, context, getTracks, trackerManager, tracks, showTrackerSelectionDialogue, scope, colorScheme)
         }
     }
 }
 
-private suspend fun getTrackers(manga: Manga, binding: EditMangaDialogBinding, context: Context, getTracks: GetTracks, trackerManager: TrackerManager, tracks: MutableState<List<Pair<Track, Tracker>>>, showTrackerSelectionDialogue: MutableState<Boolean>) {
+private suspend fun getTrackers(manga: Manga, binding: EditMangaDialogBinding, context: Context, getTracks: GetTracks, trackerManager: TrackerManager, tracks: MutableState<List<Pair<Track, Tracker>>>, showTrackerSelectionDialogue: MutableState<Boolean>, scope: CoroutineScope, colorScheme: AndroidViewColorScheme) {
     tracks.value = getTracks.await(manga.id).mapNotNull { track ->
         track to (trackerManager.get(track.trackerId) ?: return@mapNotNull null)
     }
@@ -411,14 +411,14 @@ private suspend fun getTrackers(manga: Manga, binding: EditMangaDialogBinding, c
         return
     }
 
-    autofillFromTracker(binding, tracks.value.first().first, tracks.value.first().second)
+    autofillFromTracker(binding, tracks.value.first().first, tracks.value.first().second, scope, colorScheme)
 }
 
 private fun setTextIfNotBlank(field: (String) -> Unit, value: String?) {
     value?.takeIf { it.isNotBlank() }?.let { field(it) }
 }
 
-private suspend fun autofillFromTracker(binding: EditMangaDialogBinding, track: Track, tracker: Tracker) {
+private suspend fun autofillFromTracker(binding: EditMangaDialogBinding, track: Track, tracker: Tracker, scope: CoroutineScope, colorScheme: AndroidViewColorScheme) {
     try {
         val trackerMangaMetadata = tracker.getMangaMetadata(track)
 
@@ -427,6 +427,22 @@ private suspend fun autofillFromTracker(binding: EditMangaDialogBinding, track: 
         setTextIfNotBlank(binding.mangaArtist::setText, trackerMangaMetadata.artists)
         setTextIfNotBlank(binding.thumbnailUrl::setText, trackerMangaMetadata.thumbnailUrl)
         setTextIfNotBlank(binding.mangaDescription::setText, trackerMangaMetadata.description)
+        trackerMangaMetadata.genres?.filter(String::isNotBlank)?.takeIf { it.isNotEmpty() }?.let {
+            binding.mangaGenresTags.setChips(it, scope, colorScheme)
+        }
+        trackerMangaMetadata.status?.let { status ->
+            binding.status.setSelection(
+                when (status.toInt()) {
+                    SManga.ONGOING -> 1
+                    SManga.COMPLETED -> 2
+                    SManga.LICENSED -> 3
+                    SManga.PUBLISHING_FINISHED -> 4
+                    SManga.CANCELLED -> 5
+                    SManga.ON_HIATUS -> 6
+                    else -> 0
+                },
+            )
+        }
     } catch (e: Throwable) {
         tracker.logcat(LogPriority.ERROR, e)
         binding.root.context.toast(

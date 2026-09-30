@@ -389,6 +389,8 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
                         |large
                     |}
                     |description
+                    |genres
+                    |status
                     |studios {
                         |nodes {
                             |name
@@ -442,10 +444,20 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
                             artists = anime.staff.edges.mapNotNull { it.getArtistName() }
                                 .joinToString()
                                 .ifEmpty { null },
+                            genres = anime.genres.filter(String::isNotBlank),
+                            status = anime.status.toAnikkuStatus(),
                         )
                     }
             }
         }
+    }
+
+    private fun String?.toAnikkuStatus(): Long? = when (this) {
+        "RELEASING" -> eu.kanade.tachiyomi.source.model.SManga.ONGOING.toLong()
+        "FINISHED" -> eu.kanade.tachiyomi.source.model.SManga.COMPLETED.toLong()
+        "HIATUS" -> eu.kanade.tachiyomi.source.model.SManga.ON_HIATUS.toLong()
+        "CANCELLED" -> eu.kanade.tachiyomi.source.model.SManga.CANCELLED.toLong()
+        else -> null
     }
 
     private fun createDate(dateValue: Long): JsonObject {

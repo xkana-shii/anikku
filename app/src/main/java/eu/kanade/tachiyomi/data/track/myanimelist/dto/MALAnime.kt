@@ -41,4 +41,9 @@ data class MALAnimeMetadata(
     @SerialName("main_picture")
     val covers: MALAnimeCovers,
     val studios: List<MALStudio> = emptyList(),
+    val genres: List<MALGenre> = emptyList(),
+    val status: String? = null,
 )
+
+@Serializable
+data class MALGenre(val name: String)

@@ -48,6 +48,12 @@ enum class StructuredRelationType {
     PRESERIALIZATION,
     SERIALIZATION,
     OTHER,
+    ALTERNATIVE_SETTING,
+    ALTERNATIVE_VERSION,
+    PARENT_STORY,
+    FULL_STORY,
+    CHARACTER,
+    COMPLATION,
     ;
 
     companion object {

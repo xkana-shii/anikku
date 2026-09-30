@@ -19,6 +19,7 @@ import androidx.work.WorkQuery
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
+import eu.kanade.domain.connections.service.WebhookEvent
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.domain.sync.SyncPreferences
@@ -32,7 +33,6 @@ import eu.kanade.tachiyomi.data.sync.SyncDataJob
 import eu.kanade.tachiyomi.data.track.TrackStatus
 import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.data.webhook.WebhookNotifier
-import eu.kanade.domain.connections.service.WebhookEvent
 import eu.kanade.tachiyomi.source.getChapterList
 import eu.kanade.tachiyomi.source.getMangaDetails
 import eu.kanade.tachiyomi.source.model.SManga

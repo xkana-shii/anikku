@@ -22,6 +22,8 @@ data class ALAnimeMetadataMedia(
     val description: String?,
     val staff: ALStaff,
     val studios: ALStudios,
+    val genres: List<String> = emptyList(),
+    val status: String? = null,
 )
 
 @Serializable

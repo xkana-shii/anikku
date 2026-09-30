@@ -16,9 +16,11 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.hippo.unifile.UniFile
+import eu.kanade.domain.connections.service.WebhookEvent
 import eu.kanade.tachiyomi.data.backup.BackupNotifier
 import eu.kanade.tachiyomi.data.backup.restore.BackupRestoreJob
 import eu.kanade.tachiyomi.data.notification.Notifications
+import eu.kanade.tachiyomi.data.webhook.WebhookNotifier
 import eu.kanade.tachiyomi.util.system.cancelNotification
 import eu.kanade.tachiyomi.util.system.isRunning
 import eu.kanade.tachiyomi.util.system.setForegroundSafely
@@ -61,6 +63,7 @@ class BackupCreateJob(private val context: Context, workerParams: WorkerParamete
             if (!isAutoBackup) {
                 notifier.showBackupComplete(UniFile.fromUri(context, location.toUri())!!)
             }
+            Injekt.get<WebhookNotifier>().notify(WebhookEvent.BACKUP_CREATED, data = mapOf("location" to location))
             Result.success()
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, e)

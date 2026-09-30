@@ -212,7 +212,7 @@ class MyAnimeListApi(
                 .appendPath(track.remoteId.toString())
                 .appendQueryParameter(
                     "fields",
-                    "id,title,synopsis,main_picture,studios{name}",
+                    "id,title,synopsis,main_picture,studios{name},genres{name},status",
                 )
                 .build()
             with(json) {
@@ -228,10 +228,20 @@ class MyAnimeListApi(
                             authors = metadata.studios
                                 .joinToString { it.name }
                                 .ifEmpty { null },
+                            genres = metadata.genres.map { it.name }.filter(String::isNotBlank),
+                            status = metadata.status.toAnikkuStatus(),
                         )
                     }
             }
         }
+    }
+
+    private fun String?.toAnikkuStatus(): Long? = when (this) {
+        "currently_airing" -> eu.kanade.tachiyomi.source.model.SManga.ONGOING.toLong()
+        "finished_airing" -> eu.kanade.tachiyomi.source.model.SManga.COMPLETED.toLong()
+        "on_hiatus" -> eu.kanade.tachiyomi.source.model.SManga.ON_HIATUS.toLong()
+        "discontinued" -> eu.kanade.tachiyomi.source.model.SManga.CANCELLED.toLong()
+        else -> null
     }
 
     suspend fun getPaginatedMangaList(page: Int, statusId: Long): List<TrackMangaMetadata> {
