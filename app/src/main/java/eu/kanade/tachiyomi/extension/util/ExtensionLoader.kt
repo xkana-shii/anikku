@@ -7,7 +7,6 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.content.pm.PackageInfoCompat
 import dalvik.system.PathClassLoader
-import eu.kanade.domain.extension.interactor.TrustExtension
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.extension.model.LoadResult
@@ -44,8 +43,6 @@ import java.io.File
 internal object ExtensionLoader {
 
     private val preferences: SourcePreferences by injectLazy()
-    private val trustExtension: TrustExtension by injectLazy()
-
     // KMK -->
     private val getExtensionRepo: GetExtensionRepo by injectLazy()
     // KMK <--
@@ -283,24 +280,6 @@ internal object ExtensionLoader {
         if (signatures.isNullOrEmpty()) {
             logcat(LogPriority.WARN) { "Package $pkgName isn't signed" }
             return LoadResult.Error
-        } else if (!trustExtension.isTrusted(pkgInfo, signatures)) {
-            val extension = Extension.Untrusted(
-                extName,
-                pkgName,
-                versionName,
-                versionCode,
-                libVersion,
-                signatures.last(),
-                // KMK -->
-                repoName = repos.firstOrNull { repo ->
-                    signatures.all { it == repo.signingKeyFingerprint }
-                }?.let { repo ->
-                    repo.shortName.takeIf { !it.isNullOrBlank() } ?: repo.name
-                },
-                // KMK <--
-            )
-            logcat(LogPriority.WARN) { "Extension $pkgName isn't trusted" }
-            return LoadResult.Untrusted(extension)
         }
 
         val isNsfw = appInfo.metaData.getInt(METADATA_NSFW) == 1

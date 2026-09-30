@@ -44,6 +44,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import dev.icerock.moko.resources.StringResource
 import eu.kanade.domain.track.model.AutoTrackState
+import eu.kanade.domain.track.model.AutoRereadResetMode
 import eu.kanade.domain.track.service.TrackPreferences
 import eu.kanade.presentation.more.settings.Preference
 import eu.kanade.tachiyomi.data.track.EnhancedTracker
@@ -158,6 +159,20 @@ object SettingsTrackingScreen : SearchableSettings {
                     .associateWith { stringResource(it.titleRes) }
                     .toPersistentMap(),
                 title = stringResource(AMR.strings.pref_auto_update_anime_on_mark_seen),
+            ),
+            Preference.PreferenceItem.ListPreference(
+                preference = trackPreferences.autoRereadBehavior(),
+                entries = AutoTrackState.entries
+                    .associateWith { stringResource(it.titleRes) }
+                    .toPersistentMap(),
+                title = stringResource(AMR.strings.pref_auto_reread_behavior_title),
+            ),
+            Preference.PreferenceItem.ListPreference(
+                preference = trackPreferences.autoRereadResetMode(),
+                entries = AutoRereadResetMode.entries
+                    .associateWith { stringResource(it.titleRes) }
+                    .toPersistentMap(),
+                title = stringResource(AMR.strings.pref_auto_reread_reset_to),
             ),
             // KMK -->
             Preference.PreferenceItem.SwitchPreference(

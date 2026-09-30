@@ -9,9 +9,11 @@ import eu.kanade.tachiyomi.data.track.myanimelist.dto.MALAnime
 import eu.kanade.tachiyomi.data.track.myanimelist.dto.MALAnimeMetadata
 import eu.kanade.tachiyomi.data.track.myanimelist.dto.MALListItem
 import eu.kanade.tachiyomi.data.track.myanimelist.dto.MALListItemStatus
+import eu.kanade.tachiyomi.data.track.myanimelist.dto.MALListItemStatusWrapper
 import eu.kanade.tachiyomi.data.track.myanimelist.dto.MALOAuth
 import eu.kanade.tachiyomi.data.track.myanimelist.dto.MALSearchResult
 import eu.kanade.tachiyomi.data.track.myanimelist.dto.MALUser
+import eu.kanade.tachiyomi.data.track.myanimelist.dto.MALUserSearchResult
 import eu.kanade.tachiyomi.network.DELETE
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.POST
@@ -106,11 +108,23 @@ class MyAnimeListApi(
 
     suspend fun updateItem(track: Track): Track {
         return withIOContext {
+            val previousStatus = getCurrentListStatus(track.remote_id)
+            val targetStatus = track.toMyAnimeListStatus() ?: "watching"
+            val wasRewatching = previousStatus?.isRewatching == true
             val formBodyBuilder = FormBody.Builder()
-                .add("status", track.toMyAnimeListStatus() ?: "watching")
-                .add("is_rewatching", (track.status == MyAnimeList.REWATCHING).toString())
+                .add("status", targetStatus)
                 .add("score", track.score.toString())
                 .add("num_watched_episodes", track.last_episode_seen.toInt().toString())
+            val finalIsRewatching = if (targetStatus == "completed" && wasRewatching) {
+                formBodyBuilder.add(
+                    "num_times_rewatched",
+                    ((previousStatus?.numTimesRewatched ?: 0) + 1).toString(),
+                )
+                false
+            } else {
+                track.status == MyAnimeList.REWATCHING
+            }
+            formBodyBuilder.add("is_rewatching", finalIsRewatching.toString())
             convertToIsoDate(track.started_watching_date)?.let {
                 formBodyBuilder.add("start_date", it)
             }
@@ -143,7 +157,10 @@ class MyAnimeListApi(
         return withIOContext {
             val uri = "$BASE_API_URL/anime".toUri().buildUpon()
                 .appendPath(track.remote_id.toString())
-                .appendQueryParameter("fields", "num_episodes,my_list_status{start_date,finish_date}")
+                .appendQueryParameter(
+                    "fields",
+                    "num_episodes,my_list_status{start_date,finish_date,num_times_rewatched,is_rewatching}",
+                )
                 .build()
             with(json) {
                 authClient.newCall(GET(uri.toString()))
@@ -153,6 +170,21 @@ class MyAnimeListApi(
                         track.total_episodes = item.numEpisodes
                         item.myListStatus?.let { parseAnimeItem(it, track) }
                     }
+            }
+        }
+    }
+
+    private suspend fun getCurrentListStatus(remoteId: Long): MALListItemStatus? {
+        return withIOContext {
+            val uri = "$BASE_API_URL/anime".toUri().buildUpon()
+                .appendPath(remoteId.toString())
+                .appendQueryParameter("fields", "my_list_status{is_rewatching,num_times_rewatched}")
+                .build()
+            with(json) {
+                authClient.newCall(GET(uri.toString()))
+                    .awaitSuccess()
+                    .parseAs<MALListItemStatusWrapper>()
+                    .myListStatus
             }
         }
     }
@@ -202,6 +234,32 @@ class MyAnimeListApi(
         }
     }
 
+    suspend fun getPaginatedMangaList(page: Int, statusId: Long): List<TrackMangaMetadata> {
+        return withIOContext {
+            val url = "$BASE_API_URL/users/@me/animelist".toUri().buildUpon()
+                .appendQueryParameter("status", statusId.toMyAnimeListStatus())
+                .appendQueryParameter("fields", "list_status")
+                .appendQueryParameter("limit", "50")
+                .appendQueryParameter("offset", ((page - 1) * 50).toString())
+                .build()
+            with(json) {
+                authClient.newCall(GET(url.toString()))
+                    .awaitSuccess()
+                    .parseAs<MALUserSearchResult>()
+                    .data
+                    .mapNotNull { item ->
+                        val status = item.listStatus ?: return@mapNotNull null
+                        if (statusId == MyAnimeList.REWATCHING && !status.isRewatching) return@mapNotNull null
+                        TrackMangaMetadata(
+                            remoteId = item.node.id.toLong(),
+                            title = item.node.title,
+                            thumbnailUrl = item.node.covers?.large,
+                        )
+                    }
+            }
+        }
+    }
+
     private suspend fun getListPage(offset: Int): MALSearchResult {
         return withIOContext {
             val urlBuilder = "$BASE_API_URL/users/@me/animelist".toUri().buildUpon()
@@ -221,6 +279,15 @@ class MyAnimeListApi(
                     .parseAs()
             }
         }
+    }
+
+    private fun Long.toMyAnimeListStatus() = when (this) {
+        MyAnimeList.WATCHING, MyAnimeList.REWATCHING -> "watching"
+        MyAnimeList.COMPLETED -> "completed"
+        MyAnimeList.ON_HOLD -> "on_hold"
+        MyAnimeList.DROPPED -> "dropped"
+        MyAnimeList.PLAN_TO_WATCH -> "plan_to_watch"
+        else -> "watching"
     }
 
     private fun parseAnimeItem(listStatus: MALListItemStatus, track: Track): Track {

@@ -437,16 +437,25 @@ class HistoryScreenModel(
         val selected
             get() = list.fastFilter { it.chapterId in selection }
 
-        fun getUiModel() = list.map { HistoryUiModel.Item(it) }
+        fun getUiModel(): List<HistoryUiModel> {
+            val mangaCountByDate = list
+                .groupBy { it.readAt.time.toLocalDate() }
+                .mapValues { (_, histories) -> histories.map { it.mangaId }.distinct().size }
+
+            return list.map { HistoryUiModel.Item(it) }
             .insertSeparators { before, after ->
                 val beforeDate = before?.item?.readAt?.time?.toLocalDate()
                 val afterDate = after?.item?.readAt?.time?.toLocalDate()
                 when {
-                    beforeDate != afterDate && afterDate != null -> HistoryUiModel.Header(afterDate)
+                    beforeDate != afterDate && afterDate != null -> HistoryUiModel.Header(
+                        afterDate,
+                        mangaCountByDate[afterDate] ?: 0,
+                    )
                     // Return null to avoid adding a separator between two items.
                     else -> null
                 }
             }
+        }
     }
     // KMK <--
 

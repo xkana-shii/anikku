@@ -53,6 +53,7 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
+import eu.kanade.presentation.components.AppBarTitle
 import eu.kanade.presentation.manga.components.MangaCover
 import eu.kanade.presentation.util.animateItemFastScroll
 import eu.kanade.presentation.util.formatChapterNumber
@@ -70,6 +71,7 @@ import tachiyomi.i18n.aniyomi.AYMR
 import tachiyomi.presentation.core.components.Badge
 import tachiyomi.presentation.core.components.BadgeGroup
 import tachiyomi.presentation.core.components.FastScrollLazyColumn
+import tachiyomi.presentation.core.components.Pill
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.components.material.topSmallPaddingValues
@@ -98,10 +100,17 @@ fun MigrationListScreenContent(
     Scaffold(
         topBar = { scrollBehavior ->
             AppBar(
-                title = if (items.isNotEmpty()) {
-                    stringResource(MR.strings.migrationListScreenTitleWithProgress, finishedCount, items.size)
-                } else {
-                    stringResource(MR.strings.migrationListScreenTitle)
+                titleContent = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        AppBarTitle(stringResource(MR.strings.migrationListScreenTitle))
+                        if (items.isNotEmpty()) {
+                            Pill(
+                                text = "$finishedCount/${items.size}",
+                                color = MaterialTheme.colorScheme.primaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                            )
+                        }
+                    }
                 },
                 actions = {
                     AppBarActions(

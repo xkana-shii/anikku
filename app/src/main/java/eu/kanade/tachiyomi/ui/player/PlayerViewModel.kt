@@ -35,6 +35,10 @@ import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.episode.model.toDbEpisode
 import eu.kanade.domain.source.interactor.GetIncognitoState
 import eu.kanade.domain.sync.SyncPreferences
+import eu.kanade.domain.track.model.AutoRereadResetMode
+import eu.kanade.domain.track.model.AutoTrackState
+import eu.kanade.domain.track.model.toDbTrack
+import eu.kanade.domain.track.model.toDomainTrack
 import eu.kanade.domain.track.service.TrackPreferences
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.tachiyomi.animesource.AnimeSource
@@ -107,7 +111,9 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
@@ -2039,6 +2045,77 @@ class PlayerViewModel @JvmOverloads constructor(
         }
     }
 
+    private fun maybePromptRereadOnEpisodeComplete() {
+        val currentAnime = currentAnime.value ?: return
+        if (incognitoMode || dialogShown.value == Dialogs.RereadPrompt) return
+        viewModelScope.launchIO {
+            val tracks = getTracks.await(currentAnime.id)
+            val manager = Injekt.get<TrackerManager>()
+            val completed = tracks.any { track ->
+                when (track.trackerId) {
+                    manager.myAnimeList.id -> manager.myAnimeList.isLoggedIn && track.status == MyAnimeList.COMPLETED
+                    manager.aniList.id -> manager.aniList.isLoggedIn && track.status == Anilist.COMPLETED
+                    else -> false
+                }
+            }
+            if (!completed) return@launchIO
+            when (trackPreferences.autoRereadBehavior().get()) {
+                AutoTrackState.ALWAYS -> confirmStartReread()
+                AutoTrackState.ASK -> dialogShown.update { Dialogs.RereadPrompt }
+                AutoTrackState.NEVER -> Unit
+            }
+        }
+    }
+
+    fun confirmStartReread() {
+        val currentAnime = anime ?: return
+        dialogShown.update { Dialogs.None }
+        viewModelScope.launchIO {
+            val resetMode = trackPreferences.autoRereadResetMode().get()
+            val currentEpisodeId = currentEpisode.value?.id
+            val orderedEpisodes = unfilteredEpisodeList.sortedWith(
+                getEpisodeSort(currentAnime, sortDescending = true),
+            )
+            val toReset = when (resetMode) {
+                AutoRereadResetMode.RESET_TO_ZERO -> orderedEpisodes
+                AutoRereadResetMode.RESET_TO_CURRENT_EPISODE -> {
+                    val index = orderedEpisodes.indexOfFirst { it.id == currentEpisodeId }
+                    if (index > 0) orderedEpisodes.take(index) else emptyList()
+                }
+            }
+            if (toReset.isNotEmpty()) {
+                updateEpisode.awaitAll(toReset.map { EpisodeUpdate(id = it.id, read = false) })
+            }
+            val progress = when (resetMode) {
+                AutoRereadResetMode.RESET_TO_ZERO -> 0.0
+                AutoRereadResetMode.RESET_TO_CURRENT_EPISODE -> currentEpisode.value?.episode_number?.toDouble() ?: 0.0
+            }
+            val tracks = getTracks.await(currentAnime.id)
+            val manager = Injekt.get<TrackerManager>()
+            supervisorScope {
+                tracks.filter { it.trackerId == manager.myAnimeList.id || it.trackerId == manager.aniList.id }
+                    .map { track ->
+                        launch {
+                            runCatching {
+                                val service = manager.get(track.trackerId) ?: return@runCatching
+                                if (!service.isLoggedIn) return@runCatching
+                                val refreshed = service.refresh(track.toDbTrack()).toDomainTrack(idRequired = true) ?: return@runCatching
+                                val updated = refreshed.copy(
+                                    status = service.getRereadingStatus(),
+                                    lastChapterRead = progress,
+                                    startDate = System.currentTimeMillis(),
+                                    finishDate = 0L,
+                                )
+                                service.update(updated.toDbTrack(), didReadChapter = false)
+                                Injekt.get<tachiyomi.domain.track.interactor.InsertTrack>().await(updated)
+                            }.onFailure { logcat(LogPriority.WARN, it) }
+                        }
+                    }
+                    .joinAll()
+            }
+        }
+    }
+
     /**
      * Called every time a second is reached in the player. Used to mark the flag of episode being
      * seen, update tracking services, enqueue downloaded episode deletion and download next episode.
@@ -2105,8 +2182,10 @@ class PlayerViewModel @JvmOverloads constructor(
     }
 
     private fun updateEpisodeProgressOnComplete(currentEp: Episode) {
+        if (currentEp.seen) return
         currentEp.seen = true
         updateTrackEpisodeSeen(currentEp)
+        maybePromptRereadOnEpisodeComplete()
         deleteEpisodeIfNeeded(currentEp)
 
         val markDuplicateAsSeen = libraryPreferences.markDuplicateReadChapterAsRead().get()

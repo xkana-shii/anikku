@@ -959,6 +959,7 @@ fun PlayerControls(
                 viewModel.showDialog(Dialogs.None)
                 activity.changeEpisode(it)
             },
+            onRereadConfirm = viewModel::confirmStartReread,
             onDismissRequest = { viewModel.showDialog(Dialogs.None) },
         )
 

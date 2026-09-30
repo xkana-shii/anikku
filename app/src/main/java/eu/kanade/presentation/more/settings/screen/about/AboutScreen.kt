@@ -305,7 +305,7 @@ class AboutScreen : Screen(), TvInitialFocusScreen {
                         LinkIcon(
                             label = "GitHub",
                             icon = CustomIcons.Github,
-                            url = "https://github.com/komikku-app/anikku",
+                            url = "https://github.com/xkana-shii/anikku",
                         )
                     }
                 }

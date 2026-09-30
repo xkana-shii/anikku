@@ -170,8 +170,6 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
 
         setForegroundSafely()
 
-        libraryPreferences.lastUpdatedTimestamp().set(Instant.now().toEpochMilli())
-
         val categoryId = inputData.getLong(KEY_CATEGORY, -1L)
         // SY -->
         val group = inputData.getInt(KEY_GROUP, LibraryGroup.BY_DEFAULT)
@@ -182,11 +180,11 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
         return withIOContext {
             try {
                 updateChapterList()
+                libraryPreferences.lastUpdatedTimestamp().set(Instant.now().toEpochMilli())
                 Result.success()
             } catch (e: Exception) {
                 if (e is CancellationException) {
-                    // Assume success although cancelled
-                    Result.success()
+                    throw e
                 } else {
                     logcat(LogPriority.ERROR, e)
                     Result.failure()

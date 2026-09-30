@@ -1,5 +1,6 @@
 package eu.kanade.domain.track.service
 
+import eu.kanade.domain.track.model.AutoRereadResetMode
 import eu.kanade.domain.track.model.AutoTrackState
 import eu.kanade.tachiyomi.data.track.Tracker
 import eu.kanade.tachiyomi.data.track.anilist.Anilist
@@ -48,6 +49,16 @@ class TrackPreferences(
     fun autoUpdateTrackOnMarkRead() = preferenceStore.getEnum(
         "pref_auto_update_manga_on_mark_read",
         AutoTrackState.ALWAYS,
+    )
+
+    fun autoRereadBehavior() = preferenceStore.getEnum(
+        "pref_auto_reread_behavior",
+        AutoTrackState.ASK,
+    )
+
+    fun autoRereadResetMode() = preferenceStore.getEnum(
+        "pref_auto_reread_reset_mode",
+        AutoRereadResetMode.RESET_TO_CURRENT_EPISODE,
     )
 
     // AM -->

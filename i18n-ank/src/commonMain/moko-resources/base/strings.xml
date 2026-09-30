@@ -208,6 +208,16 @@
     <string name="pref_remove_after_watching">After watching automatically delete</string>
     <string name="pref_auto_update_anime_sync">Update progress after watching</string>
     <string name="pref_auto_update_anime_on_mark_seen">Update progress when marked as watched</string>
+    <string name="pref_auto_reread_behavior">Auto rewatch</string>
+    <string name="pref_auto_reread_behavior_title">When an AniList or MyAnimeList entry is completed</string>
+    <string name="pref_auto_reread_reset_to">Reset local progress to</string>
+    <string name="pref_auto_reread_reset_to_zero">Episode 0</string>
+    <string name="pref_auto_reread_reset_to_current_episode">Current episode</string>
+    <string name="reread_prompt_title">Start rewatch?</string>
+    <string name="reread_prompt_body">Reset this anime and start a rewatch from %s?</string>
+    <string name="tracker_manga">Tracker Manga</string>
+    <string name="action_load_more">Load more</string>
+    <string name="this_episode">the current episode</string>
     <string name="pref_skip_seen_episodes">Skip episodes marked seen</string>
     <string name="pref_skip_filtered_episodes">Skip filtered episodes</string>
     <string name="pref_skip_dupe_episodes">Skip duplicate episodes</string>

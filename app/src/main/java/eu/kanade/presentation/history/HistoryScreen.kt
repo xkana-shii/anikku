@@ -69,7 +69,16 @@ fun HistoryScreen(
     // KMK <--
 ) {
     // KMK -->
-    BackHandler(enabled = state.selectionMode, onBack = toggleSelectionMode)
+    BackHandler(
+        enabled = state.selectionMode || !state.searchQuery.isNullOrEmpty(),
+        onBack = {
+            if (state.selectionMode) {
+                toggleSelectionMode()
+            } else {
+                onSearchQueryChange(null)
+            }
+        },
+    )
     // KMK <--
     val tvFocusRequesters = rememberTvAppBarContentFocusRequesters()
     val firstHistoryItem = state.list.firstOrNull()
@@ -201,6 +210,7 @@ private fun HistoryScreenContent(
                     ListGroupHeader(
                         modifier = Modifier.animateItemFastScroll(),
                         text = relativeDateText(item.date),
+                        count = item.mangaCount,
                     )
                 }
                 is HistoryUiModel.Item -> {
@@ -270,7 +280,7 @@ private fun HistoryScreenContent(
 }
 
 sealed interface HistoryUiModel {
-    data class Header(val date: LocalDate) : HistoryUiModel
+    data class Header(val date: LocalDate, val mangaCount: Int) : HistoryUiModel
     // KMK -->
     data class Item(val item: HistoryWithRelations) : HistoryUiModel
     // KMK <--

@@ -124,6 +124,7 @@ enum class Panels {
 sealed class Dialogs {
     data object None : Dialogs()
     data object EpisodeList : Dialogs()
+    data object RereadPrompt : Dialogs()
     data class IntegerPicker(
         val defaultValue: Int,
         val minValue: Int,

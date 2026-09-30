@@ -84,6 +84,7 @@ data object UpdatesTab : Tab {
         val screenModel = rememberScreenModel { UpdatesScreenModel() }
         val settingsScreenModel = rememberScreenModel { UpdatesSettingsScreenModel() }
         val state by screenModel.state.collectAsState()
+        val isLibraryUpdating by screenModel.isLibraryUpdating.collectAsState()
         val scope = rememberCoroutineScope()
 
         // KMK -->
@@ -98,6 +99,8 @@ data object UpdatesTab : Tab {
             onSelectAll = screenModel::toggleAllSelection,
             onInvertSelection = screenModel::invertSelection,
             onUpdateLibrary = screenModel::updateLibrary,
+            onCancelLibraryUpdate = screenModel::cancelLibraryUpdate,
+            isLibraryUpdating = isLibraryUpdating,
             onDownloadChapter = screenModel::downloadChapters,
             onMultiBookmarkClicked = screenModel::bookmarkUpdates,
             // AY -->

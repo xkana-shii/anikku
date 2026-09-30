@@ -26,7 +26,7 @@ android {
     namespace = "eu.kanade.tachiyomi"
 
     defaultConfig {
-        applicationId = "app.anikku"
+        applicationId = "app.anikku.kns"
 
         versionCode = 8
         versionName = "0.2.0"

@@ -23,6 +23,7 @@ import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.SearchToolbar
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.ank.AMR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.Pill
 import tachiyomi.presentation.core.i18n.stringResource
@@ -41,6 +42,8 @@ fun LibraryToolbar(
     onClickGlobalUpdate: () -> Unit,
     onClickOpenRandomManga: () -> Unit,
     onClickSyncNow: () -> Unit,
+    onClickTrackerManga: () -> Unit,
+    hasLoggedInTrackers: Boolean,
     // SY -->
     isSyncEnabled: Boolean,
     // SY <--
@@ -65,6 +68,8 @@ fun LibraryToolbar(
         onClickGlobalUpdate = onClickGlobalUpdate,
         onClickOpenRandomManga = onClickOpenRandomManga,
         onClickSyncNow = onClickSyncNow,
+        onClickTrackerManga = onClickTrackerManga,
+        hasLoggedInTrackers = hasLoggedInTrackers,
         // SY -->
         isSyncEnabled = isSyncEnabled,
         // SY <--
@@ -84,6 +89,8 @@ private fun LibraryRegularToolbar(
     onClickGlobalUpdate: () -> Unit,
     onClickOpenRandomManga: () -> Unit,
     onClickSyncNow: () -> Unit,
+    onClickTrackerManga: () -> Unit,
+    hasLoggedInTrackers: Boolean,
     // SY -->
     isSyncEnabled: Boolean,
     // SY <--
@@ -147,6 +154,14 @@ private fun LibraryRegularToolbar(
                             AppBar.OverflowAction(
                                 title = stringResource(SYMR.strings.sync_library),
                                 onClick = onClickSyncNow,
+                            ),
+                        )
+                    }
+                    if (hasLoggedInTrackers) {
+                        add(
+                            AppBar.OverflowAction(
+                                title = stringResource(AMR.strings.tracker_manga),
+                                onClick = onClickTrackerManga,
                             ),
                         )
                     }

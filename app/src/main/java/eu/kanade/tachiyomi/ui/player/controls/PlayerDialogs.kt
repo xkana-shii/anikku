@@ -5,6 +5,7 @@ import eu.kanade.tachiyomi.data.database.models.Episode
 import eu.kanade.tachiyomi.ui.player.Dialogs
 import eu.kanade.tachiyomi.ui.player.controls.components.dialogs.EpisodeListDialog
 import eu.kanade.tachiyomi.ui.player.controls.components.dialogs.IntegerPickerDialog
+import eu.kanade.tachiyomi.ui.player.controls.components.dialogs.RereadPromptDialog
 import kotlinx.collections.immutable.ImmutableList
 
 @Composable
@@ -20,6 +21,7 @@ fun PlayerDialogs(
     onBookmarkClicked: (Long?, Boolean) -> Unit,
     onFillermarkClicked: (Long?, Boolean) -> Unit,
     onEpisodeClicked: (Long?) -> Unit,
+    onRereadConfirm: () -> Unit,
 
     onDismissRequest: () -> Unit,
 ) {
@@ -35,6 +37,13 @@ fun PlayerDialogs(
                 onBookmarkClicked = onBookmarkClicked,
                 onFillermarkClicked = onFillermarkClicked,
                 onEpisodeClicked = onEpisodeClicked,
+                onDismissRequest = onDismissRequest,
+            )
+        }
+        Dialogs.RereadPrompt -> {
+            RereadPromptDialog(
+                currentEpisodeNumber = episodeList.getOrNull(currentEpisodeIndex)?.episode_number,
+                onConfirm = onRereadConfirm,
                 onDismissRequest = onDismissRequest,
             )
         }

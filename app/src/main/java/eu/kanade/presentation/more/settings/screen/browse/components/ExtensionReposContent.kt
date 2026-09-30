@@ -26,9 +26,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.imageResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -37,6 +36,7 @@ import eu.kanade.tachiyomi.util.system.copyToClipboard
 import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.persistentSetOf
 import mihon.domain.extensionrepo.interactor.CreateExtensionRepo.Companion.ANIKKU_SIGNATURE
+import mihon.domain.extensionrepo.interactor.CreateExtensionRepo.Companion.KANASHII_SIGNATURE
 import mihon.domain.extensionrepo.interactor.CreateExtensionRepo.Companion.REPO_SIGNATURE
 import mihon.domain.extensionrepo.model.ExtensionRepo
 import tachiyomi.i18n.MR
@@ -106,7 +106,7 @@ private fun ExtensionRepoListItem(
         ) {
             val resId = repoResId(repo.signingKeyFingerprint)
             Image(
-                bitmap = ImageBitmap.imageResource(id = resId),
+                painter = painterResource(id = resId),
                 contentDescription = null,
                 alpha = if (isDisabled) 0.4f else 1f,
                 modifier = Modifier
@@ -187,6 +187,7 @@ private fun ExtensionRepoListItem(
 
 // KMK -->
 fun repoResId(signKey: String) = when (signKey) {
+        KANASHII_SIGNATURE -> R.drawable.ic_kanashii
     ANIKKU_SIGNATURE -> R.mipmap.anikku
     REPO_SIGNATURE -> R.mipmap.repo
     else -> R.mipmap.extension

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CalendarMonth
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material.icons.outlined.FlipToBack
 import androidx.compose.material.icons.outlined.Refresh
@@ -62,6 +63,8 @@ fun UpdateScreen(
     onInvertSelection: () -> Unit,
     onCalendarClicked: () -> Unit,
     onUpdateLibrary: () -> Boolean,
+    onCancelLibraryUpdate: () -> Unit,
+    isLibraryUpdating: Boolean,
     onDownloadChapter: (List<UpdatesItem>, ChapterDownloadAction) -> Unit,
     onMultiBookmarkClicked: (List<UpdatesItem>, bookmark: Boolean) -> Unit,
     // AY -->
@@ -98,6 +101,8 @@ fun UpdateScreen(
             UpdatesAppBar(
                 onCalendarClicked = { onCalendarClicked() },
                 onUpdateLibrary = { onUpdateLibrary() },
+                onCancelLibraryUpdate = onCancelLibraryUpdate,
+                isLibraryUpdating = isLibraryUpdating,
                 onFilterClicked = { onFilterClicked() },
                 hasFilters = hasActiveFilters,
                 actionModeCounter = state.selected.size,
@@ -190,6 +195,8 @@ fun UpdateScreen(
 private fun UpdatesAppBar(
     onCalendarClicked: () -> Unit,
     onUpdateLibrary: () -> Unit,
+    onCancelLibraryUpdate: () -> Unit,
+    isLibraryUpdating: Boolean,
     onFilterClicked: () -> Unit,
     hasFilters: Boolean,
     // For action mode
@@ -220,9 +227,11 @@ private fun UpdatesAppBar(
                         onClick = onCalendarClicked,
                     ),
                     AppBar.Action(
-                        title = stringResource(MR.strings.action_update_library),
-                        icon = Icons.Outlined.Refresh,
-                        onClick = onUpdateLibrary,
+                        title = stringResource(
+                            if (isLibraryUpdating) MR.strings.action_cancel else MR.strings.action_update_library,
+                        ),
+                        icon = if (isLibraryUpdating) Icons.Outlined.Close else Icons.Outlined.Refresh,
+                        onClick = if (isLibraryUpdating) onCancelLibraryUpdate else onUpdateLibrary,
                     ),
                 ),
             )

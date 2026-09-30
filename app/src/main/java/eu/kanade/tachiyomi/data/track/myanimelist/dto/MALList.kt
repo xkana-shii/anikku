@@ -14,13 +14,21 @@ data class MALListItem(
 @Serializable
 data class MALListItemStatus(
     @SerialName("is_rewatching")
-    val isRewatching: Boolean,
-    val status: String,
+    val isRewatching: Boolean = false,
+    val status: String = "",
     @SerialName("num_episodes_watched")
-    val numEpisodesWatched: Double,
-    val score: Int,
+    val numEpisodesWatched: Double = 0.0,
+    val score: Int = 0,
     @SerialName("start_date")
-    val startDate: String?,
+    val startDate: String? = null,
     @SerialName("finish_date")
-    val finishDate: String?,
+    val finishDate: String? = null,
+    @SerialName("num_times_rewatched")
+    val numTimesRewatched: Int = 0,
+)
+
+@Serializable
+data class MALListItemStatusWrapper(
+    @SerialName("my_list_status")
+    val myListStatus: MALListItemStatus?,
 )

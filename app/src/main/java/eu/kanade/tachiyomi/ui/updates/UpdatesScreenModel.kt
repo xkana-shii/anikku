@@ -16,6 +16,7 @@ import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
+import eu.kanade.tachiyomi.data.LibraryUpdateStatus
 import eu.kanade.tachiyomi.util.lang.toLocalDate
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.mutate
@@ -67,6 +68,7 @@ class UpdatesScreenModel(
     private val getChapter: GetChapter = Injekt.get(),
     private val libraryPreferences: LibraryPreferences = Injekt.get(),
     private val updatesPreferences: UpdatesPreferences = Injekt.get(),
+    private val libraryUpdateStatus: LibraryUpdateStatus = Injekt.get(),
     val snackbarHostState: SnackbarHostState = SnackbarHostState(),
     downloadPreferences: DownloadPreferences = Injekt.get(),
 ) : StateScreenModel<UpdatesScreenModel.State>(State()) {
@@ -75,6 +77,7 @@ class UpdatesScreenModel(
     val events: Flow<Event> = _events.receiveAsFlow()
 
     val lastUpdated by libraryPreferences.lastUpdatedTimestamp().asState(screenModelScope)
+    val isLibraryUpdating = libraryUpdateStatus.isRunning
 
     val useExternalDownloader = downloadPreferences.useExternalDownloader().get()
 
@@ -215,6 +218,12 @@ class UpdatesScreenModel(
             _events.send(Event.LibraryUpdateTriggered(started))
         }
         return started
+    }
+
+    fun cancelLibraryUpdate() {
+        screenModelScope.launchIO {
+            LibraryUpdateJob.stop(Injekt.get<Application>())
+        }
     }
 
     /**

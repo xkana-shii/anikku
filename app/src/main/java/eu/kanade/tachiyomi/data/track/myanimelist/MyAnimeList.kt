@@ -158,6 +158,10 @@ class MyAnimeList(id: Long) : BaseTracker(id, "MyAnimeList"), DeletableTracker {
         return api.getAnimeMetadata(track)
     }
 
+    override suspend fun getPaginatedMangaList(page: Int, statusId: Long): List<TrackMangaMetadata> {
+        return api.getPaginatedMangaList(page, statusId)
+    }
+
     fun getIfAuthExpired(): Boolean {
         return trackPreferences.trackAuthExpired(this).get()
     }

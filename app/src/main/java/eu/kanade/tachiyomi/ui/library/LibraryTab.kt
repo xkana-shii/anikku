@@ -36,6 +36,7 @@ import eu.kanade.presentation.library.LibrarySettingsDialog
 import eu.kanade.presentation.library.ResetInfoMangaDialog
 import eu.kanade.presentation.library.components.LibraryContent
 import eu.kanade.presentation.library.components.LibraryToolbar
+import eu.kanade.presentation.library.tracker.TrackerMangaListScreen
 import eu.kanade.presentation.manga.components.LibraryBottomActionMenu
 import eu.kanade.presentation.more.onboarding.GETTING_STARTED_URL
 import eu.kanade.presentation.util.Tab
@@ -45,6 +46,7 @@ import eu.kanade.tachiyomi.data.connections.discord.DiscordScreen
 import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.data.sync.SyncDataJob
+import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.ui.browse.source.SourcesScreen
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreen
 import eu.kanade.tachiyomi.ui.category.CategoryScreen
@@ -110,6 +112,8 @@ data object LibraryTab : Tab {
         val navigator = LocalNavigator.currentOrThrow
         val context = LocalContext.current
         val scope = rememberCoroutineScope()
+        val hasLoggedInTrackers = remember { Injekt.get<TrackerManager>().loggedInTrackersFlow() }
+            .collectAsState(initial = emptyList()).value
         val haptic = LocalHapticFeedback.current
 
         val screenModel = rememberScreenModel { LibraryScreenModel() }
@@ -179,6 +183,8 @@ data object LibraryTab : Tab {
                             context.toast(SYMR.strings.sync_in_progress)
                         }
                     },
+                    onClickTrackerManga = { navigator.push(TrackerMangaListScreen()) },
+                    hasLoggedInTrackers = hasLoggedInTrackers.any { it.id == TrackerManager.MYANIMELIST || it.id == TrackerManager.ANILIST },
                     // SY -->
                     isSyncEnabled = state.isSyncEnabled,
                     // SY <--

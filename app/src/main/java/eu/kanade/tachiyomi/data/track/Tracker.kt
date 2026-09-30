@@ -89,6 +89,8 @@ interface Tracker {
 
     // SY -->
     suspend fun getMangaMetadata(track: DomainTrack): TrackMangaMetadata
+
+    suspend fun getPaginatedMangaList(page: Int, statusId: Long): List<TrackMangaMetadata> = emptyList()
     // SY <--
 
     // KMK -->

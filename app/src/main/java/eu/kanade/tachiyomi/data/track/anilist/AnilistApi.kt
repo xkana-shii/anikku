@@ -9,6 +9,7 @@ import eu.kanade.tachiyomi.data.track.anilist.dto.ALCurrentUserResult
 import eu.kanade.tachiyomi.data.track.anilist.dto.ALOAuth
 import eu.kanade.tachiyomi.data.track.anilist.dto.ALSearchResult
 import eu.kanade.tachiyomi.data.track.anilist.dto.ALUserListAnimeQueryResult
+import eu.kanade.tachiyomi.data.track.anilist.dto.ALUserMangaListQueryResult
 import eu.kanade.tachiyomi.data.track.model.TrackMangaMetadata
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import eu.kanade.tachiyomi.network.POST
@@ -291,6 +292,51 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
 
     suspend fun getLibAnime(track: Track, userId: Int): Track {
         return findLibAnime(track, userId) ?: throw Exception("Could not find anime")
+    }
+
+    suspend fun getPaginatedMangaList(page: Int, statusId: Long, userId: Int): List<TrackMangaMetadata> {
+        return withIOContext {
+            val query = """
+                |query (${ '$' }id: Int!, ${ '$' }page: Int!, ${ '$' }status: MediaListStatus!) {
+                |  Page(perPage: 50, page: ${ '$' }page) {
+                |    mediaList(userId: ${ '$' }id, type: ANIME, status: ${ '$' }status) {
+                |      media { id title { userPreferred } coverImage { large } }
+                |    }
+                |  }
+                |}
+            """.trimMargin()
+            val payload = buildJsonObject {
+                put("query", query)
+                putJsonObject("variables") {
+                    put("id", userId)
+                    put("page", page)
+                    put("status", statusId.toAnilistStatus())
+                }
+            }
+            with(json) {
+                authClient.newCall(POST(API_URL, body = payload.toString().toRequestBody(jsonMime)))
+                    .awaitSuccess()
+                    .parseAs<ALUserMangaListQueryResult>()
+                    .data.page.mediaList
+                    .map { entry ->
+                        TrackMangaMetadata(
+                            remoteId = entry.media.id,
+                            title = entry.media.title.userPreferred,
+                            thumbnailUrl = entry.media.coverImage.large,
+                        )
+                    }
+            }
+        }
+    }
+
+    private fun Long.toAnilistStatus() = when (this) {
+        Anilist.WATCHING -> "CURRENT"
+        Anilist.COMPLETED -> "COMPLETED"
+        Anilist.ON_HOLD -> "PAUSED"
+        Anilist.DROPPED -> "DROPPED"
+        Anilist.PLAN_TO_WATCH -> "PLANNING"
+        Anilist.REWATCHING -> "REPEATING"
+        else -> "CURRENT"
     }
 
     fun createOAuth(token: String): ALOAuth {
