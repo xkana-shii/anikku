@@ -84,6 +84,7 @@ enum class TrackStatus(val int: Int, val res: StringResource) {
                         Simkl.ON_HOLD -> PAUSED
                         Simkl.PLAN_TO_WATCH -> PLAN_TO_WATCH
                         Simkl.NOT_INTERESTING -> DROPPED
+                        Simkl.REWATCHING -> REWATCHING
                         else -> null
                     }
                 }

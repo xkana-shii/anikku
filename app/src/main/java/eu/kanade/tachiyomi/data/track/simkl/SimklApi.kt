@@ -16,7 +16,8 @@ import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.network.awaitSuccess
 import eu.kanade.tachiyomi.network.jsonMime
 import eu.kanade.tachiyomi.network.parseAs
-import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.addJsonObject
 import kotlinx.serialization.json.buildJsonArray
@@ -122,6 +123,66 @@ class SimklApi(private val client: OkHttpClient, interceptor: SimklInterceptor) 
         }
     }.toString().toRequestBody(jsonMime)
 
+    /**
+     * Starts an isolated Simkl rewatch session. This deliberately does not use
+     * /sync/history/remove: that endpoint removes the user's canonical watch history.
+     */
+    suspend fun startRewatch(track: Track): Long {
+        requireRewatchEntitlement()
+        val response = authClient.newCall(
+            POST(
+                "$API_URL/sync/history?allow_rewatch=yes",
+                body = buildRewatchProgressObject(track, rewatchId = null, includeCompletedEpisodes = true),
+            ),
+        ).awaitSuccess().let { response ->
+            with(json) { response.parseAs<SimklHistoryResponse>() }
+        }
+        return response.added?.statuses.orEmpty()
+            .firstOrNull { it.rewatchId != null }
+            ?.rewatchId
+            ?: error("Simkl did not create a rewatch session")
+    }
+
+    suspend fun updateRewatchProgress(track: Track, rewatchId: Long) {
+        if (track.last_episode_seen <= 0.0) return
+        authClient.newCall(
+            POST(
+                "$API_URL/sync/history?allow_rewatch=yes",
+                body = buildRewatchProgressObject(track, rewatchId, includeCompletedEpisodes = false),
+            ),
+        ).awaitSuccess()
+    }
+
+    private fun buildRewatchProgressObject(
+        track: Track,
+        rewatchId: Long?,
+        includeCompletedEpisodes: Boolean,
+    ) = buildJsonObject {
+        val type = track.tracking_url.substringAfter("/").substringBefore("/")
+        putJsonArray(if (type == "movies") "movies" else "shows") {
+            addJsonObject {
+                putJsonObject("ids") {
+                    put("simkl", track.remote_id)
+                }
+                put("is_rewatch", true)
+                rewatchId?.let { put("rewatch_id", it) }
+                if (type != "movies" && track.last_episode_seen > 0.0) {
+                    putJsonArray("seasons") {
+                        addJsonObject {
+                            put("number", 1)
+                            putJsonArray("episodes") {
+                                val firstEpisode = if (includeCompletedEpisodes) 1 else track.last_episode_seen.toInt()
+                                for (episode in firstEpisode..track.last_episode_seen.toInt()) {
+                                    addJsonObject { put("number", episode) }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }.toString().toRequestBody(jsonMime)
+
     suspend fun updateLibAnime(track: Track): Track {
         return withIOContext {
             // determine media type
@@ -200,17 +261,81 @@ class SimklApi(private val client: OkHttpClient, interceptor: SimklInterceptor) 
                     } ?: return@withIOContext null
             }
 
-            listAnime.toTrack(typeName, type, status)
+            val activeRewatch = findActiveRewatch(track, queryType, typeName, lastWatched)
+            (activeRewatch ?: listAnime).toTrack(
+                typeName = typeName,
+                type = type,
+                statusString = if (activeRewatch != null) "rewatching" else status,
+            )
         }
     }
 
-    fun getCurrentUser(): Int {
-        return runBlocking {
+    suspend fun findActiveRewatchId(track: Track): Long? {
+        val type = track.tracking_url.substringAfter("/").substringBefore("/")
+        val queryType = if (type == "tv") "shows" else type
+        return findActiveRewatch(track, queryType, if (type == "movies") "movie" else "show", null)?.rewatchId
+    }
+
+    private suspend fun findActiveRewatch(
+        track: Track,
+        queryType: String,
+        typeName: String,
+        dateFrom: String?,
+    ): eu.kanade.tachiyomi.data.track.simkl.dto.SimklSyncItem? {
+        val url = "$API_URL/sync/all-items/$queryType/all".toUri().buildUpon()
+            .appendQueryParameter("allow_rewatch", "yes")
+            .appendQueryParameter("extended", "full")
+            .apply { dateFrom?.let { appendQueryParameter("date_from", it) } }
+            .build()
+        return with(json) {
+            authClient.newCall(GET(url.toString()))
+                .awaitSuccess()
+                .parseAs<SimklSyncResult>()
+                .getFromType(queryType)
+                .orEmpty()
+                .firstOrNull { item ->
+                    item.isRewatch &&
+                        item.rewatchStatus == "active" &&
+                        item.getFromType(typeName).ids.simkl == track.remote_id
+                }
+        }
+    }
+
+    suspend fun isRewatchEligible(): Boolean {
+        return getCurrentUser().account.type?.lowercase() in setOf("pro", "vip")
+    }
+
+    private suspend fun requireRewatchEntitlement() {
+        check(isRewatchEligible()) { "Simkl rewatch tracking requires a Simkl PRO or VIP account" }
+    }
+
+    suspend fun getCurrentUser(): SimklUser {
+        return withIOContext {
             with(json) {
                 authClient.newCall(GET("$API_URL/users/settings"))
                     .awaitSuccess()
-                    .parseAs<SimklUser>()
-                    .account.id
+                    .parseAs()
+            }
+        }
+    }
+
+    suspend fun getPaginatedMangaList(page: Int, status: String): List<TrackMangaMetadata> {
+        val url = "$API_URL/sync/all-items/anime/$status".toUri().buildUpon()
+            .appendQueryParameter("page", page.toString())
+            .appendQueryParameter("limit", PAGE_SIZE.toString())
+            .build()
+        return withIOContext {
+            with(json) {
+                authClient.newCall(GET(url.toString()))
+                    .awaitSuccess()
+                    .parseAs<SimklSyncResult>()
+                    .getFromType("anime")
+                    .orEmpty()
+                    .map { item ->
+                        item.getFromType("show").let {
+                            TrackMangaMetadata(remoteId = it.ids.simkl, title = it.title)
+                        }
+                    }
             }
         }
     }
@@ -275,6 +400,7 @@ class SimklApi(private val client: OkHttpClient, interceptor: SimklInterceptor) 
         const val POSTERS_URL = "https://simkl.in/posters/"
 
         private const val REDIRECT_URL = "anikku://simkl-auth"
+        private const val PAGE_SIZE = 50
 
         fun authUrl(): Uri =
             LOGIN_URL.toUri().buildUpon()
@@ -284,3 +410,18 @@ class SimklApi(private val client: OkHttpClient, interceptor: SimklInterceptor) 
                 .build()
     }
 }
+
+@Serializable
+private data class SimklHistoryResponse(
+    val added: SimklHistoryAdded? = null,
+)
+
+@Serializable
+private data class SimklHistoryAdded(
+    val statuses: List<SimklHistoryStatus> = emptyList(),
+)
+
+@Serializable
+private data class SimklHistoryStatus(
+    @SerialName("rewatch_id") val rewatchId: Long? = null,
+)

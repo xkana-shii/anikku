@@ -58,6 +58,7 @@ import eu.kanade.tachiyomi.data.sync.SyncDataJob
 import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.data.track.anilist.Anilist
 import eu.kanade.tachiyomi.data.track.myanimelist.MyAnimeList
+import eu.kanade.tachiyomi.data.track.simkl.Simkl
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.player.controls.components.IndexedSegment
@@ -2057,7 +2058,11 @@ class PlayerViewModel @JvmOverloads constructor(
                     manager.aniList.id -> manager.aniList.isLoggedIn && track.status == Anilist.COMPLETED
                     else -> false
                 }
-            }
+            } || (
+                manager.simkl.isLoggedIn &&
+                    tracks.any { it.trackerId == manager.simkl.id && it.status == Simkl.COMPLETED } &&
+                    manager.simkl.canTrackRewatches()
+                )
             if (!completed) return@launchIO
             when (trackPreferences.autoRereadBehavior().get()) {
                 AutoTrackState.ALWAYS -> confirmStartReread()
@@ -2093,12 +2098,17 @@ class PlayerViewModel @JvmOverloads constructor(
             val tracks = getTracks.await(currentAnime.id)
             val manager = Injekt.get<TrackerManager>()
             supervisorScope {
-                tracks.filter { it.trackerId == manager.myAnimeList.id || it.trackerId == manager.aniList.id }
+                tracks.filter {
+                    it.trackerId == manager.myAnimeList.id ||
+                        it.trackerId == manager.aniList.id ||
+                        it.trackerId == manager.simkl.id
+                }
                     .map { track ->
                         launch {
                             runCatching {
                                 val service = manager.get(track.trackerId) ?: return@runCatching
                                 if (!service.isLoggedIn) return@runCatching
+                                if (service is Simkl && !service.canTrackRewatches()) return@runCatching
                                 val refreshed = service.refresh(track.toDbTrack()).toDomainTrack(idRequired = true) ?: return@runCatching
                                 val updated = refreshed.copy(
                                     status = service.getRereadingStatus(),

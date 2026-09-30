@@ -8,16 +8,17 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class SimklSyncResult(
-    val anime: List<SimklSyncItem>?,
-    val tv: List<SimklSyncItem>?,
-    val movies: List<SimklSyncItem>?,
+    val anime: List<SimklSyncItem>? = null,
+    val tv: List<SimklSyncItem>? = null,
+    val shows: List<SimklSyncItem>? = null,
+    val movies: List<SimklSyncItem>? = null,
 ) {
     fun getFromType(type: String): List<SimklSyncItem>? {
         return when (type) {
             "anime" -> anime
             "tv" -> tv
             "movies" -> movies
-            "shows" -> tv
+            "shows" -> shows ?: tv
             else -> throw Exception("Unknown type: $type")
         }
     }
@@ -25,14 +26,21 @@ data class SimklSyncResult(
 
 @Serializable
 data class SimklSyncItem(
-    val show: SimklSyncResultItem?,
-    val movie: SimklSyncResultItem?,
+    val show: SimklSyncResultItem? = null,
+    val movie: SimklSyncResultItem? = null,
     @SerialName("total_episodes_count")
-    val totalEpisodesCount: Long?,
+    val totalEpisodesCount: Long? = null,
     @SerialName("watched_episodes_count")
-    val watchedEpisodesCount: Double?,
+    val watchedEpisodesCount: Double? = null,
     @SerialName("user_rating")
-    val userRating: Int?,
+    val userRating: Int? = null,
+    val status: String? = null,
+    @SerialName("is_rewatch")
+    val isRewatch: Boolean = false,
+    @SerialName("rewatch_id")
+    val rewatchId: Long? = null,
+    @SerialName("rewatch_status")
+    val rewatchStatus: String? = null,
 ) {
     fun toTrack(typeName: String, type: String, statusString: String): Track {
         val resultData = getFromType(typeName)
@@ -41,8 +49,8 @@ data class SimklSyncItem(
             title = resultData.title
             remote_id = resultData.ids.simkl
             if (typeName != "movie") {
-                total_episodes = totalEpisodesCount!!
-                last_episode_seen = watchedEpisodesCount!!
+                total_episodes = totalEpisodesCount ?: 0L
+                last_episode_seen = watchedEpisodesCount ?: 0.0
             } else {
                 total_episodes = 1
                 last_episode_seen = if (statusString == "completed") 1.0 else 0.0
@@ -55,8 +63,8 @@ data class SimklSyncItem(
 
     fun getFromType(typeName: String): SimklSyncResultItem {
         return when (typeName) {
-            "show" -> show!!
-            "movie" -> movie!!
+            "show" -> show ?: error("Missing show data in Simkl response")
+            "movie" -> movie ?: error("Missing movie data in Simkl response")
             else -> throw Exception("Unknown type: $typeName")
         }
     }

@@ -13,7 +13,10 @@ SELECT
     -- KMK -->
     sum(coalesce(ES.bookmarkSeenCount, 0)) AS total_bookmarksSeenCount,
     -- KMK <--
-    sum(coalesce(ES.fillermarkCount, 0)) AS total_fillermarks
+    sum(coalesce(ES.fillermarkCount, 0)) AS total_fillermarks,
+    sum(coalesce(ES.fillermarkSeenCount, 0)) AS total_fillermarksSeenCount,
+    sum(coalesce(ES.fillermarkBookmarkCount, 0)) AS total_fillermarksBookmarkCount,
+    sum(coalesce(ES.fillermarkBookmarkSeenCount, 0)) AS total_fillermarksBookmarkSeenCount
 FROM animes season
 LEFT JOIN episodestatsView ES ON season._id = ES.anime_id
 LEFT JOIN historystatsView HS ON season._id = HS.anime_id
@@ -36,7 +39,10 @@ SELECT
     -- KMK -->
     sum(coalesce(ES.bookmarkSeenCount, 0)) AS total_bookmarksSeenCount,
     -- KMK <--
-    sum(coalesce(ES.fillermarkCount, 0)) AS total_fillermarks
+    sum(coalesce(ES.fillermarkCount, 0)) AS total_fillermarks,
+    sum(coalesce(ES.fillermarkSeenCount, 0)) AS total_fillermarksSeenCount,
+    sum(coalesce(ES.fillermarkBookmarkCount, 0)) AS total_fillermarksBookmarkCount,
+    sum(coalesce(ES.fillermarkBookmarkSeenCount, 0)) AS total_fillermarksBookmarkSeenCount
 FROM animes season
 LEFT JOIN episodemergestatsView ES ON season._id = ES.merge_id
 LEFT JOIN historymergestatsView HS ON season._id = HS.merge_id

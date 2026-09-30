@@ -37,6 +37,18 @@ SELECT
         WHEN 1 THEN coalesce(ES.fillermarkCount, 0)
         WHEN 0 THEN coalesce(ASS.total_fillermarks, 0)
     END AS fillermarkCount,
+    CASE A.fetch_type
+        WHEN 1 THEN coalesce(ES.fillermarkSeenCount, 0)
+        WHEN 0 THEN coalesce(ASS.total_fillermarksSeenCount, 0)
+    END AS fillermarkSeenCount,
+    CASE A.fetch_type
+        WHEN 1 THEN coalesce(ES.fillermarkBookmarkCount, 0)
+        WHEN 0 THEN coalesce(ASS.total_fillermarksBookmarkCount, 0)
+    END AS fillermarkBookmarkCount,
+    CASE A.fetch_type
+        WHEN 1 THEN coalesce(ES.fillermarkBookmarkSeenCount, 0)
+        WHEN 0 THEN coalesce(ASS.total_fillermarksBookmarkSeenCount, 0)
+    END AS fillermarkBookmarkSeenCount,
     -- <-- AY
     coalesce(AC.categories, '0') AS categories
 FROM animes A
@@ -96,6 +108,18 @@ SELECT
         WHEN 1 THEN coalesce(ES.fillermarkCount, 0)
         WHEN 0 THEN coalesce(ASS.total_fillermarks, 0)
     END AS fillermarkCount,
+    CASE A.fetch_type
+        WHEN 1 THEN coalesce(ES.fillermarkSeenCount, 0)
+        WHEN 0 THEN coalesce(ASS.total_fillermarksSeenCount, 0)
+    END AS fillermarkSeenCount,
+    CASE A.fetch_type
+        WHEN 1 THEN coalesce(ES.fillermarkBookmarkCount, 0)
+        WHEN 0 THEN coalesce(ASS.total_fillermarksBookmarkCount, 0)
+    END AS fillermarkBookmarkCount,
+    CASE A.fetch_type
+        WHEN 1 THEN coalesce(ES.fillermarkBookmarkSeenCount, 0)
+        WHEN 0 THEN coalesce(ASS.total_fillermarksBookmarkSeenCount, 0)
+    END AS fillermarkBookmarkSeenCount,
     -- <-- AY
     coalesce(AC.categories, '0') AS categories
 FROM animes A

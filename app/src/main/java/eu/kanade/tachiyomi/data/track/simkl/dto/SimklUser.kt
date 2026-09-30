@@ -10,4 +10,5 @@ data class SimklUser(
 @Serializable
 data class SimklUserAccount(
     val id: Int,
+    val type: String? = null,
 )

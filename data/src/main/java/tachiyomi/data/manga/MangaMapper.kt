@@ -141,6 +141,9 @@ object MangaMapper {
         // KMK <--
         // AY -->
         fillermarkCount: Double,
+        fillermarkSeenCount: Long,
+        fillermarkBookmarkCount: Long,
+        fillermarkBookmarkSeenCount: Long,
         // <-- AY
         categories: String,
     ): LibraryManga = LibraryManga(
@@ -193,6 +196,9 @@ object MangaMapper {
         // KMK <--
         // AY -->
         fillermarkCount = fillermarkCount.toLong(),
+        fillermarkReadCount = fillermarkSeenCount,
+        fillermarkBookmarkCount = fillermarkBookmarkCount,
+        fillermarkBookmarkReadCount = fillermarkBookmarkSeenCount,
         // <-- AY
         latestUpload = latestUpload,
         chapterFetchedAt = chapterFetchedAt,

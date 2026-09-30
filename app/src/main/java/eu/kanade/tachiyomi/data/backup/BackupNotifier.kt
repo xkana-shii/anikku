@@ -14,6 +14,8 @@ import eu.kanade.tachiyomi.util.storage.getUriCompat
 import eu.kanade.tachiyomi.util.system.cancelNotification
 import eu.kanade.tachiyomi.util.system.notificationBuilder
 import eu.kanade.tachiyomi.util.system.notify
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import tachiyomi.core.common.i18n.pluralStringResource
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.storage.displayablePath
@@ -25,6 +27,8 @@ import java.io.File
 import java.util.concurrent.TimeUnit
 
 class BackupNotifier(private val context: Context) {
+
+    private val restoreProgressMutex = Mutex()
 
     private val preferences: SecurityPreferences by injectLazy()
 
@@ -140,6 +144,17 @@ class BackupNotifier(private val context: Context) {
         // KMK <--
 
         return builder
+    }
+
+    /** Serializes mutations of the shared builder and posts exactly one progress notification. */
+    suspend fun updateRestoreProgress(
+        content: String,
+        progress: Int,
+        maxAmount: Int,
+        sync: Boolean,
+    ) = restoreProgressMutex.withLock {
+        showRestoreProgress(content, progress, maxAmount, sync)
+            .show(Notifications.ID_RESTORE_PROGRESS)
     }
 
     fun showRestoreError(error: String?) {

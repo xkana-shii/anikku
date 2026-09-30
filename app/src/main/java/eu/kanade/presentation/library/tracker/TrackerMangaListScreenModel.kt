@@ -10,6 +10,7 @@ import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.data.track.anilist.Anilist
 import eu.kanade.tachiyomi.data.track.model.TrackMangaMetadata
 import eu.kanade.tachiyomi.data.track.myanimelist.MyAnimeList
+import eu.kanade.tachiyomi.data.track.simkl.Simkl
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.update
 import tachiyomi.core.common.util.lang.launchIO
@@ -25,7 +26,7 @@ class TrackerMangaListScreenModel(
 ) : StateScreenModel<TrackerMangaListState>(TrackerMangaListState()) {
     val trackers: List<Tracker> = trackerManager.loggedInTrackers()
         .filterNot { it is EnhancedTracker }
-        .filter { it is Anilist || it is MyAnimeList }
+        .filter { it is Anilist || it is MyAnimeList || it is Simkl }
     private var tracker: Tracker? = trackers.firstOrNull()
     private var libraryRemoteIds: Set<Long> = emptySet()
 
@@ -40,7 +41,7 @@ class TrackerMangaListScreenModel(
                 mutableState.update {
                     it.copy(
                         trackerId = tracker?.id,
-                        statusList = tracker?.getStatusList().orEmpty(),
+                        statusList = tracker?.trackerListStatuses().orEmpty(),
                         getStatusRes = tracker?.let { service -> service::getStatus } ?: { null },
                     )
                 }
@@ -87,13 +88,17 @@ class TrackerMangaListScreenModel(
         mutableState.update {
             TrackerMangaListState(
                 trackerId = tracker?.id,
-                statusList = tracker?.getStatusList().orEmpty(),
+                statusList = tracker?.trackerListStatuses().orEmpty(),
                 getStatusRes = tracker?.let { service -> service::getStatus } ?: { null },
             )
         }
     }
 
     fun getTrackerName() = tracker?.name.orEmpty()
+
+    private fun Tracker.trackerListStatuses(): List<Long> {
+        return getStatusList().filterNot { this is Simkl && it == Simkl.REWATCHING }
+    }
 }
 
 @Immutable

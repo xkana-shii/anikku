@@ -12,6 +12,9 @@ SELECT
     excluded_scanlators.scanlator AS ex_scanlator,
     -- KMK <--
     sum(episodes.fillermark) AS fillermarkCount
+    , sum(CASE WHEN episodes.fillermark = 1 AND episodes.seen = 1 THEN 1 ELSE 0 END) AS fillermarkSeenCount
+    , sum(CASE WHEN episodes.fillermark = 1 AND episodes.bookmark = 1 THEN 1 ELSE 0 END) AS fillermarkBookmarkCount
+    , sum(CASE WHEN episodes.fillermark = 1 AND episodes.bookmark = 1 AND episodes.seen = 1 THEN 1 ELSE 0 END) AS fillermarkBookmarkSeenCount
 FROM episodes
 LEFT JOIN excluded_scanlators
     ON episodes.anime_id = excluded_scanlators.anime_id
@@ -36,6 +39,9 @@ SELECT
     excluded_scanlators.scanlator AS ex_scanlator,
     -- KMK <--
     sum(episodes.fillermark) AS fillermarkCount
+    , sum(CASE WHEN episodes.fillermark = 1 AND episodes.seen = 1 THEN 1 ELSE 0 END) AS fillermarkSeenCount
+    , sum(CASE WHEN episodes.fillermark = 1 AND episodes.bookmark = 1 THEN 1 ELSE 0 END) AS fillermarkBookmarkCount
+    , sum(CASE WHEN episodes.fillermark = 1 AND episodes.bookmark = 1 AND episodes.seen = 1 THEN 1 ELSE 0 END) AS fillermarkBookmarkSeenCount
 FROM episodes
 LEFT JOIN excluded_scanlators
     ON episodes.anime_id = excluded_scanlators.anime_id

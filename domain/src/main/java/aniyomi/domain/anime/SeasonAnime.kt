@@ -46,6 +46,9 @@ data class SeasonAnime(
             chapterFlags = episodeFlags,
             // KMK <--
             fillermarkCount = fillermarkCount,
+            fillermarkReadCount = 0,
+            fillermarkBookmarkCount = 0,
+            fillermarkBookmarkReadCount = 0,
             latestUpload = latestUpload,
             chapterFetchedAt = fetchedAt,
             lastRead = lastSeen,

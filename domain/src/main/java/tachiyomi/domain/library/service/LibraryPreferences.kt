@@ -112,6 +112,11 @@ class LibraryPreferences(
         TriState.DISABLED,
     )
 
+    fun filterFillermarked() = preferenceStore.getEnum(
+        "pref_filter_animelib_fillermarked_v2",
+        TriState.DISABLED,
+    )
+
     fun filterIntervalCustom() = preferenceStore.getEnum(
         "pref_filter_library_interval_custom",
         TriState.DISABLED,
