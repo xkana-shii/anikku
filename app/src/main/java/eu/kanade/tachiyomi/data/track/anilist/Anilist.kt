@@ -9,6 +9,7 @@ import eu.kanade.tachiyomi.data.track.DeletableTracker
 import eu.kanade.tachiyomi.data.track.anilist.dto.ALOAuth
 import eu.kanade.tachiyomi.data.track.model.TrackMangaMetadata
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
+import exh.log.xLogW
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
@@ -235,6 +236,17 @@ class Anilist(id: Long) : BaseTracker(id, "AniList"), DeletableTracker {
     override suspend fun getMangaMetadata(track: DomainTrack): TrackMangaMetadata {
         return api.getAnimeMetadata(track)
     }
+
+    override suspend fun searchById(id: String): TrackSearch? = try {
+        api.searchById(id)
+    } catch (e: Exception) {
+        xLogW("Error during exact AniList lookup '$id': ${e.message}", e)
+        null
+    }
+
+    override suspend fun getStructuredRelations(remoteId: Long) = api.getStructuredRelations(remoteId)
+
+    override val supportsStructuredRelations: Boolean = true
 
     override suspend fun getPaginatedMangaList(page: Int, statusId: Long): List<TrackMangaMetadata> {
         return api.getPaginatedMangaList(page, statusId, getUsername().toInt())

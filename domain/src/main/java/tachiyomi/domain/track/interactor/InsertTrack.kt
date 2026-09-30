@@ -17,6 +17,10 @@ class InsertTrack(
         }
     }
 
+    suspend fun awaitOrThrow(track: Track) {
+        trackRepository.insert(track)
+    }
+
     suspend fun awaitAll(tracks: List<Track>) {
         try {
             trackRepository.insertAll(tracks)

@@ -17,9 +17,16 @@ data class SMMetadataResult(
     val id: String,
     val name: String,
     val description: String,
+    val status: String? = null,
+    val genres: List<SMAnimeGenre> = emptyList(),
     val poster: SMAnimePoster,
     val studios: List<SMAnimeStudio>,
     val personRoles: List<SMAnimePersonRoles>,
+)
+
+@Serializable
+data class SMAnimeGenre(
+    val name: String,
 )
 
 @Serializable

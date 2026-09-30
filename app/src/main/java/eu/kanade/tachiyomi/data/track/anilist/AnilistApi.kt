@@ -6,6 +6,7 @@ import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.track.anilist.dto.ALAddAnimeResult
 import eu.kanade.tachiyomi.data.track.anilist.dto.ALAnimeMetadata
 import eu.kanade.tachiyomi.data.track.anilist.dto.ALCurrentUserResult
+import eu.kanade.tachiyomi.data.track.anilist.dto.ALIdSearchResult
 import eu.kanade.tachiyomi.data.track.anilist.dto.ALOAuth
 import eu.kanade.tachiyomi.data.track.anilist.dto.ALSearchResult
 import eu.kanade.tachiyomi.data.track.anilist.dto.ALUserListAnimeQueryResult
@@ -201,6 +202,55 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
                     .data.page.media
                     .map { it.toALAnime().toTrackSearch() }
             }
+        }
+    }
+
+    suspend fun searchById(id: String): TrackSearch {
+        val remoteId = id.toIntOrNull() ?: throw IllegalArgumentException("Invalid AniList ID: $id")
+        return withIOContext {
+            val query = $$"""
+            |query ($animeId: Int!) {
+                |Media (id: $animeId, type: ANIME) {
+                    |id
+                    |studios { nodes { name } }
+                    |staff { edges { role node { name { full userPreferred native } } } }
+                    |title { userPreferred }
+                    |coverImage { large }
+                    |format
+                    |status
+                    |episodes
+                    |description
+                    |startDate { year month day }
+                    |averageScore
+                |}
+            |}
+            """.trimMargin()
+            val payload = buildJsonObject {
+                put("query", query)
+                putJsonObject("variables") { put("animeId", remoteId) }
+            }
+            with(json) {
+                authClient.newCall(POST(API_URL, body = payload.toString().toRequestBody(jsonMime)))
+                    .awaitSuccess()
+                    .parseAs<ALIdSearchResult>()
+                    .data.media.toALAnime().toTrackSearch()
+            }
+        }
+    }
+
+    suspend fun getStructuredRelations(mediaId: Long) = withIOContext {
+        val payload = buildJsonObject {
+            put(
+                "query",
+                "query { Media(id: $mediaId, type: ANIME) { relations { edges { relationType(version: 2) " +
+                    "node { id type title { userPreferred romaji english } siteUrl coverImage { large } } } } } }",
+            )
+        }
+        with(json) {
+            client.newCall(POST(API_URL, body = payload.toString().toRequestBody(jsonMime)))
+                .awaitSuccess()
+                .parseAs<JsonObject>()
+                .toStructuredRelations()
         }
     }
 

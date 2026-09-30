@@ -203,8 +203,7 @@ class BackupCreator(
         }
         return mangas.filter { manga ->
             val categories = categoriesByMangaId[manga.id].orEmpty()
-            categories.any { it in entryFilter.categoryIds } ||
-                (entryFilter.includeUncategorized && categories.isEmpty())
+            entryFilter.includes(categories)
         }
     }
 
@@ -276,4 +275,8 @@ data class BackupEntryFilter(
     val categoryIds: Set<Long> = emptySet(),
     val includeUncategorized: Boolean = true,
     val enabled: Boolean = false,
-)
+) {
+    fun includes(entryCategoryIds: List<Long>): Boolean = !enabled ||
+        entryCategoryIds.any { it in categoryIds } ||
+        (includeUncategorized && entryCategoryIds.isEmpty())
+}

@@ -36,8 +36,8 @@ import eu.kanade.domain.connections.service.WebhookEvent
 import eu.kanade.domain.episode.model.toDbEpisode
 import eu.kanade.domain.source.interactor.GetIncognitoState
 import eu.kanade.domain.sync.SyncPreferences
+import eu.kanade.domain.track.model.AutoRereadLogic
 import eu.kanade.domain.track.model.AutoRereadResetMode
-import eu.kanade.domain.track.model.AutoTrackState
 import eu.kanade.domain.track.model.toDbTrack
 import eu.kanade.domain.track.model.toDomainTrack
 import eu.kanade.domain.track.service.TrackPreferences
@@ -61,6 +61,7 @@ import eu.kanade.tachiyomi.data.track.anilist.Anilist
 import eu.kanade.tachiyomi.data.track.myanimelist.MyAnimeList
 import eu.kanade.tachiyomi.data.track.simkl.Simkl
 import eu.kanade.tachiyomi.data.webhook.WebhookNotifier
+import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.player.controls.components.IndexedSegment
@@ -2023,6 +2024,11 @@ class PlayerViewModel @JvmOverloads constructor(
 
         _currentEpisode.update { _ -> chosenEpisode }
         updateEpisode(chosenEpisode)
+        Injekt.get<WebhookNotifier>().notify(
+            WebhookEvent.EPISODE_STARTED,
+            anime,
+            mapOf("episode" to chosenEpisode.name),
+        )
 
         return withIOContext {
             try {
@@ -2065,11 +2071,10 @@ class PlayerViewModel @JvmOverloads constructor(
                     tracks.any { it.trackerId == manager.simkl.id && it.status == Simkl.COMPLETED } &&
                     manager.simkl.canTrackRewatches()
                 )
-            if (!completed) return@launchIO
-            when (trackPreferences.autoRereadBehavior().get()) {
-                AutoTrackState.ALWAYS -> confirmStartReread()
-                AutoTrackState.ASK -> dialogShown.update { Dialogs.RereadPrompt }
-                AutoTrackState.NEVER -> Unit
+            when (AutoRereadLogic.action(completed, trackPreferences.autoRereadBehavior().get())) {
+                AutoRereadLogic.Action.START -> confirmStartReread()
+                AutoRereadLogic.Action.PROMPT -> dialogShown.update { Dialogs.RereadPrompt }
+                AutoRereadLogic.Action.NONE -> Unit
             }
         }
     }
@@ -2083,20 +2088,19 @@ class PlayerViewModel @JvmOverloads constructor(
             val orderedEpisodes = unfilteredEpisodeList.sortedWith(
                 getEpisodeSort(currentAnime, sortDescending = true),
             )
-            val toReset = when (resetMode) {
-                AutoRereadResetMode.RESET_TO_ZERO -> orderedEpisodes
-                AutoRereadResetMode.RESET_TO_CURRENT_EPISODE -> {
-                    val index = orderedEpisodes.indexOfFirst { it.id == currentEpisodeId }
-                    if (index > 0) orderedEpisodes.take(index) else emptyList()
-                }
-            }
+            val toReset = AutoRereadLogic.episodesToReset(
+                orderedEpisodes,
+                currentEpisodeId,
+                resetMode,
+                idOf = { it.id },
+            )
             if (toReset.isNotEmpty()) {
                 updateEpisode.awaitAll(toReset.map { EpisodeUpdate(id = it.id, read = false) })
             }
-            val progress = when (resetMode) {
-                AutoRereadResetMode.RESET_TO_ZERO -> 0.0
-                AutoRereadResetMode.RESET_TO_CURRENT_EPISODE -> currentEpisode.value?.episode_number?.toDouble() ?: 0.0
-            }
+            val progress = AutoRereadLogic.resetProgress(
+                resetMode,
+                currentEpisode.value?.episode_number?.toDouble(),
+            )
             val tracks = getTracks.await(currentAnime.id)
             val manager = Injekt.get<TrackerManager>()
             supervisorScope {
@@ -2195,6 +2199,7 @@ class PlayerViewModel @JvmOverloads constructor(
 
     private fun updateEpisodeProgressOnComplete(currentEp: Episode) {
         if (currentEp.seen) return
+        val wasUnstarted = unfilteredEpisodeList.none { it.seen }
         currentEp.seen = true
         anime?.let { anime ->
             Injekt.get<WebhookNotifier>().notify(
@@ -2202,6 +2207,15 @@ class PlayerViewModel @JvmOverloads constructor(
                 anime,
                 mapOf("episode" to currentEp.name),
             )
+            if (wasUnstarted) {
+                Injekt.get<WebhookNotifier>().notify(WebhookEvent.NEW_ANIME_STARTED, anime)
+            }
+            if (unfilteredEpisodeList.all { it.seen || it.id == currentEp.id }) {
+                Injekt.get<WebhookNotifier>().notify(WebhookEvent.CAUGHT_UP, anime)
+                if (anime.status == SManga.COMPLETED.toLong()) {
+                    Injekt.get<WebhookNotifier>().notify(WebhookEvent.ANIME_FINISHED, anime)
+                }
+            }
         }
         updateTrackEpisodeSeen(currentEp)
         maybePromptRereadOnEpisodeComplete()

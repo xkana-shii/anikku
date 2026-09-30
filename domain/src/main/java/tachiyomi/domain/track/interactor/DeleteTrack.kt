@@ -15,4 +15,8 @@ class DeleteTrack(
             logcat(LogPriority.ERROR, e)
         }
     }
+
+    suspend fun awaitOrThrow(mangaId: Long, trackerId: Long) {
+        trackRepository.delete(mangaId, trackerId)
+    }
 }

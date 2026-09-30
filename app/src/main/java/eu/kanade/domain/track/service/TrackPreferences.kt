@@ -70,18 +70,41 @@ class TrackPreferences(
     fun autoSyncProgressFromTrackers() = preferenceStore.getBoolean("pref_auto_sync_progress_from_trackers_key", true)
     // KMK <--
 
-    // ANK --> Priority is global; entry overrides remain portable across restores.
-    fun priorityTracker() = preferenceStore.getLong("pref_priority_tracker", 0)
+    // KMK --> Per-entry overrides are app state; the global priority is selected by long-pressing a service.
+    fun preferredTrackerForAnime() =
+        preferenceStore.getString(Preference.appStateKey("pref_preferred_tracker_for_anime"), "")
 
-    private fun preferredTrackerOverrides() = preferenceStore.getString("pref_preferred_tracker_overrides", "")
+    private fun legacyPreferredTrackerOverrides() = preferenceStore.getString("pref_preferred_tracker_overrides", "")
+    private val preferredTrackerLock = Any()
 
-    fun preferredTracker(animeId: Long, applicableTrackerIds: Set<Long>): Long? {
-        val override = PreferredTrackerMap.decode(preferredTrackerOverrides().get())[animeId]
-        return listOfNotNull(override, priorityTracker().get().takeIf { it > 0 }).firstOrNull { it in applicableTrackerIds }
+    fun getPreferredTrackerForAnime(animeId: Long): Long? =
+        PreferredTrackerMap.decode(preferredTrackerForAnime().get())[animeId]
+            ?: PreferredTrackerMap.decode(legacyPreferredTrackerOverrides().get())[animeId]
+
+    fun setPreferredTrackerForAnime(animeId: Long, trackerId: Long?) = synchronized(preferredTrackerLock) {
+        if (animeId > 0) {
+            preferredTrackerForAnime().set(
+                PreferredTrackerMap.update(preferredTrackerForAnime().get(), animeId, trackerId),
+            )
+            legacyPreferredTrackerOverrides().set(
+                PreferredTrackerMap.update(legacyPreferredTrackerOverrides().get(), animeId, null),
+            )
+        }
     }
 
-    fun setPreferredTracker(animeId: Long, trackerId: Long?) {
-        preferredTrackerOverrides().set(PreferredTrackerMap.update(preferredTrackerOverrides().get(), animeId, trackerId))
+    fun priorityTrackerId() = preferenceStore.getLong("pref_priority_tracker_id", 0L)
+    private fun legacyPriorityTrackerId() = preferenceStore.getLong("pref_priority_tracker", 0L)
+
+    fun getPriorityTrackerId(): Long? =
+        priorityTrackerId().get().takeIf { it > 0 } ?: legacyPriorityTrackerId().get().takeIf { it > 0 }
+
+    fun setPriorityTrackerId(trackerId: Long?) {
+        priorityTrackerId().set(trackerId?.takeIf { it > 0 } ?: 0L)
+        legacyPriorityTrackerId().set(0L)
     }
-    // <-- ANK
+
+    fun resolvePreferredTracker(animeId: Long, applicable: Set<Long>): Long? =
+        getPreferredTrackerForAnime(animeId)?.takeIf { it in applicable }
+            ?: getPriorityTrackerId()?.takeIf { it in applicable }
+    // KMK <--
 }

@@ -11,6 +11,7 @@ import eu.kanade.domain.extension.interactor.GetExtensionSources
 import eu.kanade.domain.extension.interactor.GetExtensionsByType
 import eu.kanade.domain.extension.interactor.TrustExtension
 import eu.kanade.domain.manga.interactor.GetExcludedScanlators
+import eu.kanade.domain.manga.interactor.GetStructuredRelations
 import eu.kanade.domain.manga.interactor.SetExcludedScanlators
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.source.interactor.GetEnabledSources
@@ -141,6 +142,7 @@ class DomainModule : InjektModule {
         addFactory { GetLibraryManga(get()) }
         addFactory { GetMangaByUrlAndSourceId(get()) }
         addFactory { GetManga(get()) }
+        addFactory { GetStructuredRelations(get(), get(), get(), get()) }
         addFactory { GetNextChapters(get(), get(), get(), get()) }
         addFactory { GetUpcomingManga(get()) }
         addFactory { ResetViewerFlags(get()) }
@@ -173,7 +175,7 @@ class DomainModule : InjektModule {
 
         addSingletonFactory<TrackRepository> { TrackRepositoryImpl(get()) }
         addFactory { TrackChapter(get(), get(), get(), get()) }
-        addFactory { UpdateTracks(get(), get()) }
+        addFactory { UpdateTracks(get(), get(), get(), get()) }
         addSingletonFactory { WebhookNotifier(get(), get(), get(), get()) }
         addFactory { AddTracks(get(), get(), get(), get(), get(), get()) }
         addFactory { RefreshTracks(get(), get(), get(), get()) }

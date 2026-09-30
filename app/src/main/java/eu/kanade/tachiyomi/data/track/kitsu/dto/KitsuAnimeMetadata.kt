@@ -24,6 +24,8 @@ data class KitsuAnimeMetadataMedia(
     val posterImage: KitsuAnimeCover,
     val description: KitsuAnimeDescription,
     val staff: KitsuAnimeStaff,
+    val categories: KitsuAnimeCategories = KitsuAnimeCategories(),
+    val status: String? = null,
 )
 
 @Serializable
@@ -49,6 +51,16 @@ data class KitsuAnimeDescription(
 @Serializable
 data class KitsuAnimeStaff(
     val nodes: List<KitsuAnimeStaffNode>,
+)
+
+@Serializable
+data class KitsuAnimeCategories(
+    val nodes: List<KitsuAnimeCategory> = emptyList(),
+)
+
+@Serializable
+data class KitsuAnimeCategory(
+    val title: String,
 )
 
 @Serializable

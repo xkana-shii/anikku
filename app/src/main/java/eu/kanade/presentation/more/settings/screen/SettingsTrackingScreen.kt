@@ -23,6 +23,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -95,6 +96,8 @@ object SettingsTrackingScreen : SearchableSettings {
     override fun getPreferences(): List<Preference> {
         val context = LocalContext.current
         val trackPreferences = remember { Injekt.get<TrackPreferences>() }
+        val priorityTrackerId by remember { trackPreferences.priorityTrackerId().changes() }
+            .collectAsState(trackPreferences.getPriorityTrackerId() ?: 0L)
         val trackerManager = remember { Injekt.get<TrackerManager>() }
         val sourceManager = remember { Injekt.get<SourceManager>() }
 
@@ -174,16 +177,6 @@ object SettingsTrackingScreen : SearchableSettings {
                     .toPersistentMap(),
                 title = stringResource(AMR.strings.pref_auto_reread_reset_to),
             ),
-            // ANK --> A dynamically-resolved default for player progress and multi-tracker edits.
-            Preference.PreferenceItem.ListPreference(
-                preference = trackPreferences.priorityTracker(),
-                entries = (
-                    mapOf(0L to stringResource(MR.strings.label_default)) + trackerManager.loggedInTrackers()
-                        .associate { it.id to it.name }
-                    ).toPersistentMap(),
-                title = stringResource(AMR.strings.pref_priority_tracker),
-            ),
-            // <-- ANK
             // KMK -->
             Preference.PreferenceItem.SwitchPreference(
                 preference = trackPreferences.autoSyncProgressFromTrackers(),
@@ -195,26 +188,56 @@ object SettingsTrackingScreen : SearchableSettings {
                 preferenceItems = persistentListOf(
                     Preference.PreferenceItem.TrackerPreference(
                         tracker = trackerManager.myAnimeList,
+                        isPriority = trackerManager.myAnimeList.id == priorityTrackerId,
+                        onLongClick = {
+                            trackPreferences.setPriorityTrackerId(
+                                if (trackerManager.myAnimeList.id == priorityTrackerId) null else trackerManager.myAnimeList.id,
+                            )
+                        },
                         login = { context.openInBrowser(MyAnimeListApi.authUrl(), forceDefaultBrowser = true) },
                         logout = { dialog = LogoutDialog(trackerManager.myAnimeList) },
                     ),
                     Preference.PreferenceItem.TrackerPreference(
                         tracker = trackerManager.aniList,
+                        isPriority = trackerManager.aniList.id == priorityTrackerId,
+                        onLongClick = {
+                            trackPreferences.setPriorityTrackerId(
+                                if (trackerManager.aniList.id == priorityTrackerId) null else trackerManager.aniList.id,
+                            )
+                        },
                         login = { context.openInBrowser(AnilistApi.authUrl(), forceDefaultBrowser = true) },
                         logout = { dialog = LogoutDialog(trackerManager.aniList) },
                     ),
                     Preference.PreferenceItem.TrackerPreference(
                         tracker = trackerManager.kitsu,
+                        isPriority = trackerManager.kitsu.id == priorityTrackerId,
+                        onLongClick = {
+                            trackPreferences.setPriorityTrackerId(
+                                if (trackerManager.kitsu.id == priorityTrackerId) null else trackerManager.kitsu.id,
+                            )
+                        },
                         login = { dialog = LoginDialog(trackerManager.kitsu, MR.strings.email) },
                         logout = { dialog = LogoutDialog(trackerManager.kitsu) },
                     ),
                     Preference.PreferenceItem.TrackerPreference(
                         tracker = trackerManager.shikimori,
+                        isPriority = trackerManager.shikimori.id == priorityTrackerId,
+                        onLongClick = {
+                            trackPreferences.setPriorityTrackerId(
+                                if (trackerManager.shikimori.id == priorityTrackerId) null else trackerManager.shikimori.id,
+                            )
+                        },
                         login = { context.openInBrowser(ShikimoriApi.authUrl(), forceDefaultBrowser = true) },
                         logout = { dialog = LogoutDialog(trackerManager.shikimori) },
                     ),
                     Preference.PreferenceItem.TrackerPreference(
                         tracker = trackerManager.simkl,
+                        isPriority = trackerManager.simkl.id == priorityTrackerId,
+                        onLongClick = {
+                            trackPreferences.setPriorityTrackerId(
+                                if (trackerManager.simkl.id == priorityTrackerId) null else trackerManager.simkl.id,
+                            )
+                        },
                         login = {
                             context.openInBrowser(
                                 SimklApi.authUrl(),
@@ -225,6 +248,12 @@ object SettingsTrackingScreen : SearchableSettings {
                     ),
                     Preference.PreferenceItem.TrackerPreference(
                         tracker = trackerManager.bangumi,
+                        isPriority = trackerManager.bangumi.id == priorityTrackerId,
+                        onLongClick = {
+                            trackPreferences.setPriorityTrackerId(
+                                if (trackerManager.bangumi.id == priorityTrackerId) null else trackerManager.bangumi.id,
+                            )
+                        },
                         login = { context.openInBrowser(BangumiApi.authUrl(), forceDefaultBrowser = true) },
                         logout = { dialog = LogoutDialog(trackerManager.bangumi) },
                     ),
@@ -238,6 +267,12 @@ object SettingsTrackingScreen : SearchableSettings {
                         .map { service ->
                             Preference.PreferenceItem.TrackerPreference(
                                 tracker = service,
+                                isPriority = service.id == priorityTrackerId,
+                                onLongClick = {
+                                    trackPreferences.setPriorityTrackerId(
+                                        if (service.id == priorityTrackerId) null else service.id,
+                                    )
+                                },
                                 login = { (service as EnhancedTracker).loginNoop() },
                                 logout = service::logout,
                             )

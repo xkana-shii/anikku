@@ -10,30 +10,59 @@ import kotlinx.coroutines.supervisorScope
 import tachiyomi.domain.track.interactor.InsertTrack
 import tachiyomi.domain.track.model.Track
 
-/** Executes remote tracker writes independently, then persists successful responses. */
+internal class TrackerBatchItem(val service: Tracker, val binding: Track) {
+    var returned: Track? = null
+        private set
+    var skipped = false
+        private set
+
+    fun skip() {
+        skipped = true
+    }
+
+    suspend fun refresh(): Track = service.refresh(binding.toDbTrack()).toDomainTrack()!!.also { returned = it }
+
+    suspend fun update(track: Track, didReadEpisode: Boolean = false): Track =
+        service.update(track.toDbTrack(), didReadEpisode).toDomainTrack()!!.also { returned = it }
+}
+
+internal data class TrackerBatchResult(
+    val service: Tracker,
+    val track: Track?,
+    val error: Throwable?,
+    val persistenceError: Throwable? = null,
+    val skipped: Boolean = false,
+) {
+    val failures get() = listOfNotNull(error, persistenceError)
+}
+
 internal suspend fun trackerBatch(
     entries: List<Pair<Tracker, Track>>,
-    insertTrack: InsertTrack,
-    operation: suspend (Tracker, Track) -> Track,
+    insert: InsertTrack,
+    operation: suspend TrackerBatchItem.() -> Unit,
 ): List<TrackerBatchResult> = supervisorScope {
-    entries.distinctBy { it.first.id }.map { (tracker, track) ->
+    val results = entries.distinctBy { it.first.id }.map { (service, binding) ->
         async {
-            try {
-                val returned = operation(tracker, track)
-                insertTrack.await(returned)
-                TrackerBatchResult(tracker.id, returned, null)
+            val item = TrackerBatchItem(service, binding)
+            val error = try {
+                item.operation()
+                null
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                TrackerBatchResult(tracker.id, null, e)
+                e
             }
+            TrackerBatchResult(service, item.returned, error, skipped = item.skipped)
         }
     }.awaitAll()
+    results.map { result ->
+        try {
+            result.track?.let { insert.awaitOrThrow(it) }
+            result
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            if (result.error == null) result.copy(error = e) else result.copy(persistenceError = e)
+        }
+    }
 }
-
-data class TrackerBatchResult(val trackerId: Long, val track: Track?, val error: Throwable?)
-
-internal suspend fun Tracker.refreshDomain(track: Track): Track = refresh(track.toDbTrack()).toDomainTrack()!!
-
-internal suspend fun Tracker.updateDomain(track: Track, didReadEpisode: Boolean = false): Track =
-    update(track.toDbTrack(), didReadEpisode).toDomainTrack()!!

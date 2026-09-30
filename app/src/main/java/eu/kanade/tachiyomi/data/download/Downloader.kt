@@ -12,6 +12,7 @@ import com.arthenica.ffmpegkit.Level
 import com.arthenica.ffmpegkit.LogCallback
 import com.arthenica.ffmpegkit.StatisticsCallback
 import com.hippo.unifile.UniFile
+import eu.kanade.domain.connections.service.WebhookEvent
 import eu.kanade.tachiyomi.animesource.UnmeteredSource
 import eu.kanade.tachiyomi.animesource.model.Track
 import eu.kanade.tachiyomi.animesource.model.Video
@@ -19,6 +20,7 @@ import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.data.library.LibraryUpdateNotifier
 import eu.kanade.tachiyomi.data.notification.NotificationHandler
 import eu.kanade.tachiyomi.data.torrentServer.service.TorrentServerService
+import eu.kanade.tachiyomi.data.webhook.WebhookNotifier
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.online.HttpSource
@@ -277,6 +279,12 @@ class Downloader(
             // Remove successful download from queue
             if (download.status == Download.State.DOWNLOADED) {
                 removeFromQueue(download)
+            }
+            if (areAllDownloadsFinished()) {
+                if (queueState.value.isEmpty()) {
+                    Injekt.get<WebhookNotifier>().notify(WebhookEvent.DOWNLOADS_FINISHED, download.manga)
+                }
+                stop()
             }
         } catch (e: Throwable) {
             if (e is CancellationException) throw e

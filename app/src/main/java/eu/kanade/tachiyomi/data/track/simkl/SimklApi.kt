@@ -362,6 +362,15 @@ class SimklApi(private val client: OkHttpClient, interceptor: SimklInterceptor) 
                                 else -> anime.network
                             },
                             artists = anime.network,
+                            genres = anime.genres?.filter(String::isNotBlank),
+                            status = when (anime.status?.lowercase()) {
+                                "returning series", "continuing", "in production" ->
+                                    eu.kanade.tachiyomi.source.model.SManga.ONGOING.toLong()
+                                "ended", "released" -> eu.kanade.tachiyomi.source.model.SManga.COMPLETED.toLong()
+                                "canceled", "cancelled" -> eu.kanade.tachiyomi.source.model.SManga.CANCELLED.toLong()
+                                "hiatus" -> eu.kanade.tachiyomi.source.model.SManga.ON_HIATUS.toLong()
+                                else -> null
+                            },
                         )
                     }
             }

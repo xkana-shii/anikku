@@ -143,6 +143,10 @@ class ShikimoriApi(
                         |id
                         |name
                         |description
+                        |status
+                        |genres {
+                            |name
+                        |}
                         |poster {
                             |originalUrl
                         |}
@@ -210,6 +214,12 @@ class ShikimoriApi(
                                 }
                                 .joinToString { it.person.name }
                                 .ifEmpty { null },
+                            genres = anime.genres.map { it.name }.filter(String::isNotBlank),
+                            status = when (anime.status?.lowercase()) {
+                                "ongoing" -> eu.kanade.tachiyomi.source.model.SManga.ONGOING.toLong()
+                                "released" -> eu.kanade.tachiyomi.source.model.SManga.COMPLETED.toLong()
+                                else -> null
+                            },
                         )
                     }
             }

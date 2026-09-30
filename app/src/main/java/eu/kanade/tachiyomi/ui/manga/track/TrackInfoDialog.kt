@@ -38,9 +38,12 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import dev.icerock.moko.resources.StringResource
+import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.domain.track.interactor.RefreshResult
 import eu.kanade.domain.track.interactor.RefreshTracks
+import eu.kanade.domain.track.interactor.UpdateTracks
 import eu.kanade.domain.track.model.toDbTrack
+import eu.kanade.domain.track.service.TrackPreferences
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.track.TrackChapterSelector
 import eu.kanade.presentation.track.TrackDateSelector
@@ -49,6 +52,7 @@ import eu.kanade.presentation.track.TrackScoreSelector
 import eu.kanade.presentation.track.TrackStatusSelector
 import eu.kanade.presentation.track.TrackerSearch
 import eu.kanade.presentation.util.Screen
+import eu.kanade.tachiyomi.animesource.TrackerIdMetadataSource
 import eu.kanade.tachiyomi.animesource.model.FetchType
 import eu.kanade.tachiyomi.data.track.DeletableTracker
 import eu.kanade.tachiyomi.data.track.EnhancedTracker
@@ -84,6 +88,7 @@ import tachiyomi.domain.track.interactor.DeleteTrack
 import tachiyomi.domain.track.interactor.GetTracks
 import tachiyomi.domain.track.model.Track
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.ank.AMR
 import tachiyomi.presentation.core.components.LabeledCheckbox
 import tachiyomi.presentation.core.components.material.AlertDialogContent
 import tachiyomi.presentation.core.components.material.padding
@@ -120,6 +125,20 @@ data class TrackInfoDialogHomeScreen(
 
         val dateFormat = remember { UiPreferences.dateFormat(Injekt.get<UiPreferences>().dateFormat().get()) }
         val state by screenModel.state.collectAsState()
+        val bound = state.trackItems.filter { it.track != null }
+        var editor by remember { mutableStateOf<Pair<TrackItem, UnifiedTrackField>?>(null) }
+        editor?.let { (item, field) ->
+            UnifiedTrackEditor(
+                item = item,
+                field = field,
+                onApply = {
+                    screenModel.updateUnified(it)
+                    editor = null
+                },
+                onDismiss = { editor = null },
+            )
+            return
+        }
 
         TrackInfoDialogHome(
             trackItems = state.trackItems,
@@ -129,59 +148,72 @@ data class TrackInfoDialogHomeScreen(
             isActive = navigator.lastItem == this,
             // <-- AM
             onStatusClick = {
-                navigator.push(
-                    TrackStatusSelectorScreen(
-                        track = it.track!!,
-                        serviceId = it.tracker.id,
-                    ),
-                )
+                if (bound.size >= 2) {
+                    editor = it to UnifiedTrackField.STATUS
+                } else {
+                    navigator.push(
+                        TrackStatusSelectorScreen(
+                            track = it.track!!,
+                            serviceId = it.tracker.id,
+                        ),
+                    )
+                }
             },
             onChapterClick = {
-                navigator.push(
-                    TrackChapterSelectorScreen(
-                        track = it.track!!,
-                        serviceId = it.tracker.id,
-                    ),
-                )
+                if (bound.size >= 2) {
+                    editor = it to UnifiedTrackField.PROGRESS
+                } else {
+                    navigator.push(
+                        TrackChapterSelectorScreen(
+                            track = it.track!!,
+                            serviceId = it.tracker.id,
+                        ),
+                    )
+                }
             },
             onScoreClick = {
-                navigator.push(
-                    TrackScoreSelectorScreen(
-                        track = it.track!!,
-                        serviceId = it.tracker.id,
-                    ),
-                )
+                if (bound.size >= 2) {
+                    editor = it to UnifiedTrackField.SCORE
+                } else {
+                    navigator.push(
+                        TrackScoreSelectorScreen(
+                            track = it.track!!,
+                            serviceId = it.tracker.id,
+                        ),
+                    )
+                }
             },
             onStartDateEdit = {
-                navigator.push(
-                    TrackDateSelectorScreen(
-                        track = it.track!!,
-                        serviceId = it.tracker.id,
-                        start = true,
-                    ),
-                )
+                if (bound.size >= 2) {
+                    editor = it to UnifiedTrackField.START_DATE
+                } else {
+                    navigator.push(
+                        TrackDateSelectorScreen(
+                            track = it.track!!,
+                            serviceId = it.tracker.id,
+                            start = true,
+                        ),
+                    )
+                }
             },
             onEndDateEdit = {
-                navigator.push(
-                    TrackDateSelectorScreen(
-                        track = it.track!!,
-                        serviceId = it.tracker.id,
-                        start = false,
-                    ),
-                )
+                if (bound.size >= 2) {
+                    editor = it to UnifiedTrackField.END_DATE
+                } else {
+                    navigator.push(
+                        TrackDateSelectorScreen(
+                            track = it.track!!,
+                            serviceId = it.tracker.id,
+                            start = false,
+                        ),
+                    )
+                }
             },
             onNewSearch = {
                 if (it.tracker is EnhancedTracker) {
                     screenModel.registerEnhancedTracking(it)
                 } else {
-                    navigator.push(
-                        TrackerSearchScreen(
-                            mangaId = mangaId,
-                            initialQuery = it.track?.title ?: mangaTitle,
-                            currentUrl = it.track?.remoteUrl,
-                            serviceId = it.tracker.id,
-                        ),
-                    )
+                    screenModel.newSearch(navigator, it, mangaTitle)
                 }
             },
             onOpenInBrowser = { openTrackerInBrowser(context, it) },
@@ -196,6 +228,18 @@ data class TrackInfoDialogHomeScreen(
             },
             onCopyLink = { context.copyTrackerLink(it) },
             onTogglePrivate = screenModel::togglePrivate,
+            preferredId = state.preferredId,
+            editMode = state.editMode,
+            onToggleEditMode = screenModel::toggleEditMode,
+            onSetPreferredTracker = screenModel::setPreferredTracker,
+            selectedTrackerIds = state.selectedTrackerIds,
+            onToggleTrackerSelection = screenModel::toggleTrackerSelection,
+            onRemoveSelectedTrackers = {
+                navigator.push(TrackerBatchRemoveScreen(mangaId, state.selectedTrackerIds))
+            },
+            skippedTrackerIds = state.skippedTrackerIds,
+            errorTrackerIds = state.errorTrackerIds,
+            busy = state.busy,
         )
     }
 
@@ -228,6 +272,7 @@ data class TrackInfoDialogHomeScreen(
         // SY <--
         // KMK -->
         private val sourceManager: SourceManager = Injekt.get(),
+        private val trackPreferences: TrackPreferences = Injekt.get(),
         // KMK <--
     ) : StateScreenModel<Model.State>(State()) {
         // KMK -->
@@ -249,7 +294,16 @@ data class TrackInfoDialogHomeScreen(
                     .catch { logcat(LogPriority.ERROR, it) }
                     .distinctUntilChanged()
                     .map { it.mapToTrackItem() }
-                    .collectLatest { trackItems -> mutableState.update { it.copy(trackItems = trackItems) } }
+                    .collectLatest { trackItems ->
+                        val applicable = trackItems.filter { it.track != null }.map { it.tracker.id }.toSet()
+                        mutableState.update {
+                            it.copy(
+                                trackItems = trackItems,
+                                preferredId = trackPreferences.resolvePreferredTracker(mangaId, applicable),
+                                selectedTrackerIds = it.selectedTrackerIds intersect applicable,
+                            )
+                        }
+                    }
             }
         }
 
@@ -286,6 +340,40 @@ data class TrackInfoDialogHomeScreen(
             }
         }
 
+        fun newSearch(navigator: Navigator, item: TrackItem, animeTitle: String) {
+            screenModelScope.launchNonCancellable {
+                if (item.track == null && registerUsingSourceMetadata(item)) return@launchNonCancellable
+                navigator.push(
+                    TrackerSearchScreen(
+                        mangaId = mangaId,
+                        initialQuery = item.track?.title ?: animeTitle,
+                        currentUrl = item.track?.remoteUrl,
+                        serviceId = item.tracker.id,
+                    ),
+                )
+            }
+        }
+
+        private suspend fun registerUsingSourceMetadata(item: TrackItem): Boolean {
+            val source = sourceManager.get(sourceId) as? TrackerIdMetadataSource ?: return false
+            val anime = getMangaById.await(mangaId) ?: return false
+            return try {
+                val metadata = source.getTrackerIdMetadata(anime.toSManga()) ?: return false
+                val remoteId = when (item.tracker.id) {
+                    TrackerManager.ANILIST -> metadata.aniListId
+                    TrackerManager.MYANIMELIST -> metadata.myAnimeListId
+                    TrackerManager.KITSU -> metadata.kitsuId
+                    else -> null
+                }?.takeIf { it.isNotBlank() } ?: return false
+                val exact = item.tracker.searchById(remoteId) ?: return false
+                item.tracker.register(exact, anime)
+                true
+            } catch (e: Exception) {
+                logcat(LogPriority.ERROR, e) { "Failed exact tracker binding from source metadata" }
+                false
+            }
+        }
+
         private suspend fun refreshTrackers() {
             val refreshTracks = Injekt.get<RefreshTracks>()
             val context = Injekt.get<Application>()
@@ -316,6 +404,56 @@ data class TrackInfoDialogHomeScreen(
             }
         }
 
+        fun toggleEditMode() {
+            mutableState.update {
+                it.copy(
+                    editMode = !it.editMode,
+                    selectedTrackerIds = if (it.editMode) emptySet() else it.selectedTrackerIds,
+                )
+            }
+        }
+
+        fun toggleTrackerSelection(item: TrackItem) {
+            mutableState.update {
+                val selected = it.selectedTrackerIds.toMutableSet()
+                if (!selected.add(item.tracker.id)) selected.remove(item.tracker.id)
+                it.copy(selectedTrackerIds = selected)
+            }
+        }
+
+        fun setPreferredTracker(item: TrackItem) {
+            val next = item.tracker.id.takeUnless { it == state.value.preferredId }
+            trackPreferences.setPreferredTrackerForAnime(mangaId, next)
+            val applicable = state.value.trackItems.filter { it.track != null }.map { it.tracker.id }.toSet()
+            mutableState.update { it.copy(preferredId = trackPreferences.resolvePreferredTracker(mangaId, applicable)) }
+        }
+
+        fun updateUnified(change: UpdateTracks.Change) {
+            if (state.value.busy) return
+            screenModelScope.launch {
+                mutableState.update { it.copy(busy = true, skippedTrackerIds = emptySet(), errorTrackerIds = emptySet()) }
+                try {
+                    val result = withIOContext { Injekt.get<UpdateTracks>().awaitDetailed(mangaId, change) }
+                    result.failures.forEach { (tracker, error) ->
+                        logcat(LogPriority.ERROR, error) {
+                            "Unified tracker update failed for ${tracker?.name.orEmpty()}"
+                        }
+                    }
+                    mutableState.update {
+                        it.copy(
+                            skippedTrackerIds = result.skippedTrackerIds,
+                            errorTrackerIds = result.failedTrackerIds,
+                        )
+                    }
+                    if (result.failures.isNotEmpty()) {
+                        withUIContext { Injekt.get<Application>().toast(AMR.strings.tracker_update_partial_failure) }
+                    }
+                } finally {
+                    mutableState.update { it.copy(busy = false) }
+                }
+            }
+        }
+
         private suspend fun List<Track>.mapToTrackItem(): List<TrackItem> {
             val loggedInTrackers = trackerManager.loggedInTrackers()
             val source = sourceManager.getOrStub(sourceId)
@@ -342,6 +480,12 @@ data class TrackInfoDialogHomeScreen(
         @Immutable
         data class State(
             val trackItems: List<TrackItem> = emptyList(),
+            val preferredId: Long? = null,
+            val editMode: Boolean = false,
+            val selectedTrackerIds: Set<Long> = emptySet(),
+            val skippedTrackerIds: Set<Long> = emptySet(),
+            val errorTrackerIds: Set<Long> = emptySet(),
+            val busy: Boolean = false,
         )
     }
 }
@@ -812,6 +956,71 @@ data class TrackerSearchScreen(
             val queryResult: Result<List<TrackSearch>>? = null,
             val selected: TrackSearch? = null,
         )
+    }
+}
+
+private data class TrackerBatchRemoveScreen(
+    private val animeId: Long,
+    private val trackerIds: Set<Long>,
+) : Screen() {
+    @Composable
+    override fun Content() {
+        val navigator = LocalNavigator.currentOrThrow
+        val context = LocalContext.current
+        val screenModel = rememberScreenModel { Model(animeId, trackerIds) }
+        var removeRemote by remember { mutableStateOf(false) }
+        AlertDialogContent(
+            modifier = Modifier.windowInsetsPadding(WindowInsets.systemBars),
+            icon = { Icon(Icons.Default.Delete, contentDescription = null) },
+            title = {
+                Text(
+                    text = stringResource(AMR.strings.tracker_remove_selected),
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center,
+                )
+            },
+            text = {
+                LabeledCheckbox(
+                    label = stringResource(AMR.strings.tracker_remove_remote_selected),
+                    checked = removeRemote,
+                    onCheckedChange = { removeRemote = it },
+                )
+            },
+            buttons = {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small, Alignment.End),
+                ) {
+                    TextButton(onClick = navigator::pop) { Text(stringResource(MR.strings.action_cancel)) }
+                    FilledTonalButton(
+                        onClick = {
+                            screenModel.remove(context, removeRemote)
+                            navigator.pop()
+                        },
+                        colors = ButtonDefaults.filledTonalButtonColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer,
+                            contentColor = MaterialTheme.colorScheme.onErrorContainer,
+                        ),
+                    ) {
+                        Text(stringResource(MR.strings.action_remove))
+                    }
+                }
+            },
+        )
+    }
+
+    private class Model(
+        private val animeId: Long,
+        private val trackerIds: Set<Long>,
+    ) : ScreenModel {
+        fun remove(context: Context, remotely: Boolean) {
+            screenModelScope.launchNonCancellable {
+                val failures = Injekt.get<UpdateTracks>().remove(animeId, trackerIds, remotely)
+                if (failures.isNotEmpty()) {
+                    withUIContext { context.toast(AMR.strings.tracker_remove_partial_failure) }
+                }
+            }
+        }
     }
 }
 

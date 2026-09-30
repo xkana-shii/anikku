@@ -21,6 +21,7 @@ import eu.kanade.presentation.more.settings.widget.TriStateListDialog
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.ui.category.CategoryScreen
 import eu.kanade.tachiyomi.ui.category.genre.SortTagScreen
+import eu.kanade.tachiyomi.util.system.LocaleHelper
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableMap
@@ -211,7 +212,10 @@ object SettingsLibraryScreen : SearchableSettings {
                     preference = autoUpdateSourcesExcludePref,
                     entries = sources
                         .sortedBy { it.name.lowercase() }
-                        .associate { it.id.toString() to it.name }
+                        .associate {
+                            it.id.toString() to
+                                "${it.name} — ${LocaleHelper.getSourceDisplayName(it.lang, context)}"
+                        }
                         .toImmutableMap(),
                     title = stringResource(AMR.strings.pref_library_update_excluded_sources),
                     subtitle = stringResource(AMR.strings.pref_library_update_excluded_sources_summary),
@@ -342,6 +346,13 @@ object SettingsLibraryScreen : SearchableSettings {
                     preference = libraryPreferences.showEmptyCategoriesSearch(),
                     title = stringResource(KMR.strings.pref_show_empty_categories_search),
                 ),
+                // ANK --> Keep field-scoped parsing opt-in so existing EH/SY searches are unchanged.
+                Preference.PreferenceItem.SwitchPreference(
+                    preference = libraryPreferences.advancedFieldSearchEnabled(),
+                    title = stringResource(AMR.strings.pref_advanced_library_search),
+                    subtitle = stringResource(AMR.strings.pref_advanced_library_search_summary),
+                ),
+                // <-- ANK
                 Preference.PreferenceItem.SwitchPreference(
                     preference = libraryPreferences.syncOnAdd(),
                     title = stringResource(AMR.strings.pref_sync_anime_on_add),

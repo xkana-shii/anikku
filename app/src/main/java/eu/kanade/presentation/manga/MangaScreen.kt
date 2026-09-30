@@ -95,6 +95,7 @@ import eu.kanade.presentation.manga.components.MissingChapterCountListItem
 import eu.kanade.presentation.manga.components.NextEpisodeAiringListItem
 import eu.kanade.presentation.manga.components.OutlinedButtonWithArrow
 import eu.kanade.presentation.manga.components.RelatedMangasRow
+import eu.kanade.presentation.manga.components.StructuredRelationsRow
 import eu.kanade.presentation.util.formatChapterNumber
 import eu.kanade.presentation.util.tvMediaPlayAction
 import eu.kanade.tachiyomi.animesource.model.FetchType
@@ -870,6 +871,13 @@ private fun MangaScreenSmallImpl(
                     // SY <--
 
                     item(
+                        key = EXACT_HEIGHT_KEY_PREFIX + "structured-relations",
+                        span = { GridItemSpan(maxLineSpan) },
+                    ) {
+                        StructuredRelationsRow(state.manga)
+                    }
+
+                    item(
                         // AM -->
                         key = EXACT_HEIGHT_KEY_PREFIX + MangaScreenItem.CHAPTER_HEADER,
                         // <-- AM
@@ -1333,6 +1341,7 @@ private fun MangaScreenLargeImpl(
                                 )
                             }
                             // SY <--
+                            StructuredRelationsRow(state.manga)
                         }
                     },
                     endContent = {

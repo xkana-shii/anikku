@@ -2,6 +2,7 @@ package mihon.domain.migration.usecases
 
 import eu.kanade.domain.anime.interactor.SyncSeasonsWithSource
 import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
+import eu.kanade.domain.connections.service.WebhookEvent
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.hasCustomBackground
 import eu.kanade.domain.manga.model.hasCustomCover
@@ -13,6 +14,7 @@ import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.track.EnhancedTracker
 import eu.kanade.tachiyomi.data.track.TrackerManager
+import eu.kanade.tachiyomi.data.webhook.WebhookNotifier
 import eu.kanade.tachiyomi.source.getChapterList
 import kotlinx.coroutines.CancellationException
 import mihon.domain.migration.models.MigrationFlag
@@ -29,6 +31,8 @@ import tachiyomi.domain.manga.model.MangaUpdate
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.domain.track.interactor.GetTracks
 import tachiyomi.domain.track.interactor.InsertTrack
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import java.time.Instant
 
 class MigrateMangaUseCase(
@@ -228,7 +232,13 @@ class MigrateMangaUseCase(
                 notes = if (MigrationFlag.NOTES in flags) current.notes else null,
             )
 
-            updateManga.awaitAll(listOfNotNull(currentMangaUpdate, targetMangaUpdate))
+            if (updateManga.awaitAll(listOfNotNull(currentMangaUpdate, targetMangaUpdate))) {
+                Injekt.get<WebhookNotifier>().notify(
+                    WebhookEvent.ANIME_MIGRATED,
+                    current,
+                    data = mapOf("target_title" to target.title),
+                )
+            }
         } catch (e: Throwable) {
             if (e is CancellationException) {
                 throw e

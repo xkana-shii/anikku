@@ -90,6 +90,8 @@ data class SimklAnimeResponse(
     val network: String? = null,
     val director: String? = null,
     val studios: List<SimklStudio>? = null,
+    val genres: List<String>? = null,
+    val status: String? = null,
 )
 
 @Serializable

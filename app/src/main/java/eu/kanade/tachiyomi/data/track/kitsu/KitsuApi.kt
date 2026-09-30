@@ -262,6 +262,12 @@ class KitsuApi(private val client: OkHttpClient, interceptor: KitsuInterceptor) 
                             |}
                         |}
                         |description
+                        |status
+                        |categories(first: 50) {
+                            |nodes {
+                                |title
+                            |}
+                        |}
                         |staff(first: $staffCount) {
                             |nodes {
                                 |role
@@ -319,6 +325,14 @@ class KitsuApi(private val client: OkHttpClient, interceptor: KitsuInterceptor) 
                                 }
                                 .joinToString { it.person.name }
                                 .ifEmpty { null },
+                            genres = anime.categories.nodes.map { it.title }.filter(String::isNotBlank),
+                            status = when (anime.status?.uppercase()) {
+                                "CURRENT", "RELEASING" -> eu.kanade.tachiyomi.source.model.SManga.ONGOING.toLong()
+                                "FINISHED" -> eu.kanade.tachiyomi.source.model.SManga.COMPLETED.toLong()
+                                "CANCELLED", "CANCELED" -> eu.kanade.tachiyomi.source.model.SManga.CANCELLED.toLong()
+                                "HIATUS" -> eu.kanade.tachiyomi.source.model.SManga.ON_HIATUS.toLong()
+                                else -> null
+                            },
                         )
                     }
             }

@@ -32,6 +32,7 @@ import eu.kanade.domain.anime.interactor.SyncSeasonsWithSource
 import eu.kanade.domain.chapter.interactor.GetAvailableScanlators
 import eu.kanade.domain.chapter.interactor.SetReadStatus
 import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
+import eu.kanade.domain.connections.service.WebhookEvent
 import eu.kanade.domain.manga.interactor.GetExcludedScanlators
 import eu.kanade.domain.manga.interactor.SetExcludedScanlators
 import eu.kanade.domain.manga.interactor.SmartSearchMerge
@@ -64,6 +65,7 @@ import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.data.torrentServer.service.TorrentServerService
 import eu.kanade.tachiyomi.data.track.EnhancedTracker
 import eu.kanade.tachiyomi.data.track.TrackerManager
+import eu.kanade.tachiyomi.data.webhook.WebhookNotifier
 import eu.kanade.tachiyomi.network.HttpException
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.UnmeteredSource
@@ -860,6 +862,7 @@ class MangaScreenModel(
             if (isFavorited) {
                 // Remove from library
                 if (updateManga.awaitUpdateFavorite(manga.id, false)) {
+                    Injekt.get<WebhookNotifier>().notify(WebhookEvent.LIBRARY_REMOVED, manga)
                     // Remove covers and update last modified in db
                     if (manga.removeCovers() != manga) {
                         updateManga.awaitUpdateCoverLastModified(manga.id)
@@ -887,6 +890,7 @@ class MangaScreenModel(
                     defaultCategory != null -> {
                         val result = updateManga.awaitUpdateFavorite(manga.id, true)
                         if (!result) return@launchIO
+                        Injekt.get<WebhookNotifier>().notify(WebhookEvent.LIBRARY_ADDED, manga)
                         moveMangaToCategory(defaultCategory)
                     }
 
@@ -894,6 +898,7 @@ class MangaScreenModel(
                     defaultCategoryId == 0L || categories.isEmpty() -> {
                         val result = updateManga.awaitUpdateFavorite(manga.id, true)
                         if (!result) return@launchIO
+                        Injekt.get<WebhookNotifier>().notify(WebhookEvent.LIBRARY_ADDED, manga)
                         moveMangaToCategory(null)
                     }
 
@@ -1020,7 +1025,9 @@ class MangaScreenModel(
         if (manga.favorite) return
 
         screenModelScope.launchIO {
-            updateManga.awaitUpdateFavorite(manga.id, true)
+            if (updateManga.awaitUpdateFavorite(manga.id, true)) {
+                Injekt.get<WebhookNotifier>().notify(WebhookEvent.LIBRARY_ADDED, manga)
+            }
         }
     }
 

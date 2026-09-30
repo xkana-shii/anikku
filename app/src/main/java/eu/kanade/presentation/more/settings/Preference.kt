@@ -225,6 +225,8 @@ sealed class Preference {
          * A [PreferenceItem] for individual tracker.
          */
         data class TrackerPreference(
+            val isPriority: Boolean = false,
+            val onLongClick: (() -> Unit)? = null,
             val tracker: Tracker,
             val login: () -> Unit,
             val logout: () -> Unit,

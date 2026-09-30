@@ -1084,6 +1084,7 @@ class LibraryScreenModel(
         return if (unfiltered.isNotEmpty() && !query.isNullOrBlank()) {
             // Prepare filter object
             val parsedQuery = searchEngine.parseQuery(query)
+            val advancedFieldSearchEnabled = libraryPreferences.advancedFieldSearchEnabled().get()
             val tracks = if (loggedInTrackServices.isNotEmpty()) {
                 getTracks.await().groupBy { it.mangaId }
             } else {
@@ -1115,6 +1116,7 @@ class LibraryScreenModel(
                     source = sources[sourceId],
                     categories = categories,
                     loggedInTrackServices = loggedInTrackServices,
+                    advancedFieldSearchEnabled = advancedFieldSearchEnabled,
                 )
             }.toList()
         } else {
@@ -1130,6 +1132,7 @@ class LibraryScreenModel(
         categories: Map<Long, String>,
         checkGenre: Boolean = true,
         loggedInTrackServices: Map<Long, TriState>,
+        advancedFieldSearchEnabled: Boolean,
     ): Boolean {
         val manga = libraryManga.manga
         val sourceIdString = manga.source.takeUnless { it == LocalSource.ID }?.toString()
@@ -1153,15 +1156,19 @@ class LibraryScreenModel(
                                 ) ||
                             (genre.fastAny { it.contains(query, true) })
                     }
-                    is Namespace -> matchesLibraryField(
-                        queryComponent = queryComponent,
-                        manga = manga,
-                        libraryManga = libraryManga,
-                        source = source,
-                        tracks = tracks,
-                        categories = categories,
-                        context = context,
-                    ) ?: true
+                    is Namespace -> if (advancedFieldSearchEnabled) {
+                        matchesLibraryField(
+                            queryComponent = queryComponent,
+                            manga = manga,
+                            libraryManga = libraryManga,
+                            source = source,
+                            tracks = tracks,
+                            categories = categories,
+                            context = context,
+                        ) ?: true
+                    } else {
+                        true
+                    }
                     else -> true
                 }
                 true -> when (queryComponent) {
@@ -1184,15 +1191,20 @@ class LibraryScreenModel(
                                 )
                     }
                     is Namespace -> {
-                        matchesLibraryField(
-                            queryComponent = queryComponent,
-                            manga = manga,
-                            libraryManga = libraryManga,
-                            source = source,
-                            tracks = tracks,
-                            categories = categories,
-                            context = context,
-                        )?.not() ?: run {
+                        val advancedMatch = if (advancedFieldSearchEnabled) {
+                            matchesLibraryField(
+                                queryComponent = queryComponent,
+                                manga = manga,
+                                libraryManga = libraryManga,
+                                source = source,
+                                tracks = tracks,
+                                categories = categories,
+                                context = context,
+                            )
+                        } else {
+                            null
+                        }
+                        advancedMatch?.not() ?: run {
                             val searchedTag = queryComponent.tag?.asQuery()
                             queryComponent.namespace.isBlank() && searchedTag.isNullOrBlank()
                         }

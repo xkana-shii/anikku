@@ -174,6 +174,7 @@ class BangumiApi(
                                 .filterIsInstance<Infobox.SingleValue>()
                                 .joinToString { it.value }
                                 .ifEmpty { null },
+                            genres = anime.tags.mapNotNull { it.name?.takeIf(String::isNotBlank) },
                         )
                     }
             }

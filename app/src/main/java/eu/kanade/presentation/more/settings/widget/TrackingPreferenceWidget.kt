@@ -1,7 +1,7 @@
 package eu.kanade.presentation.more.settings.widget
 
 import androidx.compose.foundation.LocalIndication
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Done
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -23,6 +24,7 @@ import eu.kanade.presentation.more.settings.LocalPreferenceHighlighted
 import eu.kanade.presentation.track.components.TrackLogoIcon
 import eu.kanade.tachiyomi.data.track.Tracker
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.ank.AMR
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.tvFocusable
 
@@ -32,17 +34,20 @@ fun TrackingPreferenceWidget(
     tracker: Tracker,
     checked: Boolean,
     onClick: (() -> Unit)? = null,
+    isPriority: Boolean = false,
+    onLongClick: (() -> Unit)? = null,
 ) {
     val highlighted = LocalPreferenceHighlighted.current
     val interactionSource = remember { MutableInteractionSource() }
     Box(modifier = Modifier.highlightBackground(highlighted)) {
         Row(
             modifier = modifier
-                .clickable(
-                    enabled = onClick != null,
+                .combinedClickable(
+                    enabled = onClick != null || onLongClick != null,
                     interactionSource = interactionSource,
                     indication = LocalIndication.current,
                     onClick = { onClick?.invoke() },
+                    onLongClick = onLongClick,
                 )
                 .tvFocusable(interactionSource)
                 .fillMaxWidth()
@@ -59,6 +64,16 @@ fun TrackingPreferenceWidget(
                 style = MaterialTheme.typography.titleLarge,
                 fontSize = TitleFontSize,
             )
+            if (isPriority) {
+                Icon(
+                    imageVector = Icons.Filled.Star,
+                    modifier = Modifier
+                        .padding(4.dp)
+                        .size(32.dp),
+                    tint = Color(0xFFFFC107),
+                    contentDescription = stringResource(AMR.strings.pref_priority_tracker),
+                )
+            }
             if (checked) {
                 Icon(
                     imageVector = Icons.Outlined.Done,

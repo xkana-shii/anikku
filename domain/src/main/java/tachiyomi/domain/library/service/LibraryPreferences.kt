@@ -264,6 +264,10 @@ class LibraryPreferences(
 
     // KMK -->
     fun showEmptyCategoriesSearch() = preferenceStore.getBoolean("show_empty_categories_search", false)
+
+    // ANK --> Field-scoped library search is opt-in to preserve legacy query behavior.
+    fun advancedFieldSearchEnabled() = preferenceStore.getBoolean("advanced_field_library_search", false)
+    // <-- ANK
     // KMK <--
     // endregion
 

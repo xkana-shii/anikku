@@ -235,6 +235,8 @@ internal fun PreferenceItem(
                     modifier = modifier,
                     tracker = item.tracker,
                     checked = isLoggedIn,
+                    isPriority = item.isPriority && isLoggedIn,
+                    onLongClick = item.onLongClick.takeIf { isLoggedIn },
                     onClick = { if (isLoggedIn) item.logout() else item.login() },
                 )
             }

@@ -10,6 +10,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.Flow
 import okhttp3.OkHttpClient
 import tachiyomi.domain.anime.model.Anime
+import tachiyomi.domain.manga.model.StructuredRelation
 import tachiyomi.domain.track.model.Track as DomainTrack
 
 interface Tracker {
@@ -90,7 +91,16 @@ interface Tracker {
     // SY -->
     suspend fun getMangaMetadata(track: DomainTrack): TrackMangaMetadata
 
+    /** Exact lookup used when trusted source metadata supplies a remote tracker ID. */
+    suspend fun searchById(id: String): TrackSearch? = null
+
     suspend fun getPaginatedMangaList(page: Int, statusId: Long): List<TrackMangaMetadata> = emptyList()
+
+    /** Structured anime relations exposed by this tracker, ordered by the remote service. */
+    suspend fun getStructuredRelations(remoteId: Long): List<StructuredRelation> = emptyList()
+
+    val supportsStructuredRelations: Boolean
+        get() = false
     // SY <--
 
     // KMK -->

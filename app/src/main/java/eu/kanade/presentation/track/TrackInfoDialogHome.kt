@@ -23,10 +23,15 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -85,6 +90,16 @@ fun TrackInfoDialogHome(
     onRemoved: (TrackItem) -> Unit,
     onCopyLink: (TrackItem) -> Unit,
     onTogglePrivate: (TrackItem) -> Unit,
+    preferredId: Long? = null,
+    editMode: Boolean = false,
+    onToggleEditMode: () -> Unit = {},
+    onSetPreferredTracker: (TrackItem) -> Unit = {},
+    selectedTrackerIds: Set<Long> = emptySet(),
+    onToggleTrackerSelection: (TrackItem) -> Unit = {},
+    onRemoveSelectedTrackers: () -> Unit = {},
+    skippedTrackerIds: Set<Long> = emptySet(),
+    errorTrackerIds: Set<Long> = emptySet(),
+    busy: Boolean = false,
 ) {
     val initialFocusRequester = remember { FocusRequester() }
     val isTvUi = isTvUi()
@@ -103,6 +118,26 @@ fun TrackInfoDialogHome(
             .windowInsetsPadding(WindowInsets.systemBars),
         verticalArrangement = Arrangement.spacedBy(24.dp),
     ) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+            if (busy) {
+                CircularProgressIndicator(modifier = Modifier.size(24.dp))
+            }
+            if (editMode && selectedTrackerIds.isNotEmpty()) {
+                IconButton(onClick = onRemoveSelectedTrackers) {
+                    Icon(
+                        imageVector = Icons.Filled.Delete,
+                        contentDescription = stringResource(AMR.strings.tracker_remove_selected),
+                    )
+                }
+            }
+            IconButton(onClick = onToggleEditMode) {
+                Icon(
+                    imageVector = Icons.Outlined.Edit,
+                    contentDescription = stringResource(AMR.strings.tracker_edit_mode),
+                    tint = if (editMode) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                )
+            }
+        }
         trackItems.forEachIndexed { index, item ->
             val initialFocusModifier = if (index == 0) {
                 Modifier.focusRequester(initialFocusRequester)
@@ -148,6 +183,13 @@ fun TrackInfoDialogHome(
                     onOpenInBrowser = { onOpenInBrowser(item) },
                     onRemoved = { onRemoved(item) },
                     onCopyLink = { onCopyLink(item) },
+                    preferred = item.tracker.id == preferredId,
+                    editMode = editMode,
+                    onSetPreferred = { onSetPreferredTracker(item) },
+                    selected = item.tracker.id in selectedTrackerIds,
+                    onToggleSelected = { onToggleTrackerSelection(item) },
+                    skipped = item.tracker.id in skippedTrackerIds,
+                    syncError = item.tracker.id in errorTrackerIds,
                     private = item.track.private,
                     onTogglePrivate = { onTogglePrivate(item) }
                         .takeIf { supportsPrivate },
@@ -184,6 +226,13 @@ private fun TrackInfoItem(
     onOpenInBrowser: () -> Unit,
     onRemoved: () -> Unit,
     onCopyLink: () -> Unit,
+    preferred: Boolean,
+    editMode: Boolean,
+    onSetPreferred: () -> Unit,
+    selected: Boolean,
+    onToggleSelected: () -> Unit,
+    skipped: Boolean,
+    syncError: Boolean,
     private: Boolean,
     onTogglePrivate: (() -> Unit)?,
     initialFocusModifier: Modifier,
@@ -195,7 +244,47 @@ private fun TrackInfoItem(
         ) {
             BadgedBox(
                 badge = {
-                    if (private) {
+                    if (syncError) {
+                        Badge(
+                            containerColor = MaterialTheme.colorScheme.errorContainer,
+                            contentColor = MaterialTheme.colorScheme.onErrorContainer,
+                            modifier = Modifier.absoluteOffset(x = (-5).dp),
+                        ) {
+                            Text("!", modifier = Modifier.padding(horizontal = 3.dp))
+                        }
+                    } else if (skipped) {
+                        Badge(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                            modifier = Modifier.absoluteOffset(x = (-5).dp),
+                        ) {
+                            Text("–", modifier = Modifier.padding(horizontal = 3.dp))
+                        }
+                    } else if (selected) {
+                        Badge(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.absoluteOffset(x = (-5).dp),
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Done,
+                                contentDescription = stringResource(AMR.strings.tracker_selected),
+                                modifier = Modifier.size(14.dp),
+                            )
+                        }
+                    } else if (preferred) {
+                        Badge(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                            modifier = Modifier.absoluteOffset(x = (-5).dp),
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Star,
+                                contentDescription = stringResource(AMR.strings.pref_priority_tracker),
+                                modifier = Modifier.size(14.dp),
+                            )
+                        }
+                    } else if (private) {
                         Badge(
                             containerColor = MaterialTheme.colorScheme.primary,
                             contentColor = MaterialTheme.colorScheme.onPrimary,
@@ -212,8 +301,8 @@ private fun TrackInfoItem(
             ) {
                 TrackLogoIcon(
                     tracker = tracker,
-                    onClick = onOpenInBrowser,
-                    onLongClick = onCopyLink,
+                    onClick = if (editMode) onToggleSelected else onOpenInBrowser,
+                    onLongClick = if (editMode) onSetPreferred else onCopyLink,
                 )
             }
             Box(

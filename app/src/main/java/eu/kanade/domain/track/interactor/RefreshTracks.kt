@@ -3,6 +3,7 @@ package eu.kanade.domain.track.interactor
 import android.app.Application
 import eu.kanade.domain.track.model.toDbTrack
 import eu.kanade.domain.track.model.toDomainTrack
+import eu.kanade.domain.track.service.TrackPreferences
 import eu.kanade.tachiyomi.data.track.EnhancedTracker
 import eu.kanade.tachiyomi.data.track.Tracker
 import eu.kanade.tachiyomi.data.track.TrackerManager
@@ -24,6 +25,7 @@ class RefreshTracks(
     private val trackerManager: TrackerManager,
     private val insertTrack: InsertTrack,
     private val syncEpisodeProgressWithTrack: SyncChapterProgressWithTrack,
+    private val preferences: TrackPreferences = Injekt.get(),
 ) {
 
     /**
@@ -42,7 +44,9 @@ class RefreshTracks(
     ): List<RefreshResult> {
         // <-- AM
         return supervisorScope {
-            return@supervisorScope getTracks.await(mangaId)
+            val tracks = getTracks.await(mangaId)
+            val preferred = preferences.resolvePreferredTracker(mangaId, tracks.map { it.trackerId }.toSet())
+            return@supervisorScope tracks
                 .map { it to trackerManager.get(it.trackerId) }
                 .filter { (_, service) -> service?.isLoggedIn == true }
                 .map { (track, service) ->
@@ -56,13 +60,18 @@ class RefreshTracks(
                                 // <-- AM
                                 val updatedTrack = service!!.refresh(track.toDbTrack()).toDomainTrack()!!
                                 insertTrack.await(updatedTrack)
-                                syncEpisodeProgressWithTrack.await(
-                                    mangaId,
-                                    updatedTrack,
-                                    service,
-                                    // KMK -->
-                                    enhancedTrackersOnly = enhancedTrackersOnly,
-                                )
+                                val shouldSyncLocal = preferred == null || service.id == preferred
+                                if (shouldSyncLocal) {
+                                    syncEpisodeProgressWithTrack.await(
+                                        mangaId,
+                                        updatedTrack,
+                                        service,
+                                        // KMK -->
+                                        enhancedTrackersOnly = enhancedTrackersOnly,
+                                    )
+                                } else {
+                                    null
+                                }
                                     ?.let {
                                         val context = Injekt.get<Application>()
                                         withUIContext {

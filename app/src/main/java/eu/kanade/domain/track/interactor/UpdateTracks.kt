@@ -1,26 +1,143 @@
 package eu.kanade.domain.track.interactor
 
+import dev.icerock.moko.resources.StringResource
+import eu.kanade.domain.track.model.toDbTrack
+import eu.kanade.tachiyomi.data.track.DeletableTracker
+import eu.kanade.tachiyomi.data.track.Tracker
 import eu.kanade.tachiyomi.data.track.TrackerManager
+import kotlinx.coroutines.CancellationException
+import tachiyomi.domain.track.interactor.DeleteTrack
+import tachiyomi.domain.track.interactor.GetTracks
 import tachiyomi.domain.track.interactor.InsertTrack
-import tachiyomi.domain.track.model.Track
+import tachiyomi.i18n.MR
+import kotlin.math.abs
 
-/**
- * Shared multi-tracker writer used by tracker UI callers. A failed service is
- * represented in the result and never cancels a sibling service write.
- */
+/** Failure-isolated multi-tracker edits using each service's native conversions. */
 class UpdateTracks(
-    private val trackerManager: TrackerManager,
-    private val insertTrack: InsertTrack,
+    private val getTracks: GetTracks,
+    private val manager: TrackerManager,
+    private val insert: InsertTrack,
+    private val delete: DeleteTrack,
 ) {
-    suspend fun update(
-        tracks: List<Track>,
-        transform: (Track) -> Track?,
-        didReadEpisode: Boolean = false,
-    ): List<TrackerBatchResult> = trackerBatch(
-        entries = tracks.mapNotNull { track -> trackerManager.get(track.trackerId)?.let { it to track } },
-        insertTrack = insertTrack,
-    ) { tracker, track ->
-        val edited = transform(track) ?: track
-        tracker.updateDomain(edited, didReadEpisode)
+    class InvalidDate : IllegalArgumentException()
+
+    sealed interface Change {
+        data class Progress(val episode: Int) : Change
+        data class Score(val sourceId: Long, val selection: String) : Change
+        data class Status(val sourceId: Long, val status: Long) : Change
+        data class Date(val start: Boolean, val millis: Long) : Change
+    }
+
+    data class Result(
+        val updatedTrackerIds: Set<Long>,
+        val failedTrackerIds: Set<Long>,
+        val skippedTrackerIds: Set<Long>,
+        val failures: List<Pair<Tracker?, Throwable>>,
+    )
+
+    suspend fun awaitDetailed(animeId: Long, change: Change): Result {
+        val bindings = getTracks.await(animeId)
+        val entries = bindings.mapNotNull { binding ->
+            manager.get(binding.trackerId)?.takeIf { it.isLoggedIn }?.let { it to binding }
+        }
+        return trackerBatch(entries, insert) {
+            if (change is Change.Score && service.getScoreList().isEmpty()) {
+                skip()
+                return@trackerBatch
+            }
+            if (change is Change.Date && !service.supportsReadingDates) {
+                skip()
+                return@trackerBatch
+            }
+            val current = refresh()
+            val edited = when (change) {
+                is Change.Progress -> {
+                    require(change.episode >= 0)
+                    current.copy(lastChapterRead = change.episode.toDouble())
+                }
+                is Change.Score -> {
+                    val source = requireNotNull(manager.get(change.sourceId))
+                    val sourceBinding = requireNotNull(bindings.find { it.trackerId == source.id })
+                    val index = source.getScoreList().indexOf(change.selection)
+                    require(index >= 0)
+                    val normalized = source.get10PointScore(sourceBinding.copy(score = source.indexToScore(index)))
+                    val score = service.getScoreList().indices.map(service::indexToScore).minBy { candidate ->
+                        abs(service.get10PointScore(current.copy(score = candidate)) - normalized)
+                    }
+                    current.copy(score = score)
+                }
+                is Change.Status -> {
+                    val source = requireNotNull(manager.get(change.sourceId))
+                    val status = equivalentStatus(source, change.status, service)
+                    if (status == null) {
+                        skip()
+                        return@trackerBatch
+                    }
+                    current.copy(
+                        status = status,
+                        lastChapterRead = if (status == service.getCompletionStatus() && current.totalChapters > 0) {
+                            current.totalChapters.toDouble()
+                        } else {
+                            current.lastChapterRead
+                        },
+                    )
+                }
+                is Change.Date -> {
+                    require(change.millis >= 0)
+                    if (change.start) {
+                        if (change.millis != 0L && current.finishDate != 0L && change.millis > current.finishDate) throw InvalidDate()
+                        current.copy(startDate = change.millis)
+                    } else {
+                        if (change.millis != 0L && current.startDate != 0L && change.millis < current.startDate) throw InvalidDate()
+                        current.copy(finishDate = change.millis)
+                    }
+                }
+            }
+            update(edited, change is Change.Progress)
+        }.let { results ->
+            Result(
+                updatedTrackerIds = results.filter { it.failures.isEmpty() && !it.skipped }.map { it.service.id }.toSet(),
+                failedTrackerIds = results.filter { it.failures.isNotEmpty() }.map { it.service.id }.toSet(),
+                skippedTrackerIds = results.filter { it.failures.isEmpty() && it.skipped }.map { it.service.id }.toSet(),
+                failures = results.flatMap { result -> result.failures.map { result.service to it } },
+            )
+        }
+    }
+
+    suspend fun remove(animeId: Long, selected: Set<Long>, remotely: Boolean): List<Pair<Tracker?, Throwable>> {
+        val failures = mutableListOf<Pair<Tracker?, Throwable>>()
+        for (track in getTracks.await(animeId).filter { it.trackerId in selected }) {
+            val service = manager.get(track.trackerId)
+            try {
+                if (remotely && service is DeletableTracker) service.delete(track)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                failures += service to e
+            }
+            try {
+                delete.awaitOrThrow(animeId, track.trackerId)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                failures += service to e
+            }
+        }
+        return failures
+    }
+
+    private fun equivalentStatus(source: Tracker, status: Long, target: Tracker): Long? {
+        if (source.id == target.id) return status
+        val label = statusLabel(source.getStatus(status)) ?: return null
+        return target.getStatusList().firstOrNull { statusLabel(target.getStatus(it)) == label }
+    }
+
+    private fun statusLabel(label: StringResource?): StringResource? = when (label) {
+        MR.strings.reading_list -> MR.strings.reading
+        MR.strings.complete_list -> MR.strings.completed
+        MR.strings.wish_list -> MR.strings.plan_to_read
+        MR.strings.unfinished_list -> MR.strings.dropped
+        MR.strings.on_hold_list, MR.strings.paused -> MR.strings.on_hold
+        else -> label
     }
 }
