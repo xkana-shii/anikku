@@ -20,3 +20,12 @@ fun getStatus(status: String?) = when (status) {
     "plan_to_watch" -> MyAnimeList.PLAN_TO_WATCH
     else -> MyAnimeList.WATCHING
 }
+
+internal data class MalRewatchUpdate(val isRewatching: Boolean, val completedCount: Int?)
+
+internal fun malRewatchUpdate(status: Long, previouslyRewatching: Boolean, previousCount: Int): MalRewatchUpdate =
+    if (status == MyAnimeList.COMPLETED && previouslyRewatching) {
+        MalRewatchUpdate(isRewatching = false, completedCount = previousCount + 1)
+    } else {
+        MalRewatchUpdate(isRewatching = status == MyAnimeList.REWATCHING, completedCount = null)
+    }

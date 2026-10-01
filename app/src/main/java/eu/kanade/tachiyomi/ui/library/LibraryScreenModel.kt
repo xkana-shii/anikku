@@ -86,6 +86,8 @@ import tachiyomi.domain.history.interactor.GetNextChapters
 import tachiyomi.domain.library.model.LibraryDisplayMode
 import tachiyomi.domain.library.model.LibraryGroup
 import tachiyomi.domain.library.model.LibraryManga
+import tachiyomi.domain.library.model.LibrarySearchParser
+import tachiyomi.domain.library.model.LibrarySearchToken
 import tachiyomi.domain.library.model.LibrarySort
 import tachiyomi.domain.library.model.sort
 import tachiyomi.domain.library.service.LibraryPreferences
@@ -1085,7 +1087,8 @@ class LibraryScreenModel(
             // Prepare filter object
             val parsedQuery = searchEngine.parseQuery(query)
             val advancedFieldSearchEnabled = libraryPreferences.advancedFieldSearchEnabled().get()
-            val tracks = if (loggedInTrackServices.isNotEmpty()) {
+            val advancedQuery = if (advancedFieldSearchEnabled) LibrarySearchParser.parse(query) else emptyList()
+            val tracks = if (loggedInTrackServices.isNotEmpty() || advancedFieldSearchEnabled) {
                 getTracks.await().groupBy { it.mangaId }
             } else {
                 emptyMap()
@@ -1097,17 +1100,26 @@ class LibraryScreenModel(
             val categories = getCategories.await().associate { it.id to it.name }
             unfiltered.asFlow().cancellable().filter { item ->
                 val mangaId = item.libraryManga.manga.id
-                if (query.startsWith("id:", true)) {
+                if (!advancedFieldSearchEnabled && query.startsWith("id:", true)) {
                     return@filter mangaId == query.substringAfter("id:").toLongOrNull()
                 }
                 val sourceId = item.libraryManga.manga.source
-                if (query.startsWith("src:", true)) {
+                if (!advancedFieldSearchEnabled && query.startsWith("src:", true)) {
                     val querySource = query.substringAfter("src:")
                     return@filter if (querySource.equals(LOCAL_SOURCE_ID_ALIAS, ignoreCase = true)) {
                         sourceId == LocalSource.ID
                     } else {
                         sourceId == querySource.toLongOrNull()
                     }
+                }
+                if (advancedFieldSearchEnabled) {
+                    return@filter filterMangaAdvanced(
+                        advancedQuery,
+                        item.libraryManga,
+                        tracks[mangaId],
+                        sources[sourceId],
+                        categories,
+                    )
                 }
                 filterManga(
                     queries = parsedQuery,
@@ -1121,6 +1133,48 @@ class LibraryScreenModel(
             }.toList()
         } else {
             unfiltered
+        }
+    }
+
+    private fun filterMangaAdvanced(
+        queries: List<LibrarySearchToken>,
+        libraryManga: LibraryManga,
+        tracks: List<Track>?,
+        source: Source?,
+        categories: Map<Long, String>,
+    ): Boolean {
+        val manga = libraryManga.manga
+        val context = Injekt.get<Application>()
+        val genres = manga.genre.orEmpty()
+        val trackerValues = tracks.orEmpty().flatMap { track ->
+            val service = trackerManager.get(track.trackerId)
+            listOfNotNull(service?.name, service?.getStatus(track.status)?.let(context::stringResource))
+        }
+        val fields = mapOf(
+            "title" to listOf(manga.title),
+            "author" to listOfNotNull(manga.author),
+            "artist" to listOfNotNull(manga.artist),
+            "description" to listOfNotNull(manga.description),
+            "genre" to genres,
+            "tag" to genres,
+            "source" to listOfNotNull(source?.name, manga.source.toString(), "local".takeIf { manga.source == LocalSource.ID }),
+            "id" to listOf(manga.id.toString()),
+            "status" to listOf(manga.status.toString(), mangaStatusName(manga.status)),
+            "tracker" to trackerValues,
+            "category" to libraryManga.categories.ifEmpty { listOf(0L) }.flatMap { id ->
+                listOfNotNull(id.toString(), categories[id], "uncategorized".takeIf { id == 0L })
+            },
+        )
+        val ordinary = fields.filterKeys { it !in setOf("category", "id", "status", "source") }
+            .values.flatten() + listOfNotNull(source?.name)
+        return queries.all { token ->
+            val values = when (val field = token.field) {
+                null -> ordinary
+                in fields.keys -> fields[field].orEmpty()
+                else -> genres.filter { it.startsWith("$field:", ignoreCase = true) }
+                    .map { it.substringAfter(':').trim() }
+            }
+            token.matches(values) != token.excluded
         }
     }
 
@@ -1166,6 +1220,10 @@ class LibraryScreenModel(
                             categories = categories,
                             context = context,
                         ) ?: true
+                    } else if (queryComponent.namespace.lowercase() in advancedFieldNames) {
+                        val literal = "${queryComponent.namespace}:${queryComponent.tag?.asQuery().orEmpty()}"
+                        listOfNotNull(manga.title, manga.author, manga.artist, manga.description, source?.name)
+                            .any { it.contains(literal, ignoreCase = true) }
                     } else {
                         true
                     }
@@ -1204,9 +1262,15 @@ class LibraryScreenModel(
                         } else {
                             null
                         }
-                        advancedMatch?.not() ?: run {
-                            val searchedTag = queryComponent.tag?.asQuery()
-                            queryComponent.namespace.isBlank() && searchedTag.isNullOrBlank()
+                        advancedMatch?.not() ?: if (queryComponent.namespace.lowercase() in advancedFieldNames) {
+                            val literal = "${queryComponent.namespace}:${queryComponent.tag?.asQuery().orEmpty()}"
+                            listOfNotNull(manga.title, manga.author, manga.artist, manga.description, source?.name)
+                                .none { it.contains(literal, ignoreCase = true) }
+                        } else {
+                            run {
+                                val searchedTag = queryComponent.tag?.asQuery()
+                                queryComponent.namespace.isBlank() && searchedTag.isNullOrBlank()
+                            }
                         }
                     }
                     else -> true
@@ -1214,6 +1278,11 @@ class LibraryScreenModel(
             }
         }
     }
+
+    private val advancedFieldNames = setOf(
+        "title", "author", "artist", "source", "src", "genre", "tag", "tags", "status", "tracker",
+        "description", "id", "category",
+    )
 
     /**
      * Field prefixes supplement the existing EH/SY namespace parser. Returning null deliberately

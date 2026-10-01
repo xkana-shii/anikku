@@ -99,7 +99,12 @@ class CreateBackupScreen : Screen() {
                 item {
                     SectionCard(MR.strings.label_library) {
                         Options(BackupOptions.libraryOptions, state, model)
-                        BackupCategories(categories, state, model)
+                    }
+                }
+
+                item {
+                    SectionCard(MR.strings.categories) {
+                        BackupCategories(categories.filterNot { it.isSystemCategory }, state, model)
                     }
                 }
 
@@ -127,25 +132,23 @@ class CreateBackupScreen : Screen() {
         LabeledCheckbox(
             label = stringResource(AMR.strings.backup_all_categories),
             checked = !state.filterLibraryEntries,
-            onCheckedChange = { model.setFilterLibraryEntries(!it) },
+            onCheckedChange = { model.selectAllCategories(it, categories) },
             enabled = state.options.libraryEntries,
         )
-        if (state.filterLibraryEntries) {
-            categories.forEach { category ->
-                LabeledCheckbox(
-                    label = category.visualName,
-                    checked = category.id in state.categoryIds,
-                    onCheckedChange = { model.toggleCategory(category.id, it) },
-                    enabled = state.options.libraryEntries,
-                )
-            }
+        categories.forEach { category ->
             LabeledCheckbox(
-                label = stringResource(AMR.strings.backup_uncategorized),
-                checked = state.includeUncategorized,
-                onCheckedChange = model::setIncludeUncategorized,
+                label = category.visualName,
+                checked = !state.filterLibraryEntries || category.id in state.categoryIds,
+                onCheckedChange = { model.toggleCategory(category.id, it, categories) },
                 enabled = state.options.libraryEntries,
             )
         }
+        LabeledCheckbox(
+            label = stringResource(AMR.strings.backup_uncategorized),
+            checked = !state.filterLibraryEntries || state.includeUncategorized,
+            onCheckedChange = { model.setIncludeUncategorized(it, categories) },
+            enabled = state.options.libraryEntries,
+        )
     }
 
     @Composable
@@ -191,18 +194,34 @@ private class CreateBackupScreenModel : StateScreenModel<CreateBackupScreenModel
         )
     }
 
-    fun setFilterLibraryEntries(enabled: Boolean) {
-        mutableState.update { it.copy(filterLibraryEntries = enabled) }
-    }
-
-    fun toggleCategory(categoryId: Long, enabled: Boolean) {
+    fun selectAllCategories(all: Boolean, categories: List<Category>) {
         mutableState.update {
-            it.copy(categoryIds = it.categoryIds.toMutableSet().apply { if (enabled) add(categoryId) else remove(categoryId) })
+            it.copy(
+                filterLibraryEntries = !all,
+                categoryIds = if (all) emptySet() else categories.map(Category::id).toSet(),
+                includeUncategorized = true,
+            )
         }
     }
 
-    fun setIncludeUncategorized(enabled: Boolean) {
-        mutableState.update { it.copy(includeUncategorized = enabled) }
+    fun toggleCategory(categoryId: Long, enabled: Boolean, categories: List<Category>) {
+        mutableState.update {
+            val selected = if (it.filterLibraryEntries) it.categoryIds else categories.map(Category::id).toSet()
+            it.copy(
+                filterLibraryEntries = true,
+                categoryIds = if (enabled) selected + categoryId else selected - categoryId,
+            )
+        }
+    }
+
+    fun setIncludeUncategorized(enabled: Boolean, categories: List<Category>) {
+        mutableState.update {
+            it.copy(
+                filterLibraryEntries = true,
+                categoryIds = if (it.filterLibraryEntries) it.categoryIds else categories.map(Category::id).toSet(),
+                includeUncategorized = enabled,
+            )
+        }
     }
 
     @Immutable

@@ -21,7 +21,6 @@ import eu.kanade.presentation.more.settings.widget.TriStateListDialog
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.ui.category.CategoryScreen
 import eu.kanade.tachiyomi.ui.category.genre.SortTagScreen
-import eu.kanade.tachiyomi.util.system.LocaleHelper
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableMap
@@ -214,7 +213,7 @@ object SettingsLibraryScreen : SearchableSettings {
                         .sortedBy { it.name.lowercase() }
                         .associate {
                             it.id.toString() to
-                                "${it.name} — ${LocaleHelper.getSourceDisplayName(it.lang, context)}"
+                                "${it.name} (${it.lang.uppercase()})"
                         }
                         .toImmutableMap(),
                     title = stringResource(AMR.strings.pref_library_update_excluded_sources),

@@ -142,6 +142,7 @@ data class TrackInfoDialogHomeScreen(
 
         TrackInfoDialogHome(
             trackItems = state.trackItems,
+            seriesTitle = mangaTitle,
             dateFormat = dateFormat,
             // AM -->
             isSeason = isSeason,
@@ -236,6 +237,13 @@ data class TrackInfoDialogHomeScreen(
             onToggleTrackerSelection = screenModel::toggleTrackerSelection,
             onRemoveSelectedTrackers = {
                 navigator.push(TrackerBatchRemoveScreen(mangaId, state.selectedTrackerIds))
+            },
+            onAdjustProgress = { delta ->
+                val current = bound.firstOrNull { it.tracker.id == state.preferredId } ?: bound.firstOrNull()
+                current?.track?.let { screenModel.updateUnified(UpdateTracks.Change.Progress((it.lastChapterRead.toInt() + delta).coerceAtLeast(0))) }
+            },
+            onRemoveTracking = { selected ->
+                navigator.push(TrackerBatchRemoveScreen(mangaId, selected.map { it.tracker.id }.toSet()))
             },
             skippedTrackerIds = state.skippedTrackerIds,
             errorTrackerIds = state.errorTrackerIds,

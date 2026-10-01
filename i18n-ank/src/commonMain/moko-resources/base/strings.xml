@@ -211,6 +211,10 @@
     <string name="pref_auto_update_anime_sync">Update progress after watching</string>
     <string name="pref_auto_update_anime_on_mark_seen">Update progress when marked as watched</string>
     <string name="pref_auto_reread_behavior">Auto rewatch</string>
+    <string name="pref_auto_rewatch_on">On</string>
+    <string name="pref_auto_rewatch_ask">Always ask</string>
+    <string name="pref_auto_rewatch_off">Off</string>
+    <string name="rewatch_tracker_update_failed">Some trackers could not start the rewatch</string>
     <string name="pref_auto_reread_behavior_title">When an AniList or MyAnimeList entry is completed</string>
     <string name="pref_auto_reread_reset_to">Reset local progress to</string>
     <string name="pref_auto_reread_reset_to_zero">Episode 0</string>

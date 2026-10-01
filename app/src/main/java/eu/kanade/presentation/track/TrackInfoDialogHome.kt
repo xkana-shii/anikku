@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -67,6 +68,7 @@ import eu.kanade.tachiyomi.data.track.Tracker
 import eu.kanade.tachiyomi.ui.manga.track.TrackItem
 import eu.kanade.tachiyomi.util.lang.toLocalDate
 import eu.kanade.tachiyomi.util.system.copyToClipboard
+import tachiyomi.domain.track.service.TrackerProgressSync
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.ank.AMR
 import tachiyomi.presentation.core.i18n.stringResource
@@ -76,6 +78,7 @@ import java.time.format.DateTimeFormatter
 fun TrackInfoDialogHome(
     trackItems: List<TrackItem>,
     dateFormat: DateTimeFormatter,
+    seriesTitle: String = "",
     // AM -->
     isSeason: Boolean,
     // <-- AM
@@ -97,6 +100,8 @@ fun TrackInfoDialogHome(
     selectedTrackerIds: Set<Long> = emptySet(),
     onToggleTrackerSelection: (TrackItem) -> Unit = {},
     onRemoveSelectedTrackers: () -> Unit = {},
+    onAdjustProgress: (Int) -> Unit = {},
+    onRemoveTracking: (List<TrackItem>) -> Unit = {},
     skippedTrackerIds: Set<Long> = emptySet(),
     errorTrackerIds: Set<Long> = emptySet(),
     busy: Boolean = false,
@@ -138,68 +143,257 @@ fun TrackInfoDialogHome(
                 )
             }
         }
-        trackItems.forEachIndexed { index, item ->
-            val initialFocusModifier = if (index == 0) {
-                Modifier.focusRequester(initialFocusRequester)
-            } else {
-                Modifier
+        val boundItems = trackItems.filter { it.track != null }
+        if (boundItems.size >= 2) {
+            UnifiedTrackerCard(
+                items = trackItems,
+                initialFocusRequester = initialFocusRequester,
+                dateFormat = dateFormat,
+                seriesTitle = seriesTitle,
+                preferredId = preferredId,
+                editMode = editMode,
+                busy = busy,
+                selectedTrackerIds = selectedTrackerIds,
+                skippedTrackerIds = skippedTrackerIds,
+                errorTrackerIds = errorTrackerIds,
+                onToggleEditMode = onToggleEditMode,
+                onToggleTrackerSelection = onToggleTrackerSelection,
+                onSetPreferredTracker = onSetPreferredTracker,
+                onNewSearch = onNewSearch,
+                onOpenInBrowser = onOpenInBrowser,
+                onCopyLink = onCopyLink,
+                onRemoved = onRemoved,
+                onRemoveSelectedTrackers = onRemoveSelectedTrackers,
+                onRemoveTracking = onRemoveTracking,
+                onTogglePrivate = onTogglePrivate,
+                onStatusClick = onStatusClick,
+                onChapterClick = onChapterClick,
+                onScoreClick = onScoreClick,
+                onStartDateEdit = onStartDateEdit,
+                onEndDateEdit = onEndDateEdit,
+                onAdjustProgress = onAdjustProgress,
+            )
+        } else {
+            trackItems.forEachIndexed { index, item ->
+                val initialFocusModifier = if (index == 0) {
+                    Modifier.focusRequester(initialFocusRequester)
+                } else {
+                    Modifier
+                }
+                if (item.track != null) {
+                    val supportsScoring = item.tracker.getScoreList().isNotEmpty()
+                    val supportsReadingDates = item.tracker.supportsReadingDates
+                    val supportsPrivate = item.tracker.supportsPrivateTracking
+                    TrackInfoItem(
+                        title = item.track.title,
+                        tracker = item.tracker,
+                        initialFocusModifier = initialFocusModifier,
+                        // AM -->
+                        isSeason = isSeason,
+                        // <-- AM
+                        status = item.tracker.getStatus(item.track.status),
+                        onStatusClick = { onStatusClick(item) },
+                        chapters = "${item.track.lastChapterRead.toInt()}".let {
+                            val totalChapters = item.track.totalChapters
+                            if (totalChapters > 0) {
+                                // Add known total chapter count
+                                "$it / $totalChapters"
+                            } else {
+                                it
+                            }
+                        },
+                        onChaptersClick = { onChapterClick(item) },
+                        score = item.tracker.displayScore(item.track)
+                            .takeIf { supportsScoring && item.track.score != 0.0 },
+                        onScoreClick = { onScoreClick(item) }
+                            .takeIf { supportsScoring },
+                        startDate = remember(item.track.startDate) { dateFormat.format(item.track.startDate.toLocalDate()) }
+                            .takeIf { supportsReadingDates && item.track.startDate != 0L },
+                        onStartDateClick = { onStartDateEdit(item) } // TODO
+                            .takeIf { supportsReadingDates },
+                        endDate = dateFormat.format(item.track.finishDate.toLocalDate())
+                            .takeIf { supportsReadingDates && item.track.finishDate != 0L },
+                        onEndDateClick = { onEndDateEdit(item) }
+                            .takeIf { supportsReadingDates },
+                        onNewSearch = { onNewSearch(item) },
+                        onOpenInBrowser = { onOpenInBrowser(item) },
+                        onRemoved = { onRemoved(item) },
+                        onCopyLink = { onCopyLink(item) },
+                        preferred = item.tracker.id == preferredId,
+                        editMode = editMode,
+                        onSetPreferred = { onSetPreferredTracker(item) },
+                        selected = item.tracker.id in selectedTrackerIds,
+                        onToggleSelected = { onToggleTrackerSelection(item) },
+                        skipped = item.tracker.id in skippedTrackerIds,
+                        syncError = item.tracker.id in errorTrackerIds,
+                        private = item.track.private,
+                        onTogglePrivate = { onTogglePrivate(item) }
+                            .takeIf { supportsPrivate },
+                    )
+                } else {
+                    TrackInfoItemEmpty(
+                        tracker = item.tracker,
+                        onNewSearch = { onNewSearch(item) },
+                        initialFocusModifier = initialFocusModifier,
+                    )
+                }
             }
+        }
+    }
+}
+
+@Composable
+private fun UnifiedTrackerCard(
+    items: List<TrackItem>,
+    initialFocusRequester: FocusRequester,
+    dateFormat: DateTimeFormatter,
+    seriesTitle: String,
+    preferredId: Long?,
+    editMode: Boolean,
+    busy: Boolean,
+    selectedTrackerIds: Set<Long>,
+    skippedTrackerIds: Set<Long>,
+    errorTrackerIds: Set<Long>,
+    onToggleEditMode: () -> Unit,
+    onToggleTrackerSelection: (TrackItem) -> Unit,
+    onSetPreferredTracker: (TrackItem) -> Unit,
+    onNewSearch: (TrackItem) -> Unit,
+    onOpenInBrowser: (TrackItem) -> Unit,
+    onCopyLink: (TrackItem) -> Unit,
+    onRemoved: (TrackItem) -> Unit,
+    onRemoveSelectedTrackers: () -> Unit,
+    onRemoveTracking: (List<TrackItem>) -> Unit,
+    onTogglePrivate: (TrackItem) -> Unit,
+    onStatusClick: (TrackItem) -> Unit,
+    onChapterClick: (TrackItem) -> Unit,
+    onScoreClick: (TrackItem) -> Unit,
+    onStartDateEdit: (TrackItem) -> Unit,
+    onEndDateEdit: (TrackItem) -> Unit,
+    onAdjustProgress: (Int) -> Unit,
+) {
+    val bound = items.filter { it.track != null }
+    val tracks = bound.mapNotNull { it.track }
+    val primaryTrack = TrackerProgressSync.resolvePreferredTrack(tracks, preferredId) ?: return
+    val primary = bound.first { it.track == primaryTrack }
+    val scoreItem = bound.firstOrNull { it.tracker.getScoreList().isNotEmpty() }
+    val dateItem = bound.firstOrNull { it.tracker.supportsReadingDates }
+    val mismatchedIds = TrackerProgressSync.mismatchedIds(tracks, preferredId)
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = seriesTitle,
+                style = MaterialTheme.typography.titleSmall,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f),
+            )
+            if (editMode && selectedTrackerIds.isNotEmpty()) {
+                IconButton(onClick = onRemoveSelectedTrackers, enabled = !busy) {
+                    Icon(Icons.Filled.Delete, contentDescription = stringResource(AMR.strings.tracker_remove_selected))
+                }
+            }
+            IconButton(
+                onClick = onToggleEditMode,
+                enabled = !busy,
+                modifier = Modifier.focusRequester(initialFocusRequester),
+            ) {
+                Icon(
+                    Icons.Outlined.Edit,
+                    contentDescription = stringResource(AMR.strings.tracker_edit_mode),
+                    tint = if (editMode) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                )
+            }
+        }
+        items.forEach { item ->
             if (item.track != null) {
-                val supportsScoring = item.tracker.getScoreList().isNotEmpty()
-                val supportsReadingDates = item.tracker.supportsReadingDates
-                val supportsPrivate = item.tracker.supportsPrivateTracking
-                TrackInfoItem(
-                    title = item.track.title,
-                    tracker = item.tracker,
-                    initialFocusModifier = initialFocusModifier,
-                    // AM -->
-                    isSeason = isSeason,
-                    // <-- AM
-                    status = item.tracker.getStatus(item.track.status),
-                    onStatusClick = { onStatusClick(item) },
-                    chapters = "${item.track.lastChapterRead.toInt()}".let {
-                        val totalChapters = item.track.totalChapters
-                        if (totalChapters > 0) {
-                            // Add known total chapter count
-                            "$it / $totalChapters"
-                        } else {
-                            it
-                        }
-                    },
-                    onChaptersClick = { onChapterClick(item) },
-                    score = item.tracker.displayScore(item.track)
-                        .takeIf { supportsScoring && item.track.score != 0.0 },
-                    onScoreClick = { onScoreClick(item) }
-                        .takeIf { supportsScoring },
-                    startDate = remember(item.track.startDate) { dateFormat.format(item.track.startDate.toLocalDate()) }
-                        .takeIf { supportsReadingDates && item.track.startDate != 0L },
-                    onStartDateClick = { onStartDateEdit(item) } // TODO
-                        .takeIf { supportsReadingDates },
-                    endDate = dateFormat.format(item.track.finishDate.toLocalDate())
-                        .takeIf { supportsReadingDates && item.track.finishDate != 0L },
-                    onEndDateClick = { onEndDateEdit(item) }
-                        .takeIf { supportsReadingDates },
-                    onNewSearch = { onNewSearch(item) },
-                    onOpenInBrowser = { onOpenInBrowser(item) },
-                    onRemoved = { onRemoved(item) },
-                    onCopyLink = { onCopyLink(item) },
-                    preferred = item.tracker.id == preferredId,
-                    editMode = editMode,
-                    onSetPreferred = { onSetPreferredTracker(item) },
-                    selected = item.tracker.id in selectedTrackerIds,
-                    onToggleSelected = { onToggleTrackerSelection(item) },
-                    skipped = item.tracker.id in skippedTrackerIds,
-                    syncError = item.tracker.id in errorTrackerIds,
-                    private = item.track.private,
-                    onTogglePrivate = { onTogglePrivate(item) }
-                        .takeIf { supportsPrivate },
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    BadgedBox(
+                        badge = {
+                            val marker = when (item.tracker.id) {
+                                in errorTrackerIds -> "!"
+                                in skippedTrackerIds -> "–"
+                                in selectedTrackerIds -> "✓"
+                                in mismatchedIds -> "•"
+                                preferredId -> "★"
+                                else -> ""
+                            }
+                            if (marker.isNotEmpty()) Badge { Text(marker) }
+                        },
+                    ) {
+                        TrackLogoIcon(
+                            tracker = item.tracker,
+                            onClick = { if (editMode) onToggleTrackerSelection(item) else onOpenInBrowser(item) },
+                            onLongClick = { if (editMode) onSetPreferredTracker(item) else onCopyLink(item) },
+                        )
+                    }
+                    Text(
+                        text = item.track.title,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f).clickable { onNewSearch(item) }.padding(start = 12.dp),
+                    )
+                    TrackInfoItemMenu(
+                        onOpenInBrowser = { onOpenInBrowser(item) },
+                        onRemoved = { onRemoved(item) },
+                        onCopyLink = { onCopyLink(item) },
+                        private = item.track.private,
+                        onTogglePrivate = { onTogglePrivate(item) }.takeIf { item.tracker.supportsPrivateTracking },
+                    )
+                }
             } else {
-                TrackInfoItemEmpty(
-                    tracker = item.tracker,
-                    onNewSearch = { onNewSearch(item) },
-                    initialFocusModifier = initialFocusModifier,
+                TrackInfoItemEmpty(item.tracker, { onNewSearch(item) }, Modifier)
+            }
+        }
+        Column(
+            modifier = Modifier.fillMaxWidth().clip(MaterialTheme.shapes.medium)
+                .background(MaterialTheme.colorScheme.surfaceContainerHighest).padding(8.dp),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = stringResource(primary.tracker.getStatus(primaryTrack.status) ?: MR.strings.reading),
+                    modifier = Modifier.weight(1f).clickable(enabled = !busy) { onStatusClick(primary) }.padding(8.dp),
                 )
+                scoreItem?.let { item ->
+                    VerticalDivider()
+                    Text(
+                        text = item.tracker.displayScore(item.track!!).ifBlank { stringResource(MR.strings.score) },
+                        modifier = Modifier.weight(1f).clickable(enabled = !busy) { onScoreClick(item) }.padding(8.dp),
+                    )
+                }
+            }
+            HorizontalDivider()
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("−", modifier = Modifier.clickable(enabled = !busy) { onAdjustProgress(-1) }.padding(12.dp))
+                VerticalDivider()
+                Text(
+                    text = "${primaryTrack.lastChapterRead.toInt()}".let { progress ->
+                        if (primaryTrack.totalChapters > 0) "$progress/${primaryTrack.totalChapters}" else progress
+                    },
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.weight(1f).clickable(enabled = !busy) { onChapterClick(primary) }.padding(8.dp),
+                )
+                VerticalDivider()
+                Text("+", modifier = Modifier.clickable(enabled = !busy) { onAdjustProgress(1) }.padding(12.dp))
+            }
+            dateItem?.let { item ->
+                HorizontalDivider()
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = item.track!!.startDate.takeIf { it > 0 }?.let { dateFormat.format(it.toLocalDate()) }
+                            ?: stringResource(MR.strings.track_started_reading_date),
+                        modifier = Modifier.weight(1f).clickable(enabled = !busy) { onStartDateEdit(item) }.padding(8.dp),
+                    )
+                    VerticalDivider()
+                    Text(
+                        text = item.track.finishDate.takeIf { it > 0 }?.let { dateFormat.format(it.toLocalDate()) }
+                            ?: stringResource(MR.strings.track_finished_reading_date),
+                        modifier = Modifier.weight(1f).clickable(enabled = !busy) { onEndDateEdit(item) }.padding(8.dp),
+                    )
+                }
+            }
+            HorizontalDivider()
+            IconButton(onClick = { onRemoveTracking(bound) }, enabled = !busy) {
+                Icon(Icons.Outlined.Close, contentDescription = stringResource(AMR.strings.tracker_remove_selected))
             }
         }
     }

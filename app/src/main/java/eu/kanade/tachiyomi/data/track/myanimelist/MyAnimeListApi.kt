@@ -110,21 +110,17 @@ class MyAnimeListApi(
         return withIOContext {
             val previousStatus = getCurrentListStatus(track.remote_id)
             val targetStatus = track.toMyAnimeListStatus() ?: "watching"
-            val wasRewatching = previousStatus?.isRewatching == true
+            val rewatch = malRewatchUpdate(
+                track.status,
+                previouslyRewatching = previousStatus?.isRewatching == true,
+                previousCount = previousStatus?.numTimesRewatched ?: 0,
+            )
             val formBodyBuilder = FormBody.Builder()
                 .add("status", targetStatus)
                 .add("score", track.score.toString())
                 .add("num_watched_episodes", track.last_episode_seen.toInt().toString())
-            val finalIsRewatching = if (targetStatus == "completed" && wasRewatching) {
-                formBodyBuilder.add(
-                    "num_times_rewatched",
-                    ((previousStatus?.numTimesRewatched ?: 0) + 1).toString(),
-                )
-                false
-            } else {
-                track.status == MyAnimeList.REWATCHING
-            }
-            formBodyBuilder.add("is_rewatching", finalIsRewatching.toString())
+            rewatch.completedCount?.let { formBodyBuilder.add("num_times_rewatched", it.toString()) }
+            formBodyBuilder.add("is_rewatching", rewatch.isRewatching.toString())
             convertToIsoDate(track.started_watching_date)?.let {
                 formBodyBuilder.add("start_date", it)
             }

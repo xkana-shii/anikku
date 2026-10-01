@@ -867,8 +867,8 @@ class PlayerActivity : BaseActivity() {
                 consumedTvKeyDown = keyCode
                 when (action) {
                     TvRemoteAction.ShowControls -> viewModel.showControls()
-                    TvRemoteAction.SeekBackward -> viewModel.handleLeftDoubleTap()
-                    TvRemoteAction.SeekForward -> viewModel.handleRightDoubleTap()
+                    TvRemoteAction.SeekBackward -> viewModel.leftSeek()
+                    TvRemoteAction.SeekForward -> viewModel.rightSeek()
                     TvRemoteAction.TogglePlayback -> {
                         viewModel.pauseUnpause()
                         viewModel.showControls()
@@ -899,13 +899,13 @@ class PlayerActivity : BaseActivity() {
                 viewModel.changeVolumeBy(-1)
                 viewModel.displayVolumeSlider()
             }
-            KeyEvent.KEYCODE_DPAD_LEFT -> viewModel.handleLeftDoubleTap()
-            KeyEvent.KEYCODE_DPAD_RIGHT -> viewModel.handleRightDoubleTap()
+            KeyEvent.KEYCODE_DPAD_LEFT -> viewModel.leftSeek()
+            KeyEvent.KEYCODE_DPAD_RIGHT -> viewModel.rightSeek()
             KeyEvent.KEYCODE_SPACE -> viewModel.pauseUnpause()
             KeyEvent.KEYCODE_MEDIA_STOP -> finishAndRemoveTask()
 
-            KeyEvent.KEYCODE_MEDIA_REWIND -> viewModel.handleLeftDoubleTap()
-            KeyEvent.KEYCODE_MEDIA_FAST_FORWARD -> viewModel.handleRightDoubleTap()
+            KeyEvent.KEYCODE_MEDIA_REWIND -> viewModel.leftSeek()
+            KeyEvent.KEYCODE_MEDIA_FAST_FORWARD -> viewModel.rightSeek()
 
             // other keys should be bound by the user in input.conf ig
             else -> {
