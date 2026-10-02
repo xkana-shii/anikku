@@ -167,7 +167,6 @@ object SettingsTrackingScreen : SearchableSettings {
             ),
             Preference.PreferenceItem.TextPreference(
                 title = stringResource(AMR.strings.pref_auto_reread_behavior),
-                subtitle = stringResource(AMR.strings.pref_auto_reread_behavior_title),
                 onClick = { navigator.push(AutoRewatchSettingsScreen) },
             ),
             // KMK -->

@@ -18,17 +18,17 @@ import tachiyomi.presentation.core.i18n.stringResource
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
-/** Komikku-style settings presentation with Anikku's rewatch preferences and semantics. */
 object AutoRewatchSettingsScreen : Screen {
     private fun readResolve(): Any = AutoRewatchSettingsScreen
 
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
-        val preferences = Injekt.get<TrackPreferences>()
+        val trackPreferences = Injekt.get<TrackPreferences>()
+
         val items = listOf(
             Preference.PreferenceItem.ListPreference(
-                preference = preferences.autoRereadBehavior(),
+                preference = trackPreferences.autoRereadBehavior(),
                 entries = persistentMapOf(
                     AutoTrackState.ALWAYS to stringResource(AMR.strings.pref_auto_rewatch_on),
                     AutoTrackState.ASK to stringResource(AMR.strings.pref_auto_rewatch_ask),
@@ -37,8 +37,10 @@ object AutoRewatchSettingsScreen : Screen {
                 title = stringResource(AMR.strings.pref_auto_reread_behavior_title),
             ),
             Preference.PreferenceItem.ListPreference(
-                preference = preferences.autoRereadResetMode(),
-                entries = AutoRereadResetMode.entries.associateWith { stringResource(it.titleRes) }.toPersistentMap(),
+                preference = trackPreferences.autoRereadResetMode(),
+                entries = AutoRereadResetMode.entries
+                    .associateWith { stringResource(it.titleRes) }
+                    .toPersistentMap(),
                 title = stringResource(AMR.strings.pref_auto_reread_reset_to),
             ),
         )
@@ -50,7 +52,10 @@ object AutoRewatchSettingsScreen : Screen {
                 )
             },
         ) { paddingValues ->
-            PreferenceScreen(items = items, contentPadding = paddingValues)
+            PreferenceScreen(
+                items = items,
+                contentPadding = paddingValues,
+            )
         }
     }
 }

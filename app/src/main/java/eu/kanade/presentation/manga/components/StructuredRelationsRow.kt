@@ -61,7 +61,7 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 @Composable
-fun StructuredRelationsRow(anime: Manga) {
+fun StructuredRelationsRow(anime: Manga, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val navigator = LocalNavigator.currentOrThrow
     val trackerManager = remember { Injekt.get<TrackerManager>() }
@@ -104,11 +104,12 @@ fun StructuredRelationsRow(anime: Manga) {
     }
 
     AnimatedVisibility(
-        visible = canLoad,
+        visible = canLoad && state != RelationsState.Empty,
+        modifier = modifier,
         enter = fadeIn() + expandVertically(),
         exit = fadeOut() + shrinkVertically(),
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small)) {
+        Column {
             Text(
                 text = stringResource(AMR.strings.structured_relations_title),
                 modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
@@ -121,12 +122,7 @@ fun StructuredRelationsRow(anime: Manga) {
                 ) {
                     CircularProgressIndicator()
                 }
-                RelationsState.Empty -> Text(
-                    text = stringResource(AMR.strings.structured_relations_empty),
-                    modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                RelationsState.Empty -> Unit
                 is RelationsState.Error -> Column(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = MaterialTheme.padding.medium),
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -141,7 +137,7 @@ fun StructuredRelationsRow(anime: Manga) {
                     }
                 }
                 is RelationsState.Content -> LazyRow(
-                    contentPadding = PaddingValues(horizontal = MaterialTheme.padding.small),
+                    contentPadding = PaddingValues(MaterialTheme.padding.small),
                     horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.extraSmall),
                 ) {
                     items(current.entries, key = { "${it.trackerId}-${it.remoteId}-${it.relation}" }) { entry ->

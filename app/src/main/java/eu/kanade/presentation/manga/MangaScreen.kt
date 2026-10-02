@@ -874,7 +874,7 @@ private fun MangaScreenSmallImpl(
                         key = EXACT_HEIGHT_KEY_PREFIX + "structured-relations",
                         span = { GridItemSpan(maxLineSpan) },
                     ) {
-                        StructuredRelationsRow(state.manga)
+                        StructuredRelationsRow(state.manga, modifier = Modifier.ignorePadding(offsetGridPaddingPx))
                     }
 
                     item(

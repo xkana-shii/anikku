@@ -36,10 +36,9 @@ import eu.kanade.domain.connections.service.WebhookEvent
 import eu.kanade.domain.episode.model.toDbEpisode
 import eu.kanade.domain.source.interactor.GetIncognitoState
 import eu.kanade.domain.sync.SyncPreferences
+import eu.kanade.domain.track.interactor.startRewatchOnTracker
 import eu.kanade.domain.track.model.AutoRereadLogic
 import eu.kanade.domain.track.model.AutoRereadResetMode
-import eu.kanade.domain.track.model.toDbTrack
-import eu.kanade.domain.track.model.toDomainTrack
 import eu.kanade.domain.track.service.TrackPreferences
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.tachiyomi.animesource.AnimeSource
@@ -2060,13 +2059,14 @@ class PlayerViewModel @JvmOverloads constructor(
     }
 
     private var rewatchDecisionHandled = false
+    private var rewatchDecisionScheduledEpisodeId: Long? = null
     private var rewatchResetEpisodeId: Long? = null
     private val rewatchDecisionMutex = Mutex()
 
-    private suspend fun maybePromptRereadOnEpisodeComplete() {
-        rewatchDecisionMutex.withLock {
-            val currentAnime = currentAnime.value ?: return@withLock
-            if (incognitoMode || rewatchDecisionHandled) return@withLock
+    private suspend fun maybePromptRereadOnEpisodeComplete(): Boolean {
+        return rewatchDecisionMutex.withLock {
+            val currentAnime = currentAnime.value ?: return@withLock false
+            if (incognitoMode || rewatchDecisionHandled) return@withLock false
             try {
                 val tracks = getTracks.await(currentAnime.id)
                 val manager = Injekt.get<TrackerManager>()
@@ -2077,26 +2077,38 @@ class PlayerViewModel @JvmOverloads constructor(
                         track.status == service.getCompletionStatus() &&
                         (service !is Simkl || service.canTrackRewatches())
                 }
-                if (!completed) return@withLock
+                if (!completed) return@withLock false
                 rewatchDecisionHandled = true
                 when (AutoRereadLogic.action(completed, trackPreferences.autoRereadBehavior().get())) {
-                    AutoRereadLogic.Action.START -> confirmStartReread()
-                    AutoRereadLogic.Action.PROMPT -> dialogShown.update { Dialogs.RereadPrompt }
-                    AutoRereadLogic.Action.NONE -> Unit
+                    AutoRereadLogic.Action.START -> {
+                        startReread()
+                        true
+                    }
+                    AutoRereadLogic.Action.PROMPT -> {
+                        dialogShown.update { Dialogs.RereadPrompt }
+                        false
+                    }
+                    AutoRereadLogic.Action.NONE -> false
                 }
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
                 rewatchDecisionHandled = false
                 logcat(LogPriority.ERROR, e) { "Could not decide whether to start rewatch" }
+                false
             }
         }
     }
 
     fun confirmStartReread() {
-        val currentAnime = anime ?: return
         dialogShown.update { Dialogs.None }
-        viewModelScope.launchIO {
+        rewatchDecisionHandled = true
+        viewModelScope.launchNonCancellable { startReread() }
+    }
+
+    private suspend fun startReread() {
+        val currentAnime = anime ?: return
+        try {
             val resetMode = trackPreferences.autoRereadResetMode().get()
             val currentEpisodeId = currentEpisode.value?.id
             val orderedEpisodes = unfilteredEpisodeList.sortedWith(
@@ -2128,16 +2140,14 @@ class PlayerViewModel @JvmOverloads constructor(
                                 val service = manager.get(track.trackerId) ?: return@async false
                                 if (!service.isLoggedIn) return@async false
                                 if (service is Simkl && !service.canTrackRewatches()) return@async false
-                                val refreshed = service.refresh(track.toDbTrack()).toDomainTrack(idRequired = true) ?: return@async false
-                                val updated = refreshed.copy(
-                                    status = service.getRereadingStatus(),
-                                    lastChapterRead = progress,
-                                    startDate = System.currentTimeMillis(),
-                                    finishDate = 0L,
-                                )
-                                val returned = service.update(updated.toDbTrack(), didReadChapter = false)
-                                Injekt.get<tachiyomi.domain.track.interactor.InsertTrack>()
-                                    .awaitOrThrow(returned.toDomainTrack(idRequired = true) ?: updated)
+                                startRewatchOnTracker(
+                                    track = track,
+                                    service = service,
+                                    progress = progress,
+                                    startedAt = System.currentTimeMillis(),
+                                ) { returned ->
+                                    Injekt.get<tachiyomi.domain.track.interactor.InsertTrack>().awaitOrThrow(returned)
+                                }
                                 true
                             } catch (e: CancellationException) {
                                 throw e
@@ -2151,6 +2161,11 @@ class PlayerViewModel @JvmOverloads constructor(
                     .takeIf { it.any { success -> !success } }
                     ?.let { eventChannel.send(Event.ShowToast(AMR.strings.rewatch_tracker_update_failed)) }
             }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            logcat(LogPriority.ERROR, e) { "Could not start rewatch" }
+            eventChannel.send(Event.ShowToast(AMR.strings.rewatch_tracker_update_failed))
         }
     }
 
@@ -2192,6 +2207,10 @@ class PlayerViewModel @JvmOverloads constructor(
 
             val progress = playerPreferences.progressPreference().get()
             if (seconds >= totalSeconds * progress) {
+                if (currentEp.seen && rewatchDecisionScheduledEpisodeId != currentEp.id) {
+                    rewatchDecisionScheduledEpisodeId = currentEp.id
+                    viewModelScope.launchNonCancellable { maybePromptRereadOnEpisodeComplete() }
+                }
                 updateEpisodeProgressOnComplete(currentEp)
 
                 // SY -->
@@ -2542,11 +2561,12 @@ class PlayerViewModel @JvmOverloads constructor(
         val anime = anime ?: return
         val context = Injekt.get<Application>()
 
+        rewatchDecisionScheduledEpisodeId = episode.id
         viewModelScope.launchNonCancellable {
-            if (trackPreferences.autoUpdateTrack().get()) {
+            val startedRewatch = maybePromptRereadOnEpisodeComplete()
+            if (!startedRewatch && trackPreferences.autoUpdateTrack().get()) {
                 trackEpisode.await(context, anime.id, episode.episode_number.toDouble())
             }
-            maybePromptRereadOnEpisodeComplete()
         }
     }
 

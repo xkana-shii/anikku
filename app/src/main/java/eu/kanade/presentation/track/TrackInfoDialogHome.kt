@@ -7,8 +7,10 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -37,6 +39,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -68,7 +71,6 @@ import eu.kanade.tachiyomi.data.track.Tracker
 import eu.kanade.tachiyomi.ui.manga.track.TrackItem
 import eu.kanade.tachiyomi.util.lang.toLocalDate
 import eu.kanade.tachiyomi.util.system.copyToClipboard
-import tachiyomi.domain.track.service.TrackerProgressSync
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.ank.AMR
 import tachiyomi.presentation.core.i18n.stringResource
@@ -119,38 +121,19 @@ fun TrackInfoDialogHome(
             .animateContentSize()
             .fillMaxWidth()
             .verticalScroll(rememberScrollState())
-            .padding(16.dp)
+            .padding(8.dp)
             .windowInsetsPadding(WindowInsets.systemBars),
-        verticalArrangement = Arrangement.spacedBy(24.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-            if (busy) {
-                CircularProgressIndicator(modifier = Modifier.size(24.dp))
-            }
-            if (editMode && selectedTrackerIds.isNotEmpty()) {
-                IconButton(onClick = onRemoveSelectedTrackers) {
-                    Icon(
-                        imageVector = Icons.Filled.Delete,
-                        contentDescription = stringResource(AMR.strings.tracker_remove_selected),
-                    )
-                }
-            }
-            IconButton(onClick = onToggleEditMode) {
-                Icon(
-                    imageVector = Icons.Outlined.Edit,
-                    contentDescription = stringResource(AMR.strings.tracker_edit_mode),
-                    tint = if (editMode) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
-                )
-            }
-        }
         val boundItems = trackItems.filter { it.track != null }
         if (boundItems.size >= 2) {
             UnifiedTrackerCard(
-                items = trackItems,
+                presentation = remember(trackItems, preferredId, dateFormat, errorTrackerIds) {
+                    TrackerSheetPresentation(trackItems, preferredId, dateFormat, errorTrackerIds)
+                },
                 initialFocusRequester = initialFocusRequester,
-                dateFormat = dateFormat,
                 seriesTitle = seriesTitle,
-                preferredId = preferredId,
+                isSeason = isSeason,
                 editMode = editMode,
                 busy = busy,
                 selectedTrackerIds = selectedTrackerIds,
@@ -174,6 +157,21 @@ fun TrackInfoDialogHome(
                 onAdjustProgress = onAdjustProgress,
             )
         } else {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                if (busy) CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                if (editMode && selectedTrackerIds.isNotEmpty()) {
+                    IconButton(onClick = onRemoveSelectedTrackers) {
+                        Icon(Icons.Filled.Delete, contentDescription = stringResource(AMR.strings.tracker_remove_selected))
+                    }
+                }
+                IconButton(onClick = onToggleEditMode) {
+                    Icon(
+                        Icons.Outlined.Edit,
+                        contentDescription = stringResource(AMR.strings.tracker_edit_mode),
+                        tint = if (editMode) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                    )
+                }
+            }
             trackItems.forEachIndexed { index, item ->
                 val initialFocusModifier = if (index == 0) {
                     Modifier.focusRequester(initialFocusRequester)
@@ -244,11 +242,10 @@ fun TrackInfoDialogHome(
 
 @Composable
 private fun UnifiedTrackerCard(
-    items: List<TrackItem>,
+    presentation: TrackerSheetPresentation,
     initialFocusRequester: FocusRequester,
-    dateFormat: DateTimeFormatter,
     seriesTitle: String,
-    preferredId: Long?,
+    isSeason: Boolean,
     editMode: Boolean,
     busy: Boolean,
     selectedTrackerIds: Set<Long>,
@@ -271,22 +268,59 @@ private fun UnifiedTrackerCard(
     onEndDateEdit: (TrackItem) -> Unit,
     onAdjustProgress: (Int) -> Unit,
 ) {
-    val bound = items.filter { it.track != null }
-    val tracks = bound.mapNotNull { it.track }
-    val primaryTrack = TrackerProgressSync.resolvePreferredTrack(tracks, preferredId) ?: return
-    val primary = bound.first { it.track == primaryTrack }
-    val scoreItem = bound.firstOrNull { it.tracker.getScoreList().isNotEmpty() }
-    val dateItem = bound.firstOrNull { it.tracker.supportsReadingDates }
-    val mismatchedIds = TrackerProgressSync.mismatchedIds(tracks, preferredId)
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    val primary = presentation.primary ?: return
+    val displayTrack = primary.track ?: return
+    val chaptersRead = displayTrack.lastChapterRead.toInt()
+    val chaptersText = if (displayTrack.totalChapters > 0) {
+        chaptersRead.toString() + "/" + displayTrack.totalChapters
+    } else {
+        chaptersRead.toString()
+    }
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text = seriesTitle,
-                style = MaterialTheme.typography.titleSmall,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
+            FlowRow(
                 modifier = Modifier.weight(1f),
-            )
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                presentation.visibleItems.forEach { item ->
+                    val marker = when {
+                        item.tracker.id in errorTrackerIds -> "!"
+                        item.tracker.id in skippedTrackerIds -> "–"
+                        item.tracker.id in selectedTrackerIds -> "✓"
+                        item.tracker.id in presentation.mismatchedIds -> "•"
+                        item.tracker.id == primary.tracker.id -> "★"
+                        else -> ""
+                    }
+                    BadgedBox(badge = { if (marker.isNotEmpty()) Badge { Text(marker) } }) {
+                        Box(
+                            modifier = Modifier.size(40.dp).clip(RoundedCornerShape(10.dp))
+                                .background(MaterialTheme.colorScheme.surfaceContainerHighest).padding(4.dp),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            TrackLogoIcon(
+                                tracker = item.tracker,
+                                onClick = {
+                                    when (item.unifiedIconClickAction(editMode)) {
+                                        UnifiedTrackerIconAction.OPEN -> onOpenInBrowser(item)
+                                        UnifiedTrackerIconAction.SEARCH -> onNewSearch(item)
+                                        else -> Unit
+                                    }
+                                },
+                                onLongClick = when (item.unifiedIconLongPressAction(editMode)) {
+                                    UnifiedTrackerIconAction.COPY_LINK -> ({ onCopyLink(item) })
+                                    UnifiedTrackerIconAction.SET_PREFERRED -> ({ onSetPreferredTracker(item) })
+                                    else -> null
+                                },
+                            )
+                        }
+                    }
+                }
+            }
+            if (busy) CircularProgressIndicator(modifier = Modifier.size(24.dp))
             if (editMode && selectedTrackerIds.isNotEmpty()) {
                 IconButton(onClick = onRemoveSelectedTrackers, enabled = !busy) {
                     Icon(Icons.Filled.Delete, contentDescription = stringResource(AMR.strings.tracker_remove_selected))
@@ -296,104 +330,131 @@ private fun UnifiedTrackerCard(
                 onClick = onToggleEditMode,
                 enabled = !busy,
                 modifier = Modifier.focusRequester(initialFocusRequester),
+                colors = IconButtonDefaults.iconButtonColors(
+                    contentColor = if (editMode) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                ),
             ) {
-                Icon(
-                    Icons.Outlined.Edit,
-                    contentDescription = stringResource(AMR.strings.tracker_edit_mode),
-                    tint = if (editMode) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
-                )
+                Icon(Icons.Outlined.Edit, contentDescription = stringResource(AMR.strings.tracker_edit_mode))
             }
         }
-        items.forEach { item ->
-            if (item.track != null) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    BadgedBox(
-                        badge = {
-                            val marker = when (item.tracker.id) {
-                                in errorTrackerIds -> "!"
-                                in skippedTrackerIds -> "–"
-                                in selectedTrackerIds -> "✓"
-                                in mismatchedIds -> "•"
-                                preferredId -> "★"
-                                else -> ""
-                            }
-                            if (marker.isNotEmpty()) Badge { Text(marker) }
-                        },
-                    ) {
-                        TrackLogoIcon(
-                            tracker = item.tracker,
-                            onClick = { if (editMode) onToggleTrackerSelection(item) else onOpenInBrowser(item) },
-                            onLongClick = { if (editMode) onSetPreferredTracker(item) else onCopyLink(item) },
-                        )
-                    }
+        if (seriesTitle.isNotBlank()) {
+            Text(
+                seriesTitle,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.padding(horizontal = 6.dp),
+            )
+        }
+        if (editMode) {
+            presentation.bound.forEach { item ->
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = item.track.title,
+                        item.track?.title.orEmpty(),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f).clickable { onNewSearch(item) }.padding(start = 12.dp),
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.weight(1f).clickable(enabled = item.canChangeEntry) { onNewSearch(item) }.padding(6.dp),
                     )
+                    TextButton(onClick = { onToggleTrackerSelection(item) }) {
+                        Text(if (item.tracker.id in selectedTrackerIds) "✓" else "○")
+                    }
                     TrackInfoItemMenu(
                         onOpenInBrowser = { onOpenInBrowser(item) },
                         onRemoved = { onRemoved(item) },
                         onCopyLink = { onCopyLink(item) },
-                        private = item.track.private,
+                        private = item.track?.private == true,
                         onTogglePrivate = { onTogglePrivate(item) }.takeIf { item.tracker.supportsPrivateTracking },
                     )
                 }
-            } else {
-                TrackInfoItemEmpty(item.tracker, { onNewSearch(item) }, Modifier)
             }
         }
-        Column(
-            modifier = Modifier.fillMaxWidth().clip(MaterialTheme.shapes.medium)
-                .background(MaterialTheme.colorScheme.surfaceContainerHighest).padding(8.dp),
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = stringResource(primary.tracker.getStatus(primaryTrack.status) ?: MR.strings.reading),
-                    modifier = Modifier.weight(1f).clickable(enabled = !busy) { onStatusClick(primary) }.padding(8.dp),
-                )
-                scoreItem?.let { item ->
-                    VerticalDivider()
-                    Text(
-                        text = item.tracker.displayScore(item.track!!).ifBlank { stringResource(MR.strings.score) },
-                        modifier = Modifier.weight(1f).clickable(enabled = !busy) { onScoreClick(item) }.padding(8.dp),
-                    )
+        if (!isSeason) {
+            Box(modifier = Modifier.padding(top = 6.dp).clip(MaterialTheme.shapes.medium).fillMaxWidth()) {
+                Column(
+                    modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainerHighest)
+                        .padding(8.dp).clip(RoundedCornerShape(6.dp)),
+                ) {
+                    Row(modifier = Modifier.height(IntrinsicSize.Min)) {
+                        Box(
+                            modifier = Modifier.weight(1f).clickable(enabled = !busy) { onStatusClick(primary) }.padding(8.dp),
+                            contentAlignment = Alignment.Center,
+                        ) { Text(stringResource(presentation.status), style = MaterialTheme.typography.bodyMedium) }
+                        presentation.scoreItem?.let { item ->
+                            VerticalDivider()
+                            Box(
+                                modifier = Modifier.weight(1f).clickable(enabled = !busy) { onScoreClick(item) }.padding(8.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    Text(
+                                        presentation.score ?: stringResource(MR.strings.score),
+                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = if (presentation.score == null) UNSET_TEXT_ALPHA else 1f),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                    )
+                                    if (presentation.appendScoreStar) Text("★", color = MaterialTheme.colorScheme.primary)
+                                }
+                            }
+                        }
+                    }
+                    HorizontalDivider()
+                    Row(modifier = Modifier.height(IntrinsicSize.Min)) {
+                        Box(
+                            modifier = Modifier.weight(0.15f).clickable(enabled = !busy) { onAdjustProgress(-1) }.padding(8.dp),
+                            contentAlignment = Alignment.Center,
+                        ) { Text("−", style = MaterialTheme.typography.titleMedium) }
+                        VerticalDivider()
+                        Box(
+                            modifier = Modifier.weight(0.7f).clickable(enabled = !busy) { onChapterClick(primary) }.padding(8.dp),
+                            contentAlignment = Alignment.Center,
+                        ) { Text(chaptersText, style = MaterialTheme.typography.bodyMedium) }
+                        VerticalDivider()
+                        Box(
+                            modifier = Modifier.weight(0.15f).clickable(enabled = !busy) { onAdjustProgress(1) }.padding(8.dp),
+                            contentAlignment = Alignment.Center,
+                        ) { Text("+", style = MaterialTheme.typography.titleMedium) }
+                    }
+                    HorizontalDivider()
+                    Row(modifier = Modifier.height(IntrinsicSize.Min), verticalAlignment = Alignment.CenterVertically) {
+                        presentation.dateItem?.let { item ->
+                            Box(
+                                modifier = Modifier.weight(0.425f).clickable(enabled = !busy) { onStartDateEdit(item) }.padding(8.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text(
+                                    presentation.startDate ?: stringResource(MR.strings.track_started_reading_date),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = if (presentation.startDate == null) UNSET_TEXT_ALPHA else 1f),
+                                )
+                            }
+                            VerticalDivider()
+                            Box(
+                                modifier = Modifier.weight(0.425f).clickable(enabled = !busy) { onEndDateEdit(item) }.padding(8.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text(
+                                    presentation.finishDate ?: stringResource(MR.strings.track_finished_reading_date),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = if (presentation.finishDate == null) UNSET_TEXT_ALPHA else 1f),
+                                )
+                            }
+                            VerticalDivider()
+                        } ?: Spacer(Modifier.weight(0.85f))
+                        Box(Modifier.weight(0.15f), contentAlignment = Alignment.Center) {
+                            IconButton(
+                                onClick = { onRemoveTracking(presentation.bound) },
+                                enabled = !busy,
+                                modifier = Modifier.size(32.dp),
+                            ) {
+                                Icon(
+                                    Icons.Outlined.Close,
+                                    contentDescription = stringResource(AMR.strings.tracker_remove_selected),
+                                    modifier = Modifier.size(18.dp),
+                                )
+                            }
+                        }
+                    }
                 }
-            }
-            HorizontalDivider()
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("−", modifier = Modifier.clickable(enabled = !busy) { onAdjustProgress(-1) }.padding(12.dp))
-                VerticalDivider()
-                Text(
-                    text = "${primaryTrack.lastChapterRead.toInt()}".let { progress ->
-                        if (primaryTrack.totalChapters > 0) "$progress/${primaryTrack.totalChapters}" else progress
-                    },
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.weight(1f).clickable(enabled = !busy) { onChapterClick(primary) }.padding(8.dp),
-                )
-                VerticalDivider()
-                Text("+", modifier = Modifier.clickable(enabled = !busy) { onAdjustProgress(1) }.padding(12.dp))
-            }
-            dateItem?.let { item ->
-                HorizontalDivider()
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = item.track!!.startDate.takeIf { it > 0 }?.let { dateFormat.format(it.toLocalDate()) }
-                            ?: stringResource(MR.strings.track_started_reading_date),
-                        modifier = Modifier.weight(1f).clickable(enabled = !busy) { onStartDateEdit(item) }.padding(8.dp),
-                    )
-                    VerticalDivider()
-                    Text(
-                        text = item.track.finishDate.takeIf { it > 0 }?.let { dateFormat.format(it.toLocalDate()) }
-                            ?: stringResource(MR.strings.track_finished_reading_date),
-                        modifier = Modifier.weight(1f).clickable(enabled = !busy) { onEndDateEdit(item) }.padding(8.dp),
-                    )
-                }
-            }
-            HorizontalDivider()
-            IconButton(onClick = { onRemoveTracking(bound) }, enabled = !busy) {
-                Icon(Icons.Outlined.Close, contentDescription = stringResource(AMR.strings.tracker_remove_selected))
             }
         }
     }

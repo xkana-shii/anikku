@@ -90,8 +90,13 @@ class TrackerMangaListScreenModel(
                 trackerId = tracker?.id,
                 statusList = tracker?.trackerListStatuses().orEmpty(),
                 getStatusRes = tracker?.let { service -> service::getStatus } ?: { null },
+                trackerSelectDialog = false,
             )
         }
+    }
+
+    fun toggleTrackerSelectDialog() {
+        mutableState.update { it.copy(trackerSelectDialog = !it.trackerSelectDialog) }
     }
 
     fun getTrackerName() = tracker?.name.orEmpty()
@@ -108,6 +113,7 @@ data class TrackerMangaListState(
     val getStatusRes: (Long) -> StringResource? = { null },
     val tabs: Map<Int, TabMangaList> = emptyMap(),
     val currentTabIndex: Int = 0,
+    val trackerSelectDialog: Boolean = false,
 )
 
 @Immutable
