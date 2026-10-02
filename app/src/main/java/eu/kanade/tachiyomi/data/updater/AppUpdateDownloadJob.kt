@@ -140,30 +140,17 @@ class AppUpdateDownloadJob(private val context: Context, workerParams: WorkerPar
         }
 
         val progressListener = object : ProgressListener {
-            // KMK -->
-            // Total size of the downloading file, should be set when starting and kept over retries
-            var totalSize = 0L
-            // KMK <--
-
             // Progress of the download
-            var savedProgress = 0
+            var savedProgress = -1
 
             // Keep track of the last notification sent to avoid posting too many.
             var lastTick = 0L
 
             override fun update(bytesRead: Long, contentLength: Long, done: Boolean) {
-                // KMK -->
-                val downloadedSize: Long
-                if (totalSize == 0L) {
-                    totalSize = contentLength
-                    downloadedSize = bytesRead
-                } else {
-                    downloadedSize = totalSize - contentLength + bytesRead
-                }
-                // KMK <--
-                val progress = (100 * (downloadedSize.toFloat() / totalSize)).toInt()
+                if (isStopped) throw CancellationException("Update download stopped")
+                val progress = downloadProgress(bytesRead, contentLength) ?: return
                 val currentTime = System.currentTimeMillis()
-                if (progress > savedProgress && currentTime - 200 > lastTick) {
+                if (progress != savedProgress && (done || currentTime - lastTick >= 200)) {
                     savedProgress = progress
                     lastTick = currentTime
                     notifier.onProgressChange(progress)
@@ -345,3 +332,6 @@ class AppUpdateDownloadJob(private val context: Context, workerParams: WorkerPar
         }
     }
 }
+
+internal fun downloadProgress(bytesRead: Long, contentLength: Long): Int? =
+    if (contentLength > 0) ((bytesRead.coerceAtLeast(0) * 100) / contentLength).toInt().coerceIn(0, 100) else null

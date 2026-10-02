@@ -4,14 +4,19 @@ import android.app.Application
 import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -30,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.rememberScreenModel
@@ -51,6 +57,7 @@ import eu.kanade.presentation.track.TrackInfoDialogHome
 import eu.kanade.presentation.track.TrackScoreSelector
 import eu.kanade.presentation.track.TrackStatusSelector
 import eu.kanade.presentation.track.TrackerSearch
+import eu.kanade.presentation.track.components.TrackLogoIcon
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.animesource.TrackerIdMetadataSource
 import eu.kanade.tachiyomi.animesource.model.FetchType
@@ -235,9 +242,6 @@ data class TrackInfoDialogHomeScreen(
             onSetPreferredTracker = screenModel::setPreferredTracker,
             selectedTrackerIds = state.selectedTrackerIds,
             onToggleTrackerSelection = screenModel::toggleTrackerSelection,
-            onRemoveSelectedTrackers = {
-                navigator.push(TrackerBatchRemoveScreen(mangaId, state.selectedTrackerIds))
-            },
             onAdjustProgress = { delta ->
                 val current = bound.firstOrNull { it.tracker.id == state.preferredId } ?: bound.firstOrNull()
                 current?.track?.let { screenModel.updateUnified(UpdateTracks.Change.Progress((it.lastChapterRead.toInt() + delta).coerceAtLeast(0))) }
@@ -309,6 +313,7 @@ data class TrackInfoDialogHomeScreen(
                                 trackItems = trackItems,
                                 preferredId = trackPreferences.resolvePreferredTracker(mangaId, applicable),
                                 selectedTrackerIds = it.selectedTrackerIds intersect applicable,
+                                editMode = if (applicable.size >= 2) it.editMode else false,
                             )
                         }
                     }
@@ -975,8 +980,13 @@ private data class TrackerBatchRemoveScreen(
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
         val context = LocalContext.current
-        val screenModel = rememberScreenModel { Model(animeId, trackerIds) }
+        val screenModel = rememberScreenModel { Model(animeId) }
         var removeRemote by remember { mutableStateOf(false) }
+        var selectedIds by remember { mutableStateOf(trackerIds) }
+        val trackers = remember(trackerIds) {
+            val manager = Injekt.get<TrackerManager>()
+            trackerIds.mapNotNull(manager::get)
+        }
         AlertDialogContent(
             modifier = Modifier.windowInsetsPadding(WindowInsets.systemBars),
             icon = { Icon(Icons.Default.Delete, contentDescription = null) },
@@ -988,11 +998,37 @@ private data class TrackerBatchRemoveScreen(
                 )
             },
             text = {
-                LabeledCheckbox(
-                    label = stringResource(AMR.strings.tracker_remove_remote_selected),
-                    checked = removeRemote,
-                    onCheckedChange = { removeRemote = it },
-                )
+                Column {
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small)) {
+                        trackers.forEach { tracker ->
+                            BadgedBox(
+                                badge = {
+                                    if (tracker.id in selectedIds) {
+                                        Badge {
+                                            Icon(
+                                                Icons.Default.Check,
+                                                contentDescription = stringResource(AMR.strings.tracker_selected),
+                                                modifier = Modifier.size(12.dp),
+                                            )
+                                        }
+                                    }
+                                },
+                            ) {
+                                TrackLogoIcon(
+                                    tracker = tracker,
+                                    onClick = {
+                                        selectedIds = if (tracker.id in selectedIds) selectedIds - tracker.id else selectedIds + tracker.id
+                                    },
+                                )
+                            }
+                        }
+                    }
+                    LabeledCheckbox(
+                        label = stringResource(AMR.strings.tracker_remove_remote_selected),
+                        checked = removeRemote,
+                        onCheckedChange = { removeRemote = it },
+                    )
+                }
             },
             buttons = {
                 Row(
@@ -1002,9 +1038,10 @@ private data class TrackerBatchRemoveScreen(
                     TextButton(onClick = navigator::pop) { Text(stringResource(MR.strings.action_cancel)) }
                     FilledTonalButton(
                         onClick = {
-                            screenModel.remove(context, removeRemote)
+                            screenModel.remove(context, selectedIds, removeRemote)
                             navigator.pop()
                         },
+                        enabled = selectedIds.isNotEmpty(),
                         colors = ButtonDefaults.filledTonalButtonColors(
                             containerColor = MaterialTheme.colorScheme.errorContainer,
                             contentColor = MaterialTheme.colorScheme.onErrorContainer,
@@ -1019,11 +1056,10 @@ private data class TrackerBatchRemoveScreen(
 
     private class Model(
         private val animeId: Long,
-        private val trackerIds: Set<Long>,
     ) : ScreenModel {
-        fun remove(context: Context, remotely: Boolean) {
+        fun remove(context: Context, selectedIds: Set<Long>, remotely: Boolean) {
             screenModelScope.launchNonCancellable {
-                val failures = Injekt.get<UpdateTracks>().remove(animeId, trackerIds, remotely)
+                val failures = Injekt.get<UpdateTracks>().remove(animeId, selectedIds, remotely)
                 if (failures.isNotEmpty()) {
                     withUIContext { context.toast(AMR.strings.tracker_remove_partial_failure) }
                 }

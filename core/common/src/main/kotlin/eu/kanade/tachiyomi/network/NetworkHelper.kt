@@ -133,12 +133,19 @@ import kotlin.random.Random
                 )
 
                 var failed = false
-                client.newCachelessCallWithProgress(request, progressListener).execute().use { response ->
-                    if (response.isSuccessful || response.code == 206) { // 206 indicates partial content
-                        saveResponseToFile(response, outputFile, downloadedBytes)
-                        if (response.isSuccessful) {
-                            return
-                        }
+                var progressOffset = downloadedBytes
+                val cumulativeProgress = object : ProgressListener {
+                    override fun update(bytesRead: Long, contentLength: Long, done: Boolean) {
+                        val totalLength = if (contentLength >= 0) progressOffset + contentLength else -1L
+                        progressListener.update(progressOffset + bytesRead, totalLength, done)
+                    }
+                }
+                client.newCachelessCallWithProgress(request, cumulativeProgress).execute().use { response ->
+                    if (response.isSuccessful) {
+                        // A server may ignore Range and send a complete file instead.
+                        progressOffset = if (response.code == 206) downloadedBytes else 0L
+                        saveResponseToFile(response, outputFile, progressOffset)
+                        return
                     } else {
                         attempt++
                         logcat(LogPriority.ERROR) { "Unexpected response code: ${response.code}. Retrying..." }
@@ -166,6 +173,7 @@ import kotlin.random.Random
 
         // Use RandomAccessFile to write from specific position
         RandomAccessFile(outputFile, "rw").use { file ->
+            if (startPosition == 0L) file.setLength(0)
             file.seek(startPosition)
             body.byteStream().use { input ->
                 val buffer = ByteArray(8 * 1024)

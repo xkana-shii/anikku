@@ -104,7 +104,7 @@ fun StructuredRelationsRow(anime: Manga, modifier: Modifier = Modifier) {
     }
 
     AnimatedVisibility(
-        visible = canLoad && state != RelationsState.Empty,
+        visible = canLoad && (state is RelationsState.Content || state is RelationsState.Error),
         modifier = modifier,
         enter = fadeIn() + expandVertically(),
         exit = fadeOut() + shrinkVertically(),
