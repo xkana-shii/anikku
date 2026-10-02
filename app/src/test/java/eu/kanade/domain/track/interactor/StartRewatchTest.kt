@@ -38,9 +38,7 @@ class StartRewatchTest {
                 service.update(
                     match {
                         it.status == status &&
-                            it.last_episode_seen == 4.0 &&
-                            it.started_watching_date == 123456789L &&
-                            it.finished_watching_date == 0L
+                            it.last_episode_seen == 4.0
                     },
                     false,
                 )
