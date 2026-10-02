@@ -94,6 +94,8 @@ internal class AppUpdateNotifier(private val context: Context) {
             setContentText(context.stringResource(MR.strings.update_check_notification_download_in_progress))
             setSmallIcon(android.R.drawable.stat_sys_download)
             setOngoing(true)
+            setOnlyAlertOnce(true)
+            setProgress(0, 0, true)
 
             clearActions()
             addAction(

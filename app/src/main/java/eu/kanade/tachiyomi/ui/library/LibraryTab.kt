@@ -184,7 +184,9 @@ data object LibraryTab : Tab {
                         }
                     },
                     onClickTrackerManga = { navigator.push(TrackerMangaListScreen()) },
-                    hasLoggedInTrackers = hasLoggedInTrackers.any { it.id == TrackerManager.MYANIMELIST || it.id == TrackerManager.ANILIST },
+                    hasLoggedInTrackers = hasLoggedInTrackers.any {
+                        it.id == TrackerManager.MYANIMELIST || it.id == TrackerManager.ANILIST || it.id == TrackerManager.SIMKL
+                    },
                     // SY -->
                     isSyncEnabled = state.isSyncEnabled,
                     // SY <--

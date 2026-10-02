@@ -15,6 +15,25 @@ class TrackerSheetPresentationTest {
     private val dateFormat = DateTimeFormatter.ofPattern("dd.MM.yyyy")
 
     @Test
+    fun `tracker count selects empty single and unified presentation data`() {
+        val first = item(1)
+        val second = item(2)
+        val unbound = item(3).copy(track = null)
+
+        val empty = TrackerSheetPresentation(listOf(unbound), null, dateFormat, emptySet())
+        empty.bound.size shouldBe 0
+        empty.visibleItems shouldBe listOf(unbound)
+
+        val single = TrackerSheetPresentation(listOf(first, unbound), 1, dateFormat, emptySet())
+        single.bound.size shouldBe 1
+        single.primary shouldBe first
+
+        val unified = TrackerSheetPresentation(listOf(first, second, unbound), 2, dateFormat, emptySet())
+        unified.bound.size shouldBe 2
+        unified.primary shouldBe second
+    }
+
+    @Test
     fun `shared editor uses preferred progress and another bound tracker for unsupported fields`() {
         val preferred = item(1, progress = 3.0, supportsScore = false)
         val scored = item(2, progress = 8.0, score = 7.0)

@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
@@ -25,7 +26,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Star
@@ -42,7 +42,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -101,7 +100,6 @@ fun TrackInfoDialogHome(
     onSetPreferredTracker: (TrackItem) -> Unit = {},
     selectedTrackerIds: Set<Long> = emptySet(),
     onToggleTrackerSelection: (TrackItem) -> Unit = {},
-    onRemoveSelectedTrackers: () -> Unit = {},
     onAdjustProgress: (Int) -> Unit = {},
     onRemoveTracking: (List<TrackItem>) -> Unit = {},
     skippedTrackerIds: Set<Long> = emptySet(),
@@ -120,35 +118,47 @@ fun TrackInfoDialogHome(
         modifier = Modifier
             .animateContentSize()
             .fillMaxWidth()
+            .heightIn(max = 400.dp)
             .verticalScroll(rememberScrollState())
             .padding(8.dp)
             .windowInsetsPadding(WindowInsets.systemBars),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        val boundItems = trackItems.filter { it.track != null }
-        if (boundItems.size >= 2) {
+        val presentation = remember(trackItems, preferredId, dateFormat, errorTrackerIds) {
+            TrackerSheetPresentation(trackItems, preferredId, dateFormat, errorTrackerIds)
+        }
+        val boundItems = presentation.bound
+        if (boundItems.isEmpty()) {
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                presentation.visibleItems.forEachIndexed { index, item ->
+                    if (item.track == null) {
+                        UnboundTrackerIcon(
+                            item = item,
+                            modifier = if (index == 0 && isTvUi) Modifier.focusRequester(initialFocusRequester) else Modifier,
+                            onClick = { onNewSearch(item) },
+                        )
+                    }
+                }
+            }
+        } else if (boundItems.size >= 2) {
             UnifiedTrackerCard(
-                presentation = remember(trackItems, preferredId, dateFormat, errorTrackerIds) {
-                    TrackerSheetPresentation(trackItems, preferredId, dateFormat, errorTrackerIds)
-                },
+                presentation = presentation,
                 initialFocusRequester = initialFocusRequester,
                 seriesTitle = seriesTitle,
                 isSeason = isSeason,
                 editMode = editMode,
                 busy = busy,
-                selectedTrackerIds = selectedTrackerIds,
                 skippedTrackerIds = skippedTrackerIds,
                 errorTrackerIds = errorTrackerIds,
                 onToggleEditMode = onToggleEditMode,
-                onToggleTrackerSelection = onToggleTrackerSelection,
                 onSetPreferredTracker = onSetPreferredTracker,
                 onNewSearch = onNewSearch,
                 onOpenInBrowser = onOpenInBrowser,
                 onCopyLink = onCopyLink,
-                onRemoved = onRemoved,
-                onRemoveSelectedTrackers = onRemoveSelectedTrackers,
                 onRemoveTracking = onRemoveTracking,
-                onTogglePrivate = onTogglePrivate,
                 onStatusClick = onStatusClick,
                 onChapterClick = onChapterClick,
                 onScoreClick = onScoreClick,
@@ -157,22 +167,7 @@ fun TrackInfoDialogHome(
                 onAdjustProgress = onAdjustProgress,
             )
         } else {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                if (busy) CircularProgressIndicator(modifier = Modifier.size(24.dp))
-                if (editMode && selectedTrackerIds.isNotEmpty()) {
-                    IconButton(onClick = onRemoveSelectedTrackers) {
-                        Icon(Icons.Filled.Delete, contentDescription = stringResource(AMR.strings.tracker_remove_selected))
-                    }
-                }
-                IconButton(onClick = onToggleEditMode) {
-                    Icon(
-                        Icons.Outlined.Edit,
-                        contentDescription = stringResource(AMR.strings.tracker_edit_mode),
-                        tint = if (editMode) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
-                    )
-                }
-            }
-            trackItems.forEachIndexed { index, item ->
+            boundItems.forEachIndexed { index, item ->
                 val initialFocusModifier = if (index == 0) {
                     Modifier.focusRequester(initialFocusRequester)
                 } else {
@@ -218,7 +213,7 @@ fun TrackInfoDialogHome(
                         onRemoved = { onRemoved(item) },
                         onCopyLink = { onCopyLink(item) },
                         preferred = item.tracker.id == preferredId,
-                        editMode = editMode,
+                        editMode = false,
                         onSetPreferred = { onSetPreferredTracker(item) },
                         selected = item.tracker.id in selectedTrackerIds,
                         onToggleSelected = { onToggleTrackerSelection(item) },
@@ -228,15 +223,26 @@ fun TrackInfoDialogHome(
                         onTogglePrivate = { onTogglePrivate(item) }
                             .takeIf { supportsPrivate },
                     )
-                } else {
-                    TrackInfoItemEmpty(
-                        tracker = item.tracker,
-                        onNewSearch = { onNewSearch(item) },
-                        initialFocusModifier = initialFocusModifier,
-                    )
+                }
+            }
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                presentation.visibleItems.filter { it.track == null }.forEach { item ->
+                    UnboundTrackerIcon(item = item, onClick = { onNewSearch(item) })
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun UnboundTrackerIcon(item: TrackItem, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    Box(
+        modifier = modifier.size(40.dp).clip(RoundedCornerShape(10.dp))
+            .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+            .clickable(onClick = onClick)
+            .padding(4.dp),
+    ) {
+        TrackLogoIcon(tracker = item.tracker)
     }
 }
 
@@ -248,19 +254,14 @@ private fun UnifiedTrackerCard(
     isSeason: Boolean,
     editMode: Boolean,
     busy: Boolean,
-    selectedTrackerIds: Set<Long>,
     skippedTrackerIds: Set<Long>,
     errorTrackerIds: Set<Long>,
     onToggleEditMode: () -> Unit,
-    onToggleTrackerSelection: (TrackItem) -> Unit,
     onSetPreferredTracker: (TrackItem) -> Unit,
     onNewSearch: (TrackItem) -> Unit,
     onOpenInBrowser: (TrackItem) -> Unit,
     onCopyLink: (TrackItem) -> Unit,
-    onRemoved: (TrackItem) -> Unit,
-    onRemoveSelectedTrackers: () -> Unit,
     onRemoveTracking: (List<TrackItem>) -> Unit,
-    onTogglePrivate: (TrackItem) -> Unit,
     onStatusClick: (TrackItem) -> Unit,
     onChapterClick: (TrackItem) -> Unit,
     onScoreClick: (TrackItem) -> Unit,
@@ -290,9 +291,6 @@ private fun UnifiedTrackerCard(
                     val marker = when {
                         item.tracker.id in errorTrackerIds -> "!"
                         item.tracker.id in skippedTrackerIds -> "–"
-                        item.tracker.id in selectedTrackerIds -> "✓"
-                        item.tracker.id in presentation.mismatchedIds -> "•"
-                        item.tracker.id == primary.tracker.id -> "★"
                         else -> ""
                     }
                     BadgedBox(badge = { if (marker.isNotEmpty()) Badge { Text(marker) } }) {
@@ -321,11 +319,6 @@ private fun UnifiedTrackerCard(
                 }
             }
             if (busy) CircularProgressIndicator(modifier = Modifier.size(24.dp))
-            if (editMode && selectedTrackerIds.isNotEmpty()) {
-                IconButton(onClick = onRemoveSelectedTrackers, enabled = !busy) {
-                    Icon(Icons.Filled.Delete, contentDescription = stringResource(AMR.strings.tracker_remove_selected))
-                }
-            }
             IconButton(
                 onClick = onToggleEditMode,
                 enabled = !busy,
@@ -337,37 +330,15 @@ private fun UnifiedTrackerCard(
                 Icon(Icons.Outlined.Edit, contentDescription = stringResource(AMR.strings.tracker_edit_mode))
             }
         }
-        if (seriesTitle.isNotBlank()) {
+        val displayTitle = displayTrack.title.ifBlank { seriesTitle }
+        if (displayTitle.isNotBlank()) {
             Text(
-                seriesTitle,
+                displayTitle,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 style = MaterialTheme.typography.titleSmall,
                 modifier = Modifier.padding(horizontal = 6.dp),
             )
-        }
-        if (editMode) {
-            presentation.bound.forEach { item ->
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                    Text(
-                        item.track?.title.orEmpty(),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.weight(1f).clickable(enabled = item.canChangeEntry) { onNewSearch(item) }.padding(6.dp),
-                    )
-                    TextButton(onClick = { onToggleTrackerSelection(item) }) {
-                        Text(if (item.tracker.id in selectedTrackerIds) "✓" else "○")
-                    }
-                    TrackInfoItemMenu(
-                        onOpenInBrowser = { onOpenInBrowser(item) },
-                        onRemoved = { onRemoved(item) },
-                        onCopyLink = { onCopyLink(item) },
-                        private = item.track?.private == true,
-                        onTogglePrivate = { onTogglePrivate(item) }.takeIf { item.tracker.supportsPrivateTracking },
-                    )
-                }
-            }
         }
         if (!isSeason) {
             Box(modifier = Modifier.padding(top = 6.dp).clip(MaterialTheme.shapes.medium).fillMaxWidth()) {
@@ -675,28 +646,6 @@ private fun TrackDetailsItem(
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = if (text == null) UNSET_TEXT_ALPHA else 1f),
         )
-    }
-}
-
-@Composable
-private fun TrackInfoItemEmpty(
-    tracker: Tracker,
-    onNewSearch: () -> Unit,
-    initialFocusModifier: Modifier,
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        TrackLogoIcon(tracker)
-        TextButton(
-            onClick = onNewSearch,
-            modifier = Modifier
-                .then(initialFocusModifier)
-                .padding(start = 16.dp)
-                .weight(1f),
-        ) {
-            Text(text = stringResource(MR.strings.add_tracking))
-        }
     }
 }
 

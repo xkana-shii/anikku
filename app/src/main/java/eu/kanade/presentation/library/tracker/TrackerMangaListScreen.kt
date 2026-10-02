@@ -117,7 +117,14 @@ class TrackerMangaListScreen : Screen() {
                                 return@HorizontalPager
                             }
                             if (tab.items.isEmpty()) {
-                                EmptyScreen(message = "All entries are in library.", modifier = Modifier.fillMaxSize())
+                                if (tab.loadError) {
+                                    Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+                                        EmptyScreen(message = stringResource(MR.strings.unknown_error), modifier = Modifier.weight(1f))
+                                        TextButton(onClick = { model.loadNextPage(page) }) { Text(stringResource(MR.strings.action_retry)) }
+                                    }
+                                } else {
+                                    EmptyScreen(message = "All entries are in library.", modifier = Modifier.fillMaxSize())
+                                }
                                 return@HorizontalPager
                             }
                             FastScrollLazyColumn(

@@ -874,7 +874,7 @@ private fun MangaScreenSmallImpl(
                         key = EXACT_HEIGHT_KEY_PREFIX + "structured-relations",
                         span = { GridItemSpan(maxLineSpan) },
                     ) {
-                        StructuredRelationsRow(state.manga, modifier = Modifier.ignorePadding(offsetGridPaddingPx))
+                        StructuredRelationsRow(state.manga, modifier = Modifier.relationsEdgeToEdge(offsetGridPaddingPx))
                     }
 
                     item(
@@ -1835,6 +1835,13 @@ private fun Modifier.ignorePadding(gridPadding: Int) = layout { measurable, cons
 
     layout(placeable.width, placeable.height) {
         placeable.placeRelative(0, 0)
+    }
+}
+
+private fun Modifier.relationsEdgeToEdge(gridPadding: Int) = layout { measurable, constraints ->
+    val placeable = measurable.measure(constraints.offset(gridPadding * 2, 0))
+    layout(placeable.width, placeable.height) {
+        placeable.placeRelative(-gridPadding, 0)
     }
 }
 // <-- AY
