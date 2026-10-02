@@ -20,8 +20,6 @@ internal suspend fun startRewatchOnTracker(
     val outgoing = refreshed.copy(
         status = service.getRereadingStatus(),
         lastChapterRead = progress,
-        startDate = startedAt,
-        finishDate = 0L,
     )
     val returned = requireNotNull(
         service.update(outgoing.toDbTrack(), didReadChapter = false).toDomainTrack(idRequired = true),
