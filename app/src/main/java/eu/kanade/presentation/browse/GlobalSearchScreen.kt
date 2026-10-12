@@ -1,12 +1,21 @@
 package eu.kanade.presentation.browse
 
+import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.focus.focusRestorer
 import eu.kanade.domain.source.model.installedExtension
 import eu.kanade.presentation.browse.components.GlobalSearchCardRow
 import eu.kanade.presentation.browse.components.GlobalSearchErrorResultItem
@@ -17,6 +26,7 @@ import eu.kanade.presentation.components.BulkSelectionToolbar
 import eu.kanade.presentation.components.TvAppBarContentFocusRequesters
 import eu.kanade.presentation.components.rememberTvAppBarContentFocusRequesters
 import eu.kanade.presentation.components.tvAppBarContentFocusTarget
+import eu.kanade.presentation.util.isTvUi
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.ui.browse.BulkFavoriteScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.SearchItemResult
@@ -46,6 +56,7 @@ fun GlobalSearchScreen(
     // KMK <--
 ) {
     val tvFocusRequesters = rememberTvAppBarContentFocusRequesters()
+    var tvContentFocusRequest by remember { mutableIntStateOf(0) }
     val firstResultSourceId = state.filteredItems.entries
         .firstOrNull { (_, result) -> result is SearchItemResult.Success && result.result.isNotEmpty() }
         ?.key
@@ -97,6 +108,7 @@ fun GlobalSearchScreen(
                     hasPinnedSources = hasPinnedSources,
                     tvFocusRequesters = tvFocusRequesters,
                     tvContentAvailable = firstResultSourceId != null,
+                    onTvRequestContentFocus = { tvContentFocusRequest++ },
                     // KMK <--
                 )
             }
@@ -113,6 +125,10 @@ fun GlobalSearchScreen(
             selection = bulkFavoriteState.selection,
             firstResultSourceId = firstResultSourceId,
             tvFocusRequesters = tvFocusRequesters,
+            tvContentFocusRequest = tvContentFocusRequest,
+            onTvContentFocusRequestHandled = { request ->
+                if (tvContentFocusRequest == request) tvContentFocusRequest = 0
+            },
             // KMK <--
         )
     }
@@ -129,11 +145,29 @@ internal fun GlobalSearchContent(
     fromSourceId: Long? = null,
     firstResultSourceId: Long? = null,
     tvFocusRequesters: TvAppBarContentFocusRequesters? = null,
+    tvContentFocusRequest: Int = 0,
+    onTvContentFocusRequestHandled: (Int) -> Unit = {},
     // KMK -->
     selection: List<Manga>,
     // KMK <--
 ) {
+    val tvUi = isTvUi()
+    val listState = rememberLazyListState()
+    val firstResultIndex = items.entries.indexOfFirst { (source, result) ->
+        source.id == firstResultSourceId && result is SearchItemResult.Success && result.result.isNotEmpty()
+    }
+
+    LaunchedEffect(tvContentFocusRequest, firstResultIndex) {
+        if (!tvUi || tvContentFocusRequest == 0 || firstResultIndex < 0) return@LaunchedEffect
+        listState.scrollToItem(firstResultIndex)
+        repeat(2) { withFrameNanos { } }
+        tvFocusRequesters?.content?.requestFocus()
+        onTvContentFocusRequestHandled(tvContentFocusRequest)
+    }
+
     LazyColumn(
+        state = listState,
+        modifier = if (tvUi) Modifier.focusGroup().focusRestorer() else Modifier,
         contentPadding = contentPadding,
     ) {
         items.forEach { (source, result) ->
@@ -177,6 +211,10 @@ internal fun GlobalSearchContent(
                                 onLongClick = onLongClickItem,
                                 // KMK -->
                                 selection = selection,
+                                rowCardModifier = tvFocusRequesters
+                                    ?.takeIf { source.id == firstResultSourceId && tvUi }
+                                    ?.let { Modifier.focusProperties { up = it.appBar } }
+                                    ?: Modifier,
                                 firstCardModifier = tvFocusRequesters
                                     ?.takeIf { source.id == firstResultSourceId }
                                     ?.let { Modifier.tvAppBarContentFocusTarget(it) }

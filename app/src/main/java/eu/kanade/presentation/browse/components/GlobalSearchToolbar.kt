@@ -27,6 +27,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.SearchToolbar
 import eu.kanade.presentation.components.TvAppBarContentFocusRequesters
@@ -57,6 +62,7 @@ fun GlobalSearchToolbar(
     hasPinnedSources: Boolean,
     tvFocusRequesters: TvAppBarContentFocusRequesters? = null,
     tvContentAvailable: Boolean = true,
+    onTvRequestContentFocus: (() -> Unit)? = null,
     // KMK <--
 ) {
     Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface)) {
@@ -70,6 +76,7 @@ fun GlobalSearchToolbar(
                 scrollBehavior = scrollBehavior,
                 tvFocusRequesters = tvFocusRequesters,
                 tvContentAvailable = tvContentAvailable,
+                onTvRequestContentFocus = onTvRequestContentFocus,
                 // KMK -->
                 actions = {
                     AppBarActions(
@@ -102,7 +109,7 @@ fun GlobalSearchToolbar(
                 if (hasPinnedSources) {
                     // KMK <--
                     FilterChip(
-                        modifier = Modifier.tvFilterFocusTarget(tvFocusRequesters, tvContentAvailable),
+                        modifier = Modifier.tvFilterFocusTarget(tvFocusRequesters, tvContentAvailable, onTvRequestContentFocus),
                         selected = sourceFilter == SourceFilter.PinnedOnly,
                         onClick = { onChangeSearchFilter(SourceFilter.PinnedOnly) },
                         leadingIcon = {
@@ -119,7 +126,7 @@ fun GlobalSearchToolbar(
                     )
                 }
                 FilterChip(
-                    modifier = Modifier.tvFilterFocusTarget(tvFocusRequesters, tvContentAvailable),
+                    modifier = Modifier.tvFilterFocusTarget(tvFocusRequesters, tvContentAvailable, onTvRequestContentFocus),
                     selected = sourceFilter == SourceFilter.All,
                     onClick = { onChangeSearchFilter(SourceFilter.All) },
                     leadingIcon = {
@@ -139,7 +146,7 @@ fun GlobalSearchToolbar(
             }
 
             FilterChip(
-                modifier = Modifier.tvFilterFocusTarget(tvFocusRequesters, tvContentAvailable),
+                modifier = Modifier.tvFilterFocusTarget(tvFocusRequesters, tvContentAvailable, onTvRequestContentFocus),
                 selected = onlyShowHasResults,
                 onClick = { onToggleResults() },
                 leadingIcon = {
@@ -164,7 +171,20 @@ fun GlobalSearchToolbar(
 private fun Modifier.tvFilterFocusTarget(
     requesters: TvAppBarContentFocusRequesters?,
     contentAvailable: Boolean,
+    onRequestContentFocus: (() -> Unit)?,
 ): Modifier {
     if (!isTvUi() || !contentAvailable || requesters == null) return this
     return focusProperties { down = requesters.content }
+        .onPreviewKeyEvent {
+            if (
+                onRequestContentFocus != null &&
+                it.type == KeyEventType.KeyDown &&
+                it.key == Key.DirectionDown
+            ) {
+                onRequestContentFocus()
+                true
+            } else {
+                false
+            }
+        }
 }

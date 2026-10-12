@@ -6,7 +6,9 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -14,13 +16,17 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastAny
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.library.components.CommonMangaItemDefaults
 import eu.kanade.presentation.library.components.MangaComfortableGridItem
 import eu.kanade.presentation.manga.components.RatioSwitchToPanorama
+import eu.kanade.presentation.util.isTvUi
+import kotlinx.coroutines.launch
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangaCover
 import tachiyomi.domain.manga.model.asMangaCover
@@ -39,9 +45,11 @@ fun GlobalSearchCardRow(
     onLongClick: (Manga) -> Unit,
     // KMK -->
     selection: List<Manga>,
+    rowCardModifier: Modifier = Modifier,
     firstCardModifier: Modifier = Modifier,
     // KMK <--
 ) {
+    val tvUi = isTvUi()
     if (titles.isEmpty()) {
         EmptyResultItem()
         return
@@ -51,15 +59,24 @@ fun GlobalSearchCardRow(
         contentPadding = PaddingValues(MaterialTheme.padding.small),
         horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.extraSmall),
     ) {
-        items(titles) { manga ->
+        itemsIndexed(titles, key = { _, manga -> manga.id }) { index, manga ->
             val title by getManga(manga)
+            val bringIntoViewRequester = remember { BringIntoViewRequester() }
+            val scope = rememberCoroutineScope()
             MangaItem(
                 title = title.title,
                 cover = title.asMangaCover(),
                 isFavorite = title.favorite,
                 onClick = { onClick(title) },
                 onLongClick = { onLongClick(title) },
-                modifier = if (manga == titles.first()) firstCardModifier else Modifier,
+                modifier = rowCardModifier
+                    .then(if (index == 0) firstCardModifier else Modifier)
+                    .bringIntoViewRequester(bringIntoViewRequester)
+                    .onFocusChanged {
+                        if (tvUi && it.isFocused) {
+                            scope.launch { bringIntoViewRequester.bringIntoView() }
+                        }
+                    },
                 // KMK -->
                 isSelected = selection.fastAny { selected -> selected.id == title.id },
                 // KMK <--

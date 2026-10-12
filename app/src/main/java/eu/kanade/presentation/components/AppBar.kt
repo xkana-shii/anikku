@@ -54,6 +54,11 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
@@ -89,6 +94,7 @@ private data class TvAppBarFocusRoute(
     val requesters: TvAppBarContentFocusRequesters,
     val contentAvailable: Boolean,
     val navigateUpFocusRequester: FocusRequester?,
+    val onRequestContentFocus: (() -> Unit)?,
 )
 
 private val LocalTvAppBarFocusRoute = staticCompositionLocalOf<TvAppBarFocusRoute?> { null }
@@ -111,6 +117,19 @@ private fun Modifier.tvAppBarFocusTarget(): Modifier {
             if (route.contentAvailable) down = route.requesters.content
             if (route.navigateUpFocusRequester != null) {
                 up = route.navigateUpFocusRequester
+            }
+        }
+        .onPreviewKeyEvent {
+            if (
+                route.contentAvailable &&
+                route.onRequestContentFocus != null &&
+                it.type == KeyEventType.KeyDown &&
+                it.key == Key.DirectionDown
+            ) {
+                route.onRequestContentFocus.invoke()
+                true
+            } else {
+                false
             }
         }
 }
@@ -137,6 +156,7 @@ fun AppBar(
     tvFocusRequesters: TvAppBarContentFocusRequesters? = null,
     tvContentAvailable: Boolean = true,
     tvNavigateUpFocusRequester: FocusRequester? = null,
+    onTvRequestContentFocus: (() -> Unit)? = null,
 ) {
     val isActionMode by remember(actionModeCounter) {
         derivedStateOf { actionModeCounter > 0 }
@@ -167,6 +187,7 @@ fun AppBar(
         tvFocusRequesters = tvFocusRequesters,
         tvContentAvailable = tvContentAvailable,
         tvNavigateUpFocusRequester = tvNavigateUpFocusRequester,
+        onTvRequestContentFocus = onTvRequestContentFocus,
     )
 }
 
@@ -194,13 +215,14 @@ fun AppBar(
     tvFocusRequesters: TvAppBarContentFocusRequesters? = null,
     tvContentAvailable: Boolean = true,
     tvNavigateUpFocusRequester: FocusRequester? = null,
+    onTvRequestContentFocus: (() -> Unit)? = null,
 ) {
     Column(
         modifier = modifier,
     ) {
         CompositionLocalProvider(
             LocalTvAppBarFocusRoute provides tvFocusRequesters?.let {
-                TvAppBarFocusRoute(it, tvContentAvailable, tvNavigateUpFocusRequester)
+                TvAppBarFocusRoute(it, tvContentAvailable, tvNavigateUpFocusRequester, onTvRequestContentFocus)
             },
         ) {
             TopAppBar(
@@ -408,6 +430,7 @@ fun SearchToolbar(
     tvFocusRequesters: TvAppBarContentFocusRequesters? = null,
     tvContentAvailable: Boolean = true,
     tvNavigateUpFocusRequester: FocusRequester? = null,
+    onTvRequestContentFocus: (() -> Unit)? = null,
 ) {
     val focusRequester = remember { FocusRequester() }
 
@@ -476,6 +499,7 @@ fun SearchToolbar(
         tvFocusRequesters = tvFocusRequesters,
         tvContentAvailable = tvContentAvailable,
         tvNavigateUpFocusRequester = tvNavigateUpFocusRequester,
+        onTvRequestContentFocus = onTvRequestContentFocus,
         actions = {
             key("search") {
                 val onClick = { onChangeSearchQuery("") }

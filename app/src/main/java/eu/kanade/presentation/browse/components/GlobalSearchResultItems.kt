@@ -22,8 +22,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import eu.kanade.presentation.util.isTvUi
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
@@ -44,6 +46,7 @@ fun GlobalSearchResultItem(
     Column(modifier = modifier) {
         Row(
             modifier = Modifier
+                .let { if (isTvUi()) it.focusProperties { canFocus = false } else it }
                 .padding(
                     start = MaterialTheme.padding.medium,
                     end = MaterialTheme.padding.extraSmall,
@@ -70,7 +73,10 @@ fun GlobalSearchResultItem(
                     Text(text = subtitle)
                 }
             }
-            IconButton(onClick = onClick) {
+            IconButton(
+                modifier = if (isTvUi()) Modifier.focusProperties { canFocus = false } else Modifier,
+                onClick = onClick,
+            ) {
                 Icon(imageVector = Icons.AutoMirrored.Outlined.ArrowForward, contentDescription = null)
             }
         }
