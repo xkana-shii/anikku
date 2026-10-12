@@ -21,8 +21,8 @@ android {
     defaultConfig {
         applicationId = "app.anikku.kns"
 
-        versionCode = 13
-        versionName = "0.2.5"
+        versionCode = 14
+        versionName = "0.2.6"
 
         buildConfigField("String", "COMMIT_COUNT", "\"${getCommitCount()}\"")
         buildConfigField("String", "COMMIT_SHA", "\"${getGitSha()}\"")
